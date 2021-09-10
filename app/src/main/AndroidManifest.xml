@@ -2,11 +2,7 @@
 <manifest
     package="de.j4velin.pedometer"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:versionCode="1511"
-    android:versionName="1.5.11">
-
-    <uses-sdk android:targetSdkVersion="26"/>
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
         android:name="android.hardware.sensor.stepcounter"
