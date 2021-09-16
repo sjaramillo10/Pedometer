@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer.widget;
+package dev.sjaramillo.pedometer.widget;
 
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
@@ -27,7 +27,7 @@ import android.view.View.OnClickListener;
 
 import de.j4velin.lib.colorpicker.ColorPickerDialog;
 import de.j4velin.lib.colorpicker.ColorPreviewButton;
-import de.j4velin.pedometer.R;
+import dev.sjaramillo.pedometer.R;
 
 public class WidgetConfig extends Activity implements OnClickListener {
 

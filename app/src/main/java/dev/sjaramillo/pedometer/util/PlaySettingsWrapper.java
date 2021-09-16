@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.j4velin.pedometer.util;
+package dev.sjaramillo.pedometer.util;
 
 import android.os.Bundle;
 import android.preference.Preference;
 
-import de.j4velin.pedometer.ui.Activity_Main;
+import dev.sjaramillo.pedometer.ui.Activity_Main;
 
 /**
  * Class to wrap some Google Play related stuff in the SettingsFragment

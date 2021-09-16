@@ -4,7 +4,7 @@ android {
     compileSdkVersion = 29
 
     defaultConfig {
-        applicationId "de.j4velin.pedometer"
+        applicationId "dev.sjaramillo.pedometer"
         targetSdkVersion 29
         minSdkVersion 21
         versionCode 1

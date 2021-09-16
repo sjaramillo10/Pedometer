@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer.util;
+package dev.sjaramillo.pedometer.util;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

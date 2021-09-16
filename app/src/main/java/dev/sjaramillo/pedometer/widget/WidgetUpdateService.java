@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer.widget;
+package dev.sjaramillo.pedometer.widget;
 
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -23,8 +23,8 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 
-import de.j4velin.pedometer.Database;
-import de.j4velin.pedometer.util.Util;
+import dev.sjaramillo.pedometer.Database;
+import dev.sjaramillo.pedometer.util.Util;
 
 public class WidgetUpdateService extends JobIntentService {
 

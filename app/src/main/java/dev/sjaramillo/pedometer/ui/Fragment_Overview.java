@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.j4velin.pedometer.ui;
+package dev.sjaramillo.pedometer.ui;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -49,13 +49,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import de.j4velin.pedometer.BuildConfig;
-import de.j4velin.pedometer.Database;
-import de.j4velin.pedometer.R;
-import de.j4velin.pedometer.SensorListener;
-import de.j4velin.pedometer.util.API26Wrapper;
-import de.j4velin.pedometer.util.Logger;
-import de.j4velin.pedometer.util.Util;
+import dev.sjaramillo.pedometer.BuildConfig;
+import dev.sjaramillo.pedometer.Database;
+import dev.sjaramillo.pedometer.R;
+import dev.sjaramillo.pedometer.SensorListener;
+import dev.sjaramillo.pedometer.util.API26Wrapper;
+import dev.sjaramillo.pedometer.util.Logger;
+import dev.sjaramillo.pedometer.util.Util;
 
 public class Fragment_Overview extends Fragment implements SensorEventListener {
 

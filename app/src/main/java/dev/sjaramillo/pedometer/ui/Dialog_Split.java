@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer.ui;
+package dev.sjaramillo.pedometer.ui;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -24,7 +24,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
-import de.j4velin.pedometer.R;
+import dev.sjaramillo.pedometer.R;
 
 abstract class Dialog_Split {
 

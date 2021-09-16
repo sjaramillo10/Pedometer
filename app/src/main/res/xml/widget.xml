@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:configure="de.j4velin.pedometer.widget.WidgetConfig"
+    android:configure="dev.sjaramillo.pedometer.widget.WidgetConfig"
     android:initialLayout="@layout/widget"
     android:minHeight="40dp"
     android:minWidth="40dp"

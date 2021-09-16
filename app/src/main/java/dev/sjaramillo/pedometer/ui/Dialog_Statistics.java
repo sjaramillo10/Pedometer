@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.j4velin.pedometer.ui;
+package dev.sjaramillo.pedometer.ui;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -26,9 +26,9 @@ import android.widget.TextView;
 import java.util.Calendar;
 import java.util.Date;
 
-import de.j4velin.pedometer.Database;
-import de.j4velin.pedometer.R;
-import de.j4velin.pedometer.util.Util;
+import dev.sjaramillo.pedometer.Database;
+import dev.sjaramillo.pedometer.R;
+import dev.sjaramillo.pedometer.util.Util;
 
 abstract class Dialog_Statistics {
 

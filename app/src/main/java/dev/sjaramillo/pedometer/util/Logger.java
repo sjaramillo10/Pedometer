@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer.util;
+package dev.sjaramillo.pedometer.util;
 
 import android.database.Cursor;
 import android.os.Environment;
@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 
-import de.j4velin.pedometer.BuildConfig;
+import dev.sjaramillo.pedometer.BuildConfig;
 
 public abstract class Logger {
 

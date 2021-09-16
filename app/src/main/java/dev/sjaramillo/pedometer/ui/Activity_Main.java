@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer.ui;
+package dev.sjaramillo.pedometer.ui;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -32,9 +32,9 @@ import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import de.j4velin.pedometer.BuildConfig;
-import de.j4velin.pedometer.R;
-import de.j4velin.pedometer.SensorListener;
+import dev.sjaramillo.pedometer.BuildConfig;
+import dev.sjaramillo.pedometer.R;
+import dev.sjaramillo.pedometer.SensorListener;
 
 public class Activity_Main extends FragmentActivity {
 

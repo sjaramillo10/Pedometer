@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer;
+package dev.sjaramillo.pedometer;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -37,12 +37,12 @@ import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import de.j4velin.pedometer.ui.Activity_Main;
-import de.j4velin.pedometer.util.API23Wrapper;
-import de.j4velin.pedometer.util.API26Wrapper;
-import de.j4velin.pedometer.util.Logger;
-import de.j4velin.pedometer.util.Util;
-import de.j4velin.pedometer.widget.WidgetUpdateService;
+import dev.sjaramillo.pedometer.ui.Activity_Main;
+import dev.sjaramillo.pedometer.util.API23Wrapper;
+import dev.sjaramillo.pedometer.util.API26Wrapper;
+import dev.sjaramillo.pedometer.util.Logger;
+import dev.sjaramillo.pedometer.util.Util;
+import dev.sjaramillo.pedometer.widget.WidgetUpdateService;
 
 /**
  * Background service which keeps the step-sensor listener alive to always get

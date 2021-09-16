@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.j4velin.pedometer.ui;
+package dev.sjaramillo.pedometer.ui;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -50,12 +50,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
 
-import de.j4velin.pedometer.Database;
-import de.j4velin.pedometer.R;
-import de.j4velin.pedometer.SensorListener;
-import de.j4velin.pedometer.util.API23Wrapper;
-import de.j4velin.pedometer.util.API26Wrapper;
-import de.j4velin.pedometer.util.PlaySettingsWrapper;
+import dev.sjaramillo.pedometer.Database;
+import dev.sjaramillo.pedometer.R;
+import dev.sjaramillo.pedometer.SensorListener;
+import dev.sjaramillo.pedometer.util.API23Wrapper;
+import dev.sjaramillo.pedometer.util.API26Wrapper;
+import dev.sjaramillo.pedometer.util.PlaySettingsWrapper;
 
 public class Fragment_Settings extends PreferenceFragment implements OnPreferenceClickListener {
 

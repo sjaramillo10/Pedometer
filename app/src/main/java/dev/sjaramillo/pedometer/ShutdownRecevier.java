@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package de.j4velin.pedometer;
+package dev.sjaramillo.pedometer;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import de.j4velin.pedometer.util.Logger;
-import de.j4velin.pedometer.util.Util;
+import dev.sjaramillo.pedometer.util.Logger;
+import dev.sjaramillo.pedometer.util.Util;
 
 public class ShutdownRecevier extends BroadcastReceiver {
 
