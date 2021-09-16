@@ -44,7 +44,7 @@ public class Activity_Main extends FragmentActivity {
         startService(new Intent(this, SensorListener.class));
         if (b == null) {
             // Create new fragment and transaction
-            Fragment newFragment = new Fragment_Overview();
+            Fragment newFragment = new OverviewFragment();
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
             // Replace whatever is in the fragment_container view with this

@@ -24,7 +24,7 @@ import com.google.android.apps.dashclock.api.ExtensionData;
 import dev.sjaramillo.pedometer.Database;
 import dev.sjaramillo.pedometer.R;
 import dev.sjaramillo.pedometer.ui.Activity_Main;
-import dev.sjaramillo.pedometer.ui.Fragment_Overview;
+import dev.sjaramillo.pedometer.ui.OverviewFragment;
 import dev.sjaramillo.pedometer.util.Util;
 
 /**
@@ -38,7 +38,7 @@ public class DashClock extends DashClockExtension {
         ExtensionData data = new ExtensionData();
         Database db = Database.getInstance(this);
         int steps = Math.max(db.getCurrentSteps() + db.getSteps(Util.getToday()), 0);
-        data.visible(true).status(Fragment_Overview.formatter.format(steps))
+        data.visible(true).status(OverviewFragment.formatter.format(steps))
                 .icon(R.drawable.ic_dashclock)
                 .clickIntent(new Intent(DashClock.this, Activity_Main.class));
         db.close();
