@@ -22,6 +22,7 @@ import de.j4velin.pedometer.ui.Activity_Main;
 
 /**
  * Class to wrap some Google Play related stuff in the SettingsFragment
+ * TODO get rid of this file
  */
 public class PlaySettingsWrapper {
 

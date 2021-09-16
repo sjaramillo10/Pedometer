@@ -15,17 +15,6 @@ android {
         release
     }
 
-    flavorDimensions "main"
-
-    productFlavors {
-        play {
-            dimension "main"
-        }
-        fdroid {
-            dimension "main"
-        }
-    }
-
     lintOptions{
         disable 'MissingTranslation'
         disable 'ExtraTranslation'
@@ -53,9 +42,6 @@ dependencies {
     implementation 'com.github.j4velin.colorpicker:colorpicker:1.20.6'
     implementation 'com.github.j4velin.EazeGraph:EazeGraph:1.0.3'
     implementation 'com.google.android.apps.dashclock:dashclock-api:2.0.0'
-    playImplementation 'com.google.android.gms:play-services-fitness:15.0.1'
-    playImplementation 'com.google.android.gms:play-services-games:15.0.1'
-    playImplementation 'com.google.android.gms:play-services-identity:15.0.1'
 }
 
 def props = new Properties()
