@@ -18,6 +18,7 @@ package dev.sjaramillo.pedometer.util;
 
 import android.database.Cursor;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -57,20 +58,22 @@ public abstract class Logger {
 
     @SuppressWarnings("deprecation")
     public static void log(String msg) {
-        if (!BuildConfig.DEBUG) return;
-        android.util.Log.d(APP, msg);
-        try {
-            if (fw == null) {
-                fw = new FileWriter(new File(
-                        Environment.getExternalStorageDirectory().toString() + "/" + APP + ".txt"),
-                        true);
-            }
-            date.setTime(System.currentTimeMillis());
-            fw.write(date.toLocaleString() + " - " + msg + "\n");
-            fw.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // TODO Use a different method to log data
+        Log.d("Logger", msg);
+//        if (!BuildConfig.DEBUG) return;
+//        android.util.Log.d(APP, msg);
+//        try {
+//            if (fw == null) {
+//                fw = new FileWriter(new File(
+//                        Environment.getExternalStorageDirectory().toString() + "/" + APP + ".txt"),
+//                        true);
+//            }
+//            date.setTime(System.currentTimeMillis());
+//            fw.write(date.toLocaleString() + " - " + msg + "\n");
+//            fw.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         // }
     }
 

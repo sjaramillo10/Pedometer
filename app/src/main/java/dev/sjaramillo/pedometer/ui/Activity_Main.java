@@ -61,6 +61,8 @@ public class Activity_Main extends FragmentActivity {
                 PermissionChecker.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
+
+        // TODO Request Activity Recognition permission: https://www.raywenderlich.com/24859773-activity-recognition-api-tutorial-for-android-getting-started
     }
 
     @Override
