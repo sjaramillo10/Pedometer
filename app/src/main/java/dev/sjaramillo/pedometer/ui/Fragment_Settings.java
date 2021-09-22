@@ -100,7 +100,7 @@ public class Fragment_Settings extends PreferenceFragment implements OnPreferenc
 
         Preference account = findPreference("account");
         PlaySettingsWrapper
-                .setupAccountSetting(account, savedInstanceState, (Activity_Main) getActivity());
+                .setupAccountSetting(account, savedInstanceState, (MainActivity) getActivity());
 
         Preference goal = findPreference("goal");
         goal.setOnPreferenceClickListener(this);
@@ -118,7 +118,7 @@ public class Fragment_Settings extends PreferenceFragment implements OnPreferenc
     @Override
     public void onSaveInstanceState(final Bundle outState) {
         super.onSaveInstanceState(outState);
-        PlaySettingsWrapper.onSavedInstance(outState, (Activity_Main) getActivity());
+        PlaySettingsWrapper.onSavedInstance(outState, (MainActivity) getActivity());
     }
 
     @Override
@@ -145,7 +145,7 @@ public class Fragment_Settings extends PreferenceFragment implements OnPreferenc
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        return ((Activity_Main) getActivity()).optionsItemSelected(item);
+        return ((MainActivity) getActivity()).optionsItemSelected(item);
     }
 
     @Override

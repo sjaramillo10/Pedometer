@@ -184,7 +184,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
                 ).show()
                 true
             }
-            else -> (activity as Activity_Main).optionsItemSelected(item)
+            else -> (activity as MainActivity).optionsItemSelected(item)
         }
     }
 

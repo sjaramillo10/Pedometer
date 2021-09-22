@@ -3,7 +3,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="5dp"
-                tools:context=".ui.Activity_Main">
+                tools:context=".ui.MainActivity">
 
     <org.eazegraph.lib.charts.PieChart
         xmlns:eaze="http://schemas.android.com/apk/res-auto"
