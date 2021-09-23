@@ -7,10 +7,6 @@
     <Preference
         android:key="stepsize"
         android:title="@string/step_size"/>
-    <Preference
-        android:key="account"
-        android:summary="@string/sign_in"
-        android:title="@string/account"/>
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="notification"
