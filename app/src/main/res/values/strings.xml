@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="MissingTranslation">
+<resources>
 
-    <string name="app_name">Pedometer</string>
+    <string name="app_name" translatable="false">Pedometer</string>
     <string name="goal">Goal</string>
     <string name="step_size">Step size</string>
     <string name="about">About</string>

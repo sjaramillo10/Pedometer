@@ -28,7 +28,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
-import dev.sjaramillo.pedometer.BuildConfig
 import org.eazegraph.lib.models.PieModel
 import org.eazegraph.lib.charts.PieChart
 import dev.sjaramillo.pedometer.util.API26Wrapper
@@ -108,9 +107,9 @@ class OverviewFragment : Fragment(), SensorEventListener {
         super.onResume()
         activity.actionBar!!.setDisplayHomeAsUpEnabled(false)
         val db = Database.getInstance(activity)
-        if (BuildConfig.DEBUG) db.logState()
-        // read todays offset
-        todayOffset = db.getSteps(Util.getToday())
+        db.logState()
+        // read today's offset
+        todayOffset = db.getSteps(Util.today)
         val prefs = activity.getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", Fragment_Settings.DEFAULT_GOAL)
         since_boot = db.currentSteps
@@ -164,7 +163,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             val sm = activity.getSystemService(Context.SENSOR_SERVICE) as SensorManager
             sm.unregisterListener(this)
         } catch (e: Exception) {
-            if (BuildConfig.DEBUG) Logger.log(e)
+            Logger.log(e)
         }
         val db = Database.getInstance(activity)
         db.saveCurrentSteps(since_boot)
@@ -193,10 +192,8 @@ class OverviewFragment : Fragment(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (BuildConfig.DEBUG) Logger.log(
-            "UI - sensorChanged | todayOffset: " + todayOffset + " since boot: " +
-                    event.values[0]
-        )
+        val msg = "UI - sensorChanged | todayOffset: $todayOffset since boot: ${event.values[0]}"
+        Logger.log(msg)
         if (event.values[0] > Int.MAX_VALUE || event.values[0] == 0f) {
             return
         }
@@ -207,7 +204,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             todayOffset = (-event.values[0]).toInt()
             val db = Database.getInstance(activity)
             db.insertNewDay(
-                Util.getToday(), event.values[0]
+                Util.today, event.values[0]
                     .toInt()
             )
             db.close()
@@ -222,7 +219,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
      * count to distance.
      */
     private fun updatePie() {
-        if (BuildConfig.DEBUG) Logger.log("UI - update steps: $since_boot")
+        Logger.log("UI - update steps: $since_boot")
         // todayOffset might still be Integer.MIN_VALUE on first start
         val steps_today = Math.max(todayOffset + since_boot, 0)
         sliceCurrent!!.value = steps_today.toFloat()

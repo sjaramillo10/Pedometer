@@ -53,7 +53,6 @@ import java.util.Locale;
 import dev.sjaramillo.pedometer.Database;
 import dev.sjaramillo.pedometer.R;
 import dev.sjaramillo.pedometer.SensorListener;
-import dev.sjaramillo.pedometer.util.API23Wrapper;
 import dev.sjaramillo.pedometer.util.API26Wrapper;
 
 public class Fragment_Settings extends PreferenceFragment implements OnPreferenceClickListener {
@@ -220,8 +219,8 @@ public class Fragment_Settings extends PreferenceFragment implements OnPreferenc
                         exportCsv();
                     }
                 } else if (Build.VERSION.SDK_INT >= 23) {
-                    API23Wrapper.requestPermission(getActivity(),
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE});
+                    // TODO Update code so that external storage permission is not required
+                    getActivity().requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 42);
                 } else {
                     Toast.makeText(getActivity(), R.string.permission_external_storage,
                             Toast.LENGTH_SHORT).show();

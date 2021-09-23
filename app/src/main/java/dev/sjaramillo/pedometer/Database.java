@@ -126,10 +126,8 @@ public class Database extends SQLiteOpenHelper {
                 getWritableDatabase().insert(DB_NAME, null, values);
             }
             c.close();
-            if (BuildConfig.DEBUG) {
-                Logger.log("insertDay " + date + " / " + steps);
-                logState();
-            }
+            Logger.log("insertDay " + date + " / " + steps);
+            logState();
             getWritableDatabase().setTransactionSuccessful();
         } finally {
             getWritableDatabase().endTransaction();
@@ -179,6 +177,7 @@ public class Database extends SQLiteOpenHelper {
      * Writes the current steps database to the log
      */
     public void logState() {
+        // TODO Audit this method and see if it is actually useful
         if (BuildConfig.DEBUG) {
             Cursor c = getReadableDatabase()
                     .query(DB_NAME, null, null, null, null, null, "date DESC", "5");
@@ -365,9 +364,7 @@ public class Database extends SQLiteOpenHelper {
             values.put("date", -1);
             getWritableDatabase().insert(DB_NAME, null, values);
         }
-        if (BuildConfig.DEBUG) {
-            Logger.log("saving steps in db: " + steps);
-        }
+        Logger.log("saving steps in db: " + steps);
     }
 
     /**

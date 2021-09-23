@@ -15,20 +15,16 @@
  */
 package dev.sjaramillo.pedometer.ui
 
-import android.Manifest
 import android.app.AlertDialog
 import android.app.Fragment
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.MenuItem
 import android.widget.TextView
-import androidx.core.content.PermissionChecker
 import androidx.fragment.app.FragmentActivity
-import dev.sjaramillo.pedometer.BuildConfig
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.SensorListener
 
@@ -49,15 +45,6 @@ class MainActivity : FragmentActivity() {
 
             // Commit the transaction
             transaction.commit()
-        }
-
-        // TODO Update code so that external storage permission is not required
-
-        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= 23 && PermissionChecker
-                .checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-            PermissionChecker.PERMISSION_GRANTED
-        ) {
-            requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
         }
 
         // TODO Request Activity Recognition permission: https://www.raywenderlich.com/24859773-activity-recognition-api-tutorial-for-android-getting-started

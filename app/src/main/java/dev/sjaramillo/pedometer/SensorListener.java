@@ -38,7 +38,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import dev.sjaramillo.pedometer.ui.MainActivity;
-import dev.sjaramillo.pedometer.util.API23Wrapper;
 import dev.sjaramillo.pedometer.util.API26Wrapper;
 import dev.sjaramillo.pedometer.util.Logger;
 import dev.sjaramillo.pedometer.util.Util;
@@ -68,14 +67,13 @@ public class SensorListener extends Service implements SensorEventListener {
     public void onAccuracyChanged(final Sensor sensor, int accuracy) {
         // nobody knows what happens here: step value might magically decrease
         // when this method is called...
-        if (BuildConfig.DEBUG) Logger.log(sensor.getName() + " accuracy changed: " + accuracy);
+        Logger.log(sensor.getName() + " accuracy changed: " + accuracy);
     }
 
     @Override
     public void onSensorChanged(final SensorEvent event) {
         if (event.values[0] > Integer.MAX_VALUE) {
-            if (BuildConfig.DEBUG) Logger.log("probably not a real value: " + event.values[0]);
-            return;
+            Logger.log("probably not a real value: " + event.values[0]);
         } else {
             steps = (int) event.values[0];
             updateIfNecessary();
@@ -88,8 +86,7 @@ public class SensorListener extends Service implements SensorEventListener {
     private boolean updateIfNecessary() {
         if (steps > lastSaveSteps + SAVE_OFFSET_STEPS ||
                 (steps > 0 && System.currentTimeMillis() > lastSaveTime + SAVE_OFFSET_TIME)) {
-            if (BuildConfig.DEBUG) Logger.log(
-                    "saving steps: steps=" + steps + " lastSave=" + lastSaveSteps +
+            Logger.log("saving steps: steps=" + steps + " lastSave=" + lastSaveSteps +
                             " lastSaveTime=" + new Date(lastSaveTime));
             Database db = Database.getInstance(this);
             if (db.getSteps(Util.getToday()) == Integer.MIN_VALUE) {
@@ -141,14 +138,14 @@ public class SensorListener extends Service implements SensorEventListener {
         // restart service every hour to save the current step count
         long nextUpdate = Math.min(Util.getTomorrow(),
                 System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR);
-        if (BuildConfig.DEBUG) Logger.log("next update: " + new Date(nextUpdate).toLocaleString());
+        Logger.log("next update: " + new Date(nextUpdate).toLocaleString());
         AlarmManager am =
                 (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = PendingIntent
                 .getService(getApplicationContext(), 2, new Intent(this, SensorListener.class),
                         PendingIntent.FLAG_UPDATE_CURRENT);
         if (Build.VERSION.SDK_INT >= 23) {
-            API23Wrapper.setAlarmWhileIdle(am, AlarmManager.RTC, nextUpdate, pi);
+            am.setAndAllowWhileIdle(AlarmManager.RTC, nextUpdate, pi);
         } else {
             am.set(AlarmManager.RTC, nextUpdate, pi);
         }
@@ -159,13 +156,13 @@ public class SensorListener extends Service implements SensorEventListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (BuildConfig.DEBUG) Logger.log("SensorListener onCreate");
+        Logger.log("SensorListener onCreate");
     }
 
     @Override
     public void onTaskRemoved(final Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        if (BuildConfig.DEBUG) Logger.log("sensor service task removed");
+        Logger.log("sensor service task removed");
         // Restart service in 500 ms
         ((AlarmManager) getSystemService(Context.ALARM_SERVICE))
                 .set(AlarmManager.RTC, System.currentTimeMillis() + 500, PendingIntent
@@ -175,18 +172,17 @@ public class SensorListener extends Service implements SensorEventListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (BuildConfig.DEBUG) Logger.log("SensorListener onDestroy");
+        Logger.log("SensorListener onDestroy");
         try {
             SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
             sm.unregisterListener(this);
         } catch (Exception e) {
-            if (BuildConfig.DEBUG) Logger.log(e);
-            e.printStackTrace();
+            Logger.log(e);
         }
     }
 
     public static Notification getNotification(final Context context) {
-        if (BuildConfig.DEBUG) Logger.log("getNotification");
+        Logger.log("getNotification");
         SharedPreferences prefs = context.getSharedPreferences("pedometer", Context.MODE_PRIVATE);
         int goal = prefs.getInt("goal", 10000);
         Database db = Database.getInstance(context);
@@ -221,32 +217,29 @@ public class SensorListener extends Service implements SensorEventListener {
     }
 
     private void registerBroadcastReceiver() {
-        if (BuildConfig.DEBUG) Logger.log("register broadcastreceiver");
+        Logger.log("register broadcastreceiver");
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SHUTDOWN);
         registerReceiver(shutdownReceiver, filter);
     }
 
     private void reRegisterSensor() {
-        if (BuildConfig.DEBUG) Logger.log("re-register sensor listener");
+        Logger.log("re-register sensor listener");
         SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
         try {
             sm.unregisterListener(this);
         } catch (Exception e) {
-            if (BuildConfig.DEBUG) Logger.log(e);
-            e.printStackTrace();
+            Logger.log(e);
         }
 
-        if (BuildConfig.DEBUG) {
-            Logger.log("step sensors: " + sm.getSensorList(Sensor.TYPE_STEP_COUNTER).size());
-            if (sm.getSensorList(Sensor.TYPE_STEP_COUNTER).size() < 1) return; // emulator
-            Logger.log("default: " + sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER).getName());
-        }
+        Logger.log("step sensors: " + sm.getSensorList(Sensor.TYPE_STEP_COUNTER).size());
+        if (sm.getSensorList(Sensor.TYPE_STEP_COUNTER).size() < 1) return; // emulator
+        Logger.log("default: " + sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER).getName());
 
         // enable batching with delay of max 5 min
         boolean enabled = sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER),
                 SensorManager.SENSOR_DELAY_NORMAL, (int) (5 * MICROSECONDS_IN_ONE_MINUTE));
 
-        if (BuildConfig.DEBUG) Logger.log("Steps SensorListener enabled: " + enabled);
+        Logger.log("Steps SensorListener enabled: " + enabled);
     }
 }

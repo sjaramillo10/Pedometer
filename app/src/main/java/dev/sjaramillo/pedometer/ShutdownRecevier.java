@@ -27,7 +27,7 @@ public class ShutdownRecevier extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        if (BuildConfig.DEBUG) Logger.log("shutting down");
+        Logger.log("shutting down");
 
         context.startService(new Intent(context, SensorListener.class));
 

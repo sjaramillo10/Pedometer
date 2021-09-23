@@ -13,27 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package dev.sjaramillo.pedometer.receiver
 
-package dev.sjaramillo.pedometer;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.util.API26Wrapper.startForegroundService
+import dev.sjaramillo.pedometer.util.Logger
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-
-import dev.sjaramillo.pedometer.util.API26Wrapper;
-import dev.sjaramillo.pedometer.util.Logger;
-
-public class AppUpdatedReceiver extends BroadcastReceiver {
-
-    @Override
-    public void onReceive(final Context context, final Intent intent) {
-        if (BuildConfig.DEBUG) Logger.log("app updated");
+class AppUpdatedReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        Logger.log("app updated")
         if (Build.VERSION.SDK_INT >= 26) {
-            API26Wrapper.startForegroundService(context, new Intent(context, SensorListener.class));
+            startForegroundService(context, Intent(context, SensorListener::class.java))
         } else {
-            context.startService(new Intent(context, SensorListener.class));
+            context.startService(Intent(context, SensorListener::class.java))
         }
     }
-
 }
