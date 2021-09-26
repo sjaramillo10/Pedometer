@@ -177,7 +177,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_split_count -> {
-                Dialog_Split.getDialog(
+                SplitDialog.getDialog(
                     activity,
                     total_start + Math.max(todayOffset + since_boot, 0)
                 ).show()
@@ -321,7 +321,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
     }
 
     companion object {
-        @JvmField
+        @JvmField // TODO Remove @JvmField once all is converted to Kotlin, and move to a utils class
         val formatter = NumberFormat.getInstance(Locale.getDefault())
     }
 }
