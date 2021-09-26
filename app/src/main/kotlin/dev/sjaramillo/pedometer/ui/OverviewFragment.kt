@@ -313,7 +313,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             }
         }
         if (barChart.data.size > 0) {
-            barChart.setOnClickListener { Dialog_Statistics.getDialog(activity, since_boot).show() }
+            barChart.setOnClickListener { StatisticsDialog.getDialog(activity!!, since_boot).show() }
             barChart.startAnimation()
         } else {
             barChart.visibility = View.GONE
