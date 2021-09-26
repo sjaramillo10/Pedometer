@@ -91,7 +91,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
 
         // slice for the "missing" steps until reaching the goal
         sliceGoal =
-            PieModel("", Fragment_Settings.DEFAULT_GOAL.toFloat(), Color.parseColor("#CC0000"))
+            PieModel("", SettingsFragment.DEFAULT_GOAL.toFloat(), Color.parseColor("#CC0000"))
         pg!!.addPieSlice(sliceGoal)
         pg!!.setOnClickListener {
             showSteps = !showSteps
@@ -111,7 +111,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
         // read today's offset
         todayOffset = db.getSteps(Util.today)
         val prefs = activity.getSharedPreferences("pedometer", Context.MODE_PRIVATE)
-        goal = prefs.getInt("goal", Fragment_Settings.DEFAULT_GOAL)
+        goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
         since_boot = db.currentSteps
         val pauseDifference = since_boot - prefs.getInt("pauseCount", since_boot)
 
@@ -144,7 +144,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
                 getString(R.string.steps)
         } else {
             var unit = activity.getSharedPreferences("pedometer", Context.MODE_PRIVATE)
-                .getString("stepsize_unit", Fragment_Settings.DEFAULT_STEP_UNIT)
+                .getString("stepsize_unit", SettingsFragment.DEFAULT_STEP_UNIT)
             unit = if (unit == "cm") {
                 "km"
             } else {
@@ -246,10 +246,10 @@ class OverviewFragment : Fragment(), SensorEventListener {
         } else {
             // update only every 10 steps when displaying distance
             val prefs = activity.getSharedPreferences("pedometer", Context.MODE_PRIVATE)
-            val stepsize = prefs.getFloat("stepsize_value", Fragment_Settings.DEFAULT_STEP_SIZE)
+            val stepsize = prefs.getFloat("stepsize_value", SettingsFragment.DEFAULT_STEP_SIZE)
             var distance_today = steps_today * stepsize
             var distance_total = (total_start + steps_today) * stepsize
-            if (prefs.getString("stepsize_unit", Fragment_Settings.DEFAULT_STEP_UNIT)
+            if (prefs.getString("stepsize_unit", SettingsFragment.DEFAULT_STEP_UNIT)
                 == "cm"
             ) {
                 distance_today /= 100000f
@@ -275,13 +275,13 @@ class OverviewFragment : Fragment(), SensorEventListener {
         if (barChart.data.size > 0) barChart.clearChart()
         var steps: Int
         var distance: Float
-        var stepsize = Fragment_Settings.DEFAULT_STEP_SIZE
+        var stepsize = SettingsFragment.DEFAULT_STEP_SIZE
         var stepsize_cm = true
         if (!showSteps) {
             // load some more settings if distance is needed
             val prefs = activity.getSharedPreferences("pedometer", Context.MODE_PRIVATE)
-            stepsize = prefs.getFloat("stepsize_value", Fragment_Settings.DEFAULT_STEP_SIZE)
-            stepsize_cm = (prefs.getString("stepsize_unit", Fragment_Settings.DEFAULT_STEP_UNIT)
+            stepsize = prefs.getFloat("stepsize_value", SettingsFragment.DEFAULT_STEP_SIZE)
+            stepsize_cm = (prefs.getString("stepsize_unit", SettingsFragment.DEFAULT_STEP_UNIT)
                     == "cm")
         }
         barChart.isShowDecimal = !showSteps // show decimal in distance view only

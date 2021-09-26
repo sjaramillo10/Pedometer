@@ -62,7 +62,7 @@ class MainActivity : FragmentActivity() {
         when (item.itemId) {
             android.R.id.home -> fragmentManager.popBackStackImmediate()
             R.id.action_settings -> fragmentManager.beginTransaction()
-                .replace(android.R.id.content, Fragment_Settings()).addToBackStack(null)
+                .replace(android.R.id.content, SettingsFragment()).addToBackStack(null)
                 .commit()
             R.id.action_faq -> {
                 val faqUri = Uri.parse("http://j4velin.de/faq/index.php?app=pm")
