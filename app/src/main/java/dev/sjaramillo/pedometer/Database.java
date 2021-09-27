@@ -304,7 +304,7 @@ public class Database extends SQLiteOpenHelper {
      * Only call this directly after boot, otherwise it might remove the current
      * day as the current offset is likely to be negative
      */
-    void removeNegativeEntries() {
+    public void removeNegativeEntries() {
         getWritableDatabase().delete(DB_NAME, "steps < ?", new String[]{"0"});
     }
 

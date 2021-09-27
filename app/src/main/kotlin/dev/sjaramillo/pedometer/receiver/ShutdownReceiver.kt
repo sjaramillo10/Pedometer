@@ -13,41 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package dev.sjaramillo.pedometer.receiver
 
-package dev.sjaramillo.pedometer;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import dev.sjaramillo.pedometer.Database
+import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.util.Logger.log
+import dev.sjaramillo.pedometer.util.Util.today
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-
-import dev.sjaramillo.pedometer.util.Logger;
-import dev.sjaramillo.pedometer.util.Util;
-
-public class ShutdownRecevier extends BroadcastReceiver {
-
-    @Override
-    public void onReceive(final Context context, final Intent intent) {
-        Logger.log("shutting down");
-
-        context.startService(new Intent(context, SensorListener.class));
+class ShutdownReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        log("shutting down")
+        context.startService(Intent(context, SensorListener::class.java))
 
         // if the user used a root script for shutdown, the DEVICE_SHUTDOWN
         // broadcast might not be send. Therefore, the app will check this
         // setting on the next boot and displays an error message if it's not
         // set to true
         context.getSharedPreferences("pedometer", Context.MODE_PRIVATE).edit()
-                .putBoolean("correctShutdown", true).commit();
+            .putBoolean("correctShutdown", true).apply()
 
-        Database db = Database.getInstance(context);
+        val db = Database.getInstance(context)
         // if it's already a new day, add the temp. steps to the last one
-        if (db.getSteps(Util.getToday()) == Integer.MIN_VALUE) {
-            int steps = db.getCurrentSteps();
-            db.insertNewDay(Util.getToday(), steps);
+        if (db.getSteps(today) == Int.MIN_VALUE) {
+            val steps = db.currentSteps
+            db.insertNewDay(today, steps)
         } else {
-            db.addToLastEntry(db.getCurrentSteps());
+            db.addToLastEntry(db.currentSteps)
         }
         // current steps will be reset on boot @see BootReceiver
-        db.close();
+        db.close()
     }
-
 }

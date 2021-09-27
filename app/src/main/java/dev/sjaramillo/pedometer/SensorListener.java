@@ -37,6 +37,7 @@ import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import dev.sjaramillo.pedometer.receiver.ShutdownReceiver;
 import dev.sjaramillo.pedometer.ui.MainActivity;
 import dev.sjaramillo.pedometer.util.API26Wrapper;
 import dev.sjaramillo.pedometer.util.Logger;
@@ -60,7 +61,7 @@ public class SensorListener extends Service implements SensorEventListener {
     private static int lastSaveSteps;
     private static long lastSaveTime;
 
-    private final BroadcastReceiver shutdownReceiver = new ShutdownRecevier();
+    private final BroadcastReceiver shutdownReceiver = new ShutdownReceiver();
 
     @Override
     public void onAccuracyChanged(final Sensor sensor, int accuracy) {

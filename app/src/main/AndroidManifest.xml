@@ -33,12 +33,17 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".BootReceiver">
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="true">
             <intent-filter>
+                <!-- // TODO Might want to switch to android.intent.action.LOCKED_BOOT_COMPLETED -->
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".receiver.AppUpdatedReceiver">
+        <receiver
+            android:name=".receiver.AppUpdatedReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
