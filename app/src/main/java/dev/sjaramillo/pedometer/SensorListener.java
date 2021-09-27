@@ -41,7 +41,6 @@ import dev.sjaramillo.pedometer.ui.MainActivity;
 import dev.sjaramillo.pedometer.util.API26Wrapper;
 import dev.sjaramillo.pedometer.util.Logger;
 import dev.sjaramillo.pedometer.util.Util;
-import dev.sjaramillo.pedometer.widget.WidgetUpdateService;
 
 /**
  * Background service which keeps the step-sensor listener alive to always get
@@ -105,7 +104,6 @@ public class SensorListener extends Service implements SensorEventListener {
             lastSaveSteps = steps;
             lastSaveTime = System.currentTimeMillis();
             showNotification(); // update notification
-            WidgetUpdateService.enqueueUpdate(this);
             return true;
         } else {
             return false;
