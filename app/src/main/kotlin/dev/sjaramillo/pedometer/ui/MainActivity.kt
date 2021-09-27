@@ -26,7 +26,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.service.SensorListener
 
 class MainActivity : FragmentActivity() {
 

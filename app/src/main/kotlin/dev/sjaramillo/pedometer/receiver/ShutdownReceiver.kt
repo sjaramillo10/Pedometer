@@ -19,7 +19,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import dev.sjaramillo.pedometer.Database
-import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.Util.today
 

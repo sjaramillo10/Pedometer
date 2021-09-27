@@ -30,7 +30,7 @@ import android.view.*
 import android.widget.TextView
 import dev.sjaramillo.pedometer.Database
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger
 import dev.sjaramillo.pedometer.util.Util
 import org.eazegraph.lib.charts.BarChart

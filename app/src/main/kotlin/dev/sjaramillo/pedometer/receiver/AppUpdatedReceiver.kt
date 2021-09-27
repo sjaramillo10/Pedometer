@@ -19,7 +19,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger
 
 class AppUpdatedReceiver : BroadcastReceiver() {

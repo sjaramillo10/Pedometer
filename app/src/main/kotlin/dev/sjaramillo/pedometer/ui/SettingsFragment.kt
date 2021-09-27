@@ -34,7 +34,7 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import dev.sjaramillo.pedometer.Database
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
 import java.io.*
 import java.util.*
