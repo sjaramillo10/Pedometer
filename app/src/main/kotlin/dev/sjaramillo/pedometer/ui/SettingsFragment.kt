@@ -32,7 +32,7 @@ import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.RadioGroup
 import android.widget.Toast
-import dev.sjaramillo.pedometer.Database
+import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
@@ -318,7 +318,7 @@ class SettingsFragment : PreferenceFragment(), Preference.OnPreferenceClickListe
             if (c != null && c.moveToFirst()) {
                 while (!c.isAfterLast) {
                     out.append(c.getString(0)).append(";")
-                        .append(Math.max(0, c.getInt(1)).toString()).append("\n")
+                        .append(c.getInt(1).coerceAtLeast(0).toString()).append("\n")
                     c.moveToNext()
                 }
             }

@@ -21,7 +21,7 @@ import android.view.View
 import android.view.Window
 import android.widget.TextView
 import dev.sjaramillo.pedometer.util.Util.today
-import dev.sjaramillo.pedometer.Database
+import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
 import java.text.DateFormat
 import java.util.*

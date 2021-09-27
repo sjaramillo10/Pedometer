@@ -28,7 +28,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
-import dev.sjaramillo.pedometer.Database
+import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger
@@ -104,7 +104,6 @@ class OverviewFragment : Fragment(), SensorEventListener {
         super.onResume()
         activity.actionBar!!.setDisplayHomeAsUpEnabled(false)
         val db = Database.getInstance(activity)
-        db.logState()
         // read today's offset
         todayOffset = db.getSteps(Util.today)
         val prefs = activity.getSharedPreferences("pedometer", Context.MODE_PRIVATE)

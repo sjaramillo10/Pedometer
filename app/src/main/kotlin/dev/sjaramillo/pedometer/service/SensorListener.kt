@@ -26,7 +26,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
-import dev.sjaramillo.pedometer.Database
+import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.Util.today

@@ -15,7 +15,6 @@
  */
 package dev.sjaramillo.pedometer.util
 
-import android.database.Cursor
 import android.util.Log
 import dev.sjaramillo.pedometer.BuildConfig
 
@@ -24,7 +23,6 @@ object Logger {
 
     private const val APP = "Pedometer"
 
-    @JvmStatic
     fun log(ex: Throwable) {
         if (!BuildConfig.DEBUG) return
         log(ex.message ?: "generic exception error message")
@@ -33,22 +31,6 @@ object Logger {
         }
     }
 
-    @JvmStatic
-    fun log(c: Cursor) {
-        if (!BuildConfig.DEBUG) return
-        c.moveToFirst()
-        var title = ""
-        for (i in 0 until c.columnCount) title += c.getColumnName(i) + "\t| "
-        log(title)
-        while (!c.isAfterLast) {
-            title = ""
-            for (i in 0 until c.columnCount) title += c.getString(i) + "\t| "
-            log(title)
-            c.moveToNext()
-        }
-    }
-
-    @JvmStatic
     fun log(msg: String) {
         if (!BuildConfig.DEBUG) return
         Log.d(APP, msg)
