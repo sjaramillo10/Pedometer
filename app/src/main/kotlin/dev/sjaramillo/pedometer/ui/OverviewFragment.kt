@@ -28,17 +28,15 @@ import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
-import org.eazegraph.lib.models.PieModel
-import org.eazegraph.lib.charts.PieChart
-import dev.sjaramillo.pedometer.util.API26Wrapper
 import dev.sjaramillo.pedometer.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.SensorListener
-import org.eazegraph.lib.charts.BarChart
-import org.eazegraph.lib.models.BarModel
 import dev.sjaramillo.pedometer.util.Logger
 import dev.sjaramillo.pedometer.util.Util
-import java.lang.Exception
+import org.eazegraph.lib.charts.BarChart
+import org.eazegraph.lib.charts.PieChart
+import org.eazegraph.lib.models.BarModel
+import org.eazegraph.lib.models.PieModel
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -64,13 +62,12 @@ class OverviewFragment : Fragment(), SensorEventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        val serviceIntent = Intent(activity, SensorListener::class.java)
         if (Build.VERSION.SDK_INT >= 26) {
-            API26Wrapper.startForegroundService(
-                activity,
-                Intent(activity, SensorListener::class.java)
-            )
+            context.startForegroundService(serviceIntent)
         } else {
-            activity.startService(Intent(activity, SensorListener::class.java))
+            activity.startService(serviceIntent)
         }
     }
 

@@ -22,7 +22,6 @@ import android.os.Build
 import dev.sjaramillo.pedometer.Database
 import dev.sjaramillo.pedometer.SensorListener
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.API26Wrapper.startForegroundService
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -44,10 +43,12 @@ class BootReceiver : BroadcastReceiver() {
         db.saveCurrentSteps(0)
         db.close()
         prefs.edit().remove("correctShutdown").apply()
+
+        val serviceIntent = Intent(context, SensorListener::class.java)
         if (Build.VERSION.SDK_INT >= 26) {
-            startForegroundService(context, Intent(context, SensorListener::class.java))
+            context.startForegroundService(serviceIntent)
         } else {
-            context.startService(Intent(context, SensorListener::class.java))
+            context.startService(serviceIntent)
         }
     }
 }

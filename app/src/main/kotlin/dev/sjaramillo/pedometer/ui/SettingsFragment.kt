@@ -32,14 +32,11 @@ import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.RadioGroup
 import android.widget.Toast
-import dev.sjaramillo.pedometer.util.API26Wrapper.startForegroundService
-import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
 import dev.sjaramillo.pedometer.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.SensorListener
+import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
 import java.io.*
-import java.lang.Exception
-import java.lang.NumberFormatException
 import java.util.*
 
 // TODO cleanup this file
@@ -89,7 +86,7 @@ class SettingsFragment : PreferenceFragment(), Preference.OnPreferenceClickListe
         super.onResume()
         activity.actionBar!!.setDisplayHomeAsUpEnabled(true)
         if (Build.VERSION.SDK_INT >= 26) { // notification settings might have changed
-            startForegroundService(activity, Intent(activity, SensorListener::class.java))
+            activity.startForegroundService(Intent(activity, SensorListener::class.java))
         }
     }
 

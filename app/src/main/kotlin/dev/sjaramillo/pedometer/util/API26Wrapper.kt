@@ -33,11 +33,6 @@ object API26Wrapper {
     private const val NOTIFICATION_CHANNEL_ID = "Notification"
 
     @JvmStatic // TODO Remove once it is used from Kotlin only
-    fun startForegroundService(context: Context, intent: Intent?) {
-        context.startForegroundService(intent)
-    }
-
-    @JvmStatic // TODO Remove once it is used from Kotlin only
     fun getNotificationBuilder(context: Context): Notification.Builder {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(

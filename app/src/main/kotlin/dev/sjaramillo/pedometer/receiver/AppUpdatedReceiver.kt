@@ -20,7 +20,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import dev.sjaramillo.pedometer.SensorListener
-import dev.sjaramillo.pedometer.util.API26Wrapper.startForegroundService
 import dev.sjaramillo.pedometer.util.Logger
 
 class AppUpdatedReceiver : BroadcastReceiver() {
@@ -28,10 +27,11 @@ class AppUpdatedReceiver : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
 
         Logger.log("app updated")
+        val serviceIntent = Intent(context, SensorListener::class.java)
         if (Build.VERSION.SDK_INT >= 26) {
-            startForegroundService(context, Intent(context, SensorListener::class.java))
+            context.startForegroundService(serviceIntent)
         } else {
-            context.startService(Intent(context, SensorListener::class.java))
+            context.startService(serviceIntent)
         }
     }
 }
