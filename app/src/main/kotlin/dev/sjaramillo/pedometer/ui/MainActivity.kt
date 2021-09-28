@@ -16,7 +16,6 @@
 package dev.sjaramillo.pedometer.ui
 
 import android.app.AlertDialog
-import android.app.Fragment
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
@@ -24,11 +23,12 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.MenuItem
 import android.widget.TextView
-import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.service.SensorListener
 
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +37,7 @@ class MainActivity : FragmentActivity() {
         if (savedInstanceState == null) {
             // Create new fragment and transaction
             val newFragment: Fragment = OverviewFragment()
-            val transaction = fragmentManager.beginTransaction()
+            val transaction = supportFragmentManager.beginTransaction()
 
             // Replace whatever is in the fragment_container view with this
             // fragment, and add the transaction to the back stack
@@ -47,12 +47,14 @@ class MainActivity : FragmentActivity() {
             transaction.commit()
         }
 
+        val a = 1
+
         // TODO Request Activity Recognition permission: https://www.raywenderlich.com/24859773-activity-recognition-api-tutorial-for-android-getting-started
     }
 
     override fun onBackPressed() {
-        if (fragmentManager.backStackEntryCount > 0) {
-            fragmentManager.popBackStackImmediate()
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStackImmediate()
         } else {
             finish()
         }
@@ -60,8 +62,8 @@ class MainActivity : FragmentActivity() {
 
     fun optionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> fragmentManager.popBackStackImmediate()
-            R.id.action_settings -> fragmentManager.beginTransaction()
+            android.R.id.home -> supportFragmentManager.popBackStackImmediate()
+            R.id.action_settings -> supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, SettingsFragment()).addToBackStack(null)
                 .commit()
             R.id.action_faq -> {

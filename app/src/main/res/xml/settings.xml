@@ -5,7 +5,7 @@
         android:key="goal"
         android:title="@string/goal"/>
     <Preference
-        android:key="stepsize"
+        android:key="step_size"
         android:title="@string/step_size"/>
     <CheckBoxPreference
         android:defaultValue="true"

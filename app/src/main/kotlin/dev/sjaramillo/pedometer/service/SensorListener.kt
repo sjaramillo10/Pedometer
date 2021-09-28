@@ -116,7 +116,7 @@ class SensorListener : Service(), SensorEventListener {
         return null
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         reRegisterSensor()
         registerBroadcastReceiver()
         if (!updateIfNecessary()) {
@@ -160,6 +160,7 @@ class SensorListener : Service(), SensorEventListener {
         try {
             val sm = getSystemService(SENSOR_SERVICE) as SensorManager
             sm.unregisterListener(this)
+            unregisterReceiver(shutdownReceiver)
         } catch (e: Exception) {
             log(e)
         }

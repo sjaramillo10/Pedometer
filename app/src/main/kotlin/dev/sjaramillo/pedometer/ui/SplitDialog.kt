@@ -33,10 +33,10 @@ internal object SplitDialog {
         val prefs = context.getSharedPreferences("pedometer", Context.MODE_MULTI_PROCESS)
         val splitDate = prefs.getLong("split_date", -1)
         val splitSteps = prefs.getInt("split_steps", totalSteps)
-        val stepSize = prefs.getFloat("stepsize_value", SettingsFragment.DEFAULT_STEP_SIZE)
+        val stepSize = prefs.getFloat("step_size_value", SettingsFragment.DEFAULT_STEP_SIZE)
         var distance = (totalSteps - splitSteps) * stepSize
         val distanceUnit: String
-        if (prefs.getString("stepsize_unit", SettingsFragment.DEFAULT_STEP_UNIT) == "cm") {
+        if (prefs.getString("step_size_unit", SettingsFragment.DEFAULT_STEP_UNIT) == "cm") {
             distance /= 100000f
             distanceUnit = context.getString(R.string.distance_unit_km)
         } else {
