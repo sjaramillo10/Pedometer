@@ -15,23 +15,21 @@
  */
 package dev.sjaramillo.pedometer.ui
 
-import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import androidx.preference.Preference
 import android.view.*
 import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.RadioGroup
-import android.widget.Toast
 import androidx.preference.CheckBoxPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.db.Database
@@ -39,6 +37,7 @@ import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
 import java.io.*
 import java.util.*
+import kotlin.math.max
 
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
@@ -169,155 +168,74 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 builder.setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 builder.create().show()
             }
-            "import", "export" -> if (hasWriteExternalPermission()) {
-                if (preference.key == "import") {
-                    importCsv()
-                } else {
-                    exportCsv()
-                }
-            } else if (Build.VERSION.SDK_INT >= 23) {
-                // TODO Update code so that external storage permission is not required
-                activity
-                    ?.requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 42)
-            } else {
-                Toast.makeText(
-                    context, R.string.permission_external_storage,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
             "notification" -> launchNotificationSettings(requireContext())
+            "export" -> requestCsvUriToExportData()
+            "import" -> requestCsvUriToImportData()
         }
         return false
     }
 
-    private fun hasWriteExternalPermission(): Boolean {
-        return requireContext().packageManager
-            .checkPermission(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                requireContext().packageName
-            ) == PackageManager.PERMISSION_GRANTED
+    private fun requestCsvUriToExportData() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/csv"
+            // TODO create dynamic file name using current date, i.e. Pedometer-2021-09-28.csv
+            putExtra(Intent.EXTRA_TITLE, "Pedometer.csv")
+        }
+
+        startActivityForResult(intent, REQUEST_CREATE_FILE)
     }
 
-    /**
-     * Creates the CSV file containing data about past days and the steps taken on them
-     *
-     *
-     * Requires external storage to be writeable
-     */
-    private fun exportCsv() {
-        if ((Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED)) {
-            val f = File(Environment.getExternalStorageDirectory(), "Pedometer.csv")
-            if (f.exists()) {
-                AlertDialog.Builder(context).setMessage(R.string.file_already_exists)
-                    .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                        dialog.dismiss()
-                        writeToFile(f)
-                    }.setNegativeButton(
-                        android.R.string.cancel
-                    ) { dialog, _ -> dialog.dismiss() }
-                    .create().show()
+    private fun requestCsvUriToImportData() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*" // TODO Figure out which mime type to use, 'text/csv' does not work
+        }
+
+        startActivityForResult(intent, REQUEST_READ_FILE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        if (requestCode == REQUEST_CREATE_FILE) {
+            if (resultCode == Activity.RESULT_OK) {
+                resultData?.data?.also { uri -> writeDataToCsv(uri) }
             } else {
-                writeToFile(f)
+                // TODO Show error dialog
             }
-        } else {
-            AlertDialog.Builder(context)
-                .setMessage(R.string.error_external_storage_not_available)
-                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create().show()
+        } else if (requestCode == REQUEST_READ_FILE) {
+            if (resultCode == Activity.RESULT_OK) {
+                resultData?.data?.also { uri -> readDataFromCsv(uri) }
+            } else {
+                // TODO Show error dialog
+            }
         }
     }
 
     /**
-     * Imports previously exported data from a csv file
-     *
-     * Requires external storage to be readable. Overwrites days for which there is already an entry in the database
+     * Writes data containing past days' steps to a CSV file
      */
-    private fun importCsv() {
-        if ((Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED)) {
-            val f = File(Environment.getExternalStorageDirectory(), "Pedometer.csv")
-            if (!f.exists() || !f.canRead()) {
-                AlertDialog.Builder(context)
-                    .setMessage(getString(R.string.file_cant_read, f.absolutePath))
-                    .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                    .create().show()
-                return
-            }
-            val db = Database.getInstance(requireContext())
-            var line: String?
-            var data: Array<String?>
-            var ignored = 0
-            var inserted = 0
-            var overwritten = 0
-            val `in`: BufferedReader
-            try {
-                `in` = BufferedReader(FileReader(f))
-                while ((`in`.readLine().also { line = it }) != null) {
-                    data = line!!.split(";".toRegex()).toTypedArray()
-                    try {
-                        if (db.insertDayFromBackup(data[0]!!.toLong(), (data[1])!!.toInt())) {
-                            inserted++
-                        } else {
-                            overwritten++
-                        }
-                    } catch (nfe: Exception) {
-                        ignored++
-                    }
-                }
-                `in`.close()
-            } catch (e: IOException) {
-                AlertDialog.Builder(context)
-                    .setMessage(getString(R.string.error_file, e.message))
-                    .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                    .create().show()
-                e.printStackTrace()
-                return
-            } finally {
-                db.close()
-            }
-            var message = getString(R.string.entries_imported, inserted + overwritten)
-            if (overwritten > 0) message += "\n\n" + getString(
-                R.string.entries_overwritten,
-                overwritten
-            )
-            if (ignored > 0) message += "\n\n" + getString(R.string.entries_ignored, ignored)
-            AlertDialog.Builder(context).setMessage(message)
-                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create().show()
-        } else {
-            AlertDialog.Builder(context)
-                .setMessage(R.string.error_external_storage_not_available)
-                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create().show()
-        }
-    }
-
-    private fun writeToFile(f: File) {
-        val out: BufferedWriter
-        try {
-            f.createNewFile()
-            out = BufferedWriter(FileWriter(f))
-        } catch (e: IOException) {
-            AlertDialog.Builder(context)
-                .setMessage(getString(R.string.error_file, e.message))
-                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create().show()
-            e.printStackTrace()
-            return
-        }
+    private fun writeDataToCsv(uri: Uri) {
+        val contentResolver = requireContext().applicationContext.contentResolver
         val db = Database.getInstance(requireContext())
         val c = db.query(arrayOf("date", "steps"), "date > 0", null, null, null, "date", null)
         try {
-            if (c.moveToFirst()) {
-                while (!c.isAfterLast) {
-                    out.append(c.getString(0)).append(";")
-                        .append(c.getInt(1).coerceAtLeast(0).toString()).append("\n")
-                    c.moveToNext()
+            contentResolver.openFileDescriptor(uri, "w")?.use {
+                FileOutputStream(it.fileDescriptor).use { stream ->
+                    if (c.moveToFirst()) {
+                        while (!c.isAfterLast) {
+                            val line = "${c.getString(0)};${max(c.getInt(1), 0)}\n"
+                            stream.write(line.toByteArray())
+                            c.moveToNext()
+                        }
+                    }
                 }
             }
-            out.flush()
-            out.close()
+        } catch (e: FileNotFoundException) {
+            // TODO Show pertinent error dialog
+            e.printStackTrace()
+            return
         } catch (e: IOException) {
-            AlertDialog.Builder(activity)
+            AlertDialog.Builder(context)
                 .setMessage(getString(R.string.error_file, e.message))
                 .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
                 .create().show()
@@ -327,14 +245,69 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             c.close()
             db.close()
         }
+
+        // TODO obtain created file name and use it in dialog message
         AlertDialog.Builder(activity)
-            .setMessage(getString(R.string.data_saved, f.absolutePath))
+            .setMessage(getString(R.string.data_saved, "f.absolutePath"))
+            .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
+            .create().show()
+    }
+
+    /**
+     * Reads previously exported steps data from a CSV file
+     *
+     * Overwrites days for which there is already an entry in the database
+     */
+    private fun readDataFromCsv(uri: Uri) {
+        val contentResolver = requireContext().applicationContext.contentResolver
+        val db = Database.getInstance(requireContext())
+        var ignored = 0
+        var inserted = 0
+        var overwritten = 0
+        try {
+            contentResolver.openFileDescriptor(uri, "r")?.use {
+                FileReader(it.fileDescriptor).use { reader ->
+                    reader.forEachLine { line ->
+                        val data = line.split(";")
+                        try {
+                            if (db.insertDayFromBackup(data[0].toLong(), (data[1]).toInt())) {
+                                inserted++
+                            } else {
+                                overwritten++
+                            }
+                        } catch (nfe: Exception) {
+                            ignored++
+                        }
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            AlertDialog.Builder(context)
+                .setMessage(getString(R.string.error_file, e.message))
+                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
+                .create().show()
+            e.printStackTrace()
+            return
+        } finally {
+            db.close()
+        }
+        var message = getString(R.string.entries_imported, inserted + overwritten)
+        if (overwritten > 0) message += "\n\n" + getString(
+            R.string.entries_overwritten,
+            overwritten
+        )
+        if (ignored > 0) message += "\n\n" + getString(R.string.entries_ignored, ignored)
+        AlertDialog.Builder(context).setMessage(message)
             .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
             .create().show()
     }
 
     companion object {
+        const val REQUEST_CREATE_FILE = 1
+        const val REQUEST_READ_FILE = 2
+
         const val DEFAULT_GOAL = 10000
+
         val DEFAULT_STEP_SIZE = if (Locale.getDefault() === Locale.US) 2.5f else 75f
         val DEFAULT_STEP_UNIT = if (Locale.getDefault() === Locale.US) "ft" else "cm"
     }

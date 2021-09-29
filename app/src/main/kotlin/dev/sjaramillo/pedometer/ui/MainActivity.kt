@@ -47,8 +47,6 @@ class MainActivity : AppCompatActivity() {
             transaction.commit()
         }
 
-        val a = 1
-
         // TODO Request Activity Recognition permission: https://www.raywenderlich.com/24859773-activity-recognition-api-tutorial-for-android-getting-started
     }
 
