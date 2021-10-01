@@ -23,6 +23,7 @@ import android.widget.TextView
 import dev.sjaramillo.pedometer.util.Util.today
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.util.Util
 import java.text.DateFormat
 import java.util.*
 
@@ -41,22 +42,23 @@ object StatisticsDialog {
         date[Calendar.DAY_OF_MONTH] = 1
         val thisMonth = db.getSteps(date.timeInMillis, System.currentTimeMillis()) + since_boot
         db.close()
+        val numberFormat = Util.numberFormat
 
         return Dialog(context).apply {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
             setContentView(R.layout.statistics)
             findViewById<View>(R.id.close).setOnClickListener { dismiss() }
             findViewById<TextView>(R.id.record).text =
-                (OverviewFragment.formatter.format(record.second) + " @ "
+                (numberFormat.format(record.second) + " @ "
                     + DateFormat.getDateInstance().format(record.first))
             findViewById<TextView>(R.id.totalthisweek).text =
-                OverviewFragment.formatter.format(thisWeek.toLong())
+                numberFormat.format(thisWeek.toLong())
             findViewById<TextView>(R.id.totalthismonth).text =
-                OverviewFragment.formatter.format(thisMonth.toLong())
+                numberFormat.format(thisMonth.toLong())
             findViewById<TextView>(R.id.averagethisweek).text =
-                OverviewFragment.formatter.format((thisWeek / 7).toLong())
+                numberFormat.format((thisWeek / 7).toLong())
             findViewById<TextView>(R.id.averagethismonth).text =
-                OverviewFragment.formatter.format((thisMonth / daysThisMonth).toLong())
+                numberFormat.format((thisMonth / daysThisMonth).toLong())
         }
     }
 }

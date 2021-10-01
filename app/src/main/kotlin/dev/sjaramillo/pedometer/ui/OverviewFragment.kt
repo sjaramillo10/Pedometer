@@ -37,9 +37,10 @@ import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.max
+import kotlin.math.roundToLong
 
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
@@ -117,7 +118,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             AlertDialog.Builder(context).setTitle(R.string.no_sensor)
                 .setMessage(R.string.no_sensor_explain)
                 .setOnDismissListener { activity?.finish() }
-                .setNeutralButton(android.R.string.ok) { dialogInterface, i -> dialogInterface.dismiss() }
+                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
                 .create().show()
         } else {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
@@ -135,8 +136,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
      */
     private fun stepsDistanceChanged() {
         if (showSteps) {
-            requireView().findViewById<TextView>(R.id.unit).text =
-                getString(R.string.steps)
+            requireView().findViewById<TextView>(R.id.unit).text = getString(R.string.steps)
         } else {
             var unit = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
                 .getString("step_size_unit", SettingsFragment.DEFAULT_STEP_UNIT)
@@ -169,7 +169,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             R.id.action_split_count -> {
                 SplitDialog.getDialog(
                     requireContext(),
-                    totalStart + Math.max(todayOffset + sinceBoot, 0)
+                    totalStart + max(todayOffset + sinceBoot, 0)
                 ).show()
                 true
             }
@@ -223,12 +223,12 @@ class OverviewFragment : Fragment(), SensorEventListener {
             graph.addPieSlice(sliceCurrent)
         }
         graph.update()
+
+        val numberFormat = Util.numberFormat
         if (showSteps) {
-            stepsView.text = formatter.format(stepsToday.toLong())
-            totalView.text =
-                formatter.format((totalStart + stepsToday).toLong())
-            averageView.text =
-                formatter.format(((totalStart + stepsToday) / totalDays).toLong())
+            stepsView.text = numberFormat.format(stepsToday.toLong())
+            totalView.text = numberFormat.format((totalStart + stepsToday).toLong())
+            averageView.text = numberFormat.format(((totalStart + stepsToday) / totalDays).toLong())
         } else {
             // update only every 10 steps when displaying distance
             val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
@@ -242,10 +242,9 @@ class OverviewFragment : Fragment(), SensorEventListener {
                 distanceToday /= 5280f
                 distanceTotal /= 5280f
             }
-            stepsView.text = formatter.format(distanceToday.toDouble())
-            totalView.text = formatter.format(distanceTotal.toDouble())
-            averageView.text =
-                formatter.format((distanceTotal / totalDays).toDouble())
+            stepsView.text = numberFormat.format(distanceToday.toDouble())
+            totalView.text = numberFormat.format(distanceTotal.toDouble())
+            averageView.text = numberFormat.format((distanceTotal / totalDays).toDouble())
         }
     }
 
@@ -290,7 +289,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
                     } else {
                         5280f
                     }
-                    distance = Math.round(distance * 1000) / 1000f // 3 decimals
+                    distance = (distance * 1000).roundToLong() / 1000f // 3 decimals
                     bm.value = distance
                 }
                 barChart.addBar(bm)
@@ -304,10 +303,5 @@ class OverviewFragment : Fragment(), SensorEventListener {
         } else {
             barChart.visibility = View.GONE
         }
-    }
-
-    companion object {
-        @JvmField // TODO Remove @JvmField once all is converted to Kotlin, and move to a utils class
-        val formatter = NumberFormat.getInstance(Locale.getDefault())
     }
 }

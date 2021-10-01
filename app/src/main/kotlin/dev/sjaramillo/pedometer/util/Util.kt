@@ -15,6 +15,7 @@
  */
 package dev.sjaramillo.pedometer.util
 
+import java.text.NumberFormat
 import java.util.*
 
 
@@ -22,7 +23,6 @@ object Util {
     /**
      * @return milliseconds since 1.1.1970 for today 0:00:00 local timezone
      */
-    @JvmStatic
     val today: Long
         get() {
             val c = Calendar.getInstance()
@@ -37,7 +37,6 @@ object Util {
     /**
      * @return milliseconds since 1.1.1970 for tomorrow 0:00:01 local timezone
      */
-    @JvmStatic
     val tomorrow: Long
         get() {
             val c = Calendar.getInstance()
@@ -49,4 +48,7 @@ object Util {
             c.add(Calendar.DATE, 1)
             return c.timeInMillis
         }
+
+    val numberFormat: NumberFormat
+        get() = NumberFormat.getInstance(Locale.getDefault())
 }
