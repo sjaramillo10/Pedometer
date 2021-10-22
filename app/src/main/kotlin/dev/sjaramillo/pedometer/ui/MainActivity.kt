@@ -15,14 +15,18 @@
  */
 package dev.sjaramillo.pedometer.ui
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import dev.sjaramillo.pedometer.R
@@ -47,7 +51,84 @@ class MainActivity : AppCompatActivity() {
             transaction.commit()
         }
 
-        // TODO Request Activity Recognition permission: https://www.raywenderlich.com/24859773-activity-recognition-api-tutorial-for-android-getting-started
+        checkActivityRecognitionPermission()
+    }
+
+    private fun checkActivityRecognitionPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+            return // We are good, Activity Recognition permission is not required before Android Q
+
+        if (isActivityRecognitionPermissionGranted())
+            return // We are good, Activity Recognition permission already granted
+
+        if (shouldShowRequestPermissionRationale(Manifest.permission.ACTIVITY_RECOGNITION)) {
+            showActivityRecognitionPermissionRationaleDialog()
+        } else {
+            requestActivityRecognitionPermission()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun isActivityRecognitionPermissionGranted() = PackageManager.PERMISSION_GRANTED ==
+            checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)
+
+    /**
+     * Create and show a rationale dialog which explains why is permission needed.
+     * Positive button leads to the settings
+     */
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun showActivityRecognitionPermissionRationaleDialog() {
+        AlertDialog.Builder(this).apply {
+            setTitle(R.string.activity_recognition_permission_rationale_title)
+            setMessage(R.string.activity_recognition_permission_rationale_message)
+            setPositiveButton(R.string.activity_recognition_permission_rationale_positive_button) { _, _ ->
+                requestActivityRecognitionPermission()
+            }
+            setNegativeButton(R.string.activity_recognition_permission_rationale_negative_button) { _, _ ->
+                showActivityRecognitionPermissionRequiredDialog()
+            }
+        }.run {
+            create()
+            show()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestActivityRecognitionPermission() {
+        requestPermissions(
+            arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+            PERMISSION_REQUEST_ACTIVITY_RECOGNITION
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == PERMISSION_REQUEST_ACTIVITY_RECOGNITION) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                return // We are good, Activity Recognition permission was granted
+            } else {
+                showActivityRecognitionPermissionRequiredDialog()
+            }
+        }
+    }
+
+    private fun showActivityRecognitionPermissionRequiredDialog() {
+        AlertDialog.Builder(this).apply {
+            setTitle(R.string.activity_recognition_permission_required_title)
+            setMessage(R.string.activity_recognition_permission_required_message)
+            setPositiveButton(R.string.activity_recognition_permission_required_positive_button) { _, _ ->
+                this@MainActivity.finish()
+            }
+            setCancelable(false)
+        }.run {
+            create()
+            show()
+        }
     }
 
     override fun onBackPressed() {
@@ -92,5 +173,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return true
+    }
+
+    companion object {
+        private const val PERMISSION_REQUEST_ACTIVITY_RECOGNITION = 1001
     }
 }

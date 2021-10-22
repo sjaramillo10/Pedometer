@@ -4,14 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="dev.sjaramillo.pedometer">
 
-    <uses-feature android:name="android.hardware.sensor.stepcounter" />
-
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-
+    <!-- Normal permissions -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK" android:maxSdkVersion="26"/>
+
+    <!-- Runtime permissions or sensitive permissions -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
+    <!-- Hardware requirements -->
+    <uses-feature android:name="android.hardware.sensor.stepcounter" />
 
     <application
         android:allowBackup="true"

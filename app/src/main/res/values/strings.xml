@@ -46,4 +46,13 @@
     <string name="notification_settings">Notification settings</string>
     <string name="distance_unit_km">km</string>
     <string name="distance_unit_mi">mi</string>
+
+    <string name="activity_recognition_permission_rationale_title">Activity Recognition permission required</string>
+    <string name="activity_recognition_permission_rationale_message">Pedometer requires the Activity Recognition permission to be able to count your steps</string>
+    <string name="activity_recognition_permission_rationale_positive_button">Request permission</string>
+    <string name="activity_recognition_permission_rationale_negative_button">No Thanks</string>
+
+    <string name="activity_recognition_permission_required_title">Activity Recognition permission required</string>
+    <string name="activity_recognition_permission_required_message">Without the Activity Recognition permission, Pedometer is not able to count your steps.\n\nIf you want to use Pedometer, please grant the Activity Recognition permission in your device\'s settings.</string>
+    <string name="activity_recognition_permission_required_positive_button">I understand</string>
 </resources>
