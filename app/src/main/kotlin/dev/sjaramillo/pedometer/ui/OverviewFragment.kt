@@ -109,7 +109,6 @@ class OverviewFragment : Fragment(), SensorEventListener {
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
         sinceBoot = db.currentSteps
-        val pauseDifference = sinceBoot - prefs.getInt("pauseCount", sinceBoot)
 
         // register a sensor listener to live update the UI if a step is taken
         val sm = context?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -123,7 +122,6 @@ class OverviewFragment : Fragment(), SensorEventListener {
         } else {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
-        sinceBoot -= pauseDifference
         totalStart = db.totalWithoutToday
         totalDays = db.days
         db.close()

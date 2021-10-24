@@ -79,16 +79,7 @@ class SensorListener : Service(), SensorEventListener {
             )
             val db = Database.getInstance(this)
             if (db.getSteps(today) == Int.MIN_VALUE) {
-                val pauseDifference = steps -
-                        getSharedPreferences("pedometer", MODE_PRIVATE)
-                            .getInt("pauseCount", steps)
-                db.insertNewDay(today, steps - pauseDifference)
-                if (pauseDifference > 0) {
-                    // update pauseCount for the new day
-                    getSharedPreferences("pedometer", MODE_PRIVATE).edit()
-                        .putInt("pauseCount", steps)
-                        .apply()
-                }
+                db.insertNewDay(today, steps)
             }
             db.saveCurrentSteps(steps)
             db.close()
