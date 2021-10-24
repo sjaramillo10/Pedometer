@@ -16,6 +16,8 @@
 package dev.sjaramillo.pedometer.util
 
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 
@@ -33,6 +35,17 @@ object TimeUtil {
             c[Calendar.MILLISECOND] = 0
             return c.timeInMillis
         }
+
+    /**
+     * @param today    used for testing to specify today's date.
+     *
+     * @return unixDay calculated as the number of days elapsed since January 1st, 1970.
+     */
+    fun getUnixDay(today: LocalDate = LocalDate.now()): Long {
+        val firstUnixDay = LocalDate.of(1970, 1, 1)
+
+        return ChronoUnit.DAYS.between(firstUnixDay, today)
+    }
 
     /**
      * @return milliseconds since 1.1.1970 for tomorrow 0:00:01 local timezone
