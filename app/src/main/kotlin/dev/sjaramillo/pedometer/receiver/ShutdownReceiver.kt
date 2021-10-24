@@ -21,7 +21,7 @@ import android.content.Intent
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.Util.today
+import dev.sjaramillo.pedometer.util.TimeUtil.today
 
 class ShutdownReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

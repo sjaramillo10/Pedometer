@@ -22,7 +22,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Pair
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.Util.today
+import dev.sjaramillo.pedometer.util.TimeUtil.today
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 

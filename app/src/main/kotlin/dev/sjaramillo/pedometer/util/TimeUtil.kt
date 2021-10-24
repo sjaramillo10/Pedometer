@@ -19,7 +19,7 @@ import java.text.NumberFormat
 import java.util.*
 
 
-object Util {
+object TimeUtil {
     /**
      * @return milliseconds since 1.1.1970 for today 0:00:00 local timezone
      */

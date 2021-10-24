@@ -32,7 +32,7 @@ import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger
-import dev.sjaramillo.pedometer.util.Util
+import dev.sjaramillo.pedometer.util.TimeUtil
 import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
@@ -105,7 +105,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
         activity?.actionBar?.setDisplayHomeAsUpEnabled(false)
         val db = Database.getInstance(requireContext())
         // read today's offset
-        todayOffset = db.getSteps(Util.today)
+        todayOffset = db.getSteps(TimeUtil.today)
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
         sinceBoot = db.currentSteps
@@ -190,7 +190,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             // initializing them with -STEPS_SINCE_BOOT
             todayOffset = (-event.values[0]).toInt()
             val db = Database.getInstance(requireContext())
-            db.insertNewDay(Util.today, event.values[0].toInt())
+            db.insertNewDay(TimeUtil.today, event.values[0].toInt())
             db.close()
         }
         sinceBoot = event.values[0].toInt()
@@ -222,7 +222,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
         }
         graph.update()
 
-        val numberFormat = Util.numberFormat
+        val numberFormat = TimeUtil.numberFormat
         if (showSteps) {
             stepsView.text = numberFormat.format(stepsToday.toLong())
             totalView.text = numberFormat.format((totalStart + stepsToday).toLong())

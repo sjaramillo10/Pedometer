@@ -29,8 +29,8 @@ import android.os.IBinder
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.Util.today
-import dev.sjaramillo.pedometer.util.Util.tomorrow
+import dev.sjaramillo.pedometer.util.TimeUtil.today
+import dev.sjaramillo.pedometer.util.TimeUtil.tomorrow
 import dev.sjaramillo.pedometer.util.API26Wrapper.getNotificationBuilder
 import dev.sjaramillo.pedometer.receiver.ShutdownReceiver
 import dev.sjaramillo.pedometer.ui.MainActivity

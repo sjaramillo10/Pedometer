@@ -21,7 +21,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.util.Util
+import dev.sjaramillo.pedometer.util.TimeUtil
 import java.text.DateFormat
 
 // TODO Extend from Dialog class
@@ -44,7 +44,7 @@ internal object SplitDialog {
             distance /= 5280f
             distanceUnit = context.getString(R.string.distance_unit_mi)
         }
-        val numberFormat = Util.numberFormat
+        val numberFormat = TimeUtil.numberFormat
 
         val dialog = Dialog(context)
         dialog.setTitle(R.string.split_count)

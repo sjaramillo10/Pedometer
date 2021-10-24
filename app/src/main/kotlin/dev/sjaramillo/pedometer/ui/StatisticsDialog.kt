@@ -20,10 +20,10 @@ import android.content.Context
 import android.view.View
 import android.view.Window
 import android.widget.TextView
-import dev.sjaramillo.pedometer.util.Util.today
+import dev.sjaramillo.pedometer.util.TimeUtil.today
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.util.Util
+import dev.sjaramillo.pedometer.util.TimeUtil
 import java.text.DateFormat
 import java.util.*
 
@@ -42,7 +42,7 @@ object StatisticsDialog {
         date[Calendar.DAY_OF_MONTH] = 1
         val thisMonth = db.getSteps(date.timeInMillis, System.currentTimeMillis()) + since_boot
         db.close()
-        val numberFormat = Util.numberFormat
+        val numberFormat = TimeUtil.numberFormat
 
         return Dialog(context).apply {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
