@@ -33,10 +33,9 @@ object StatisticsDialog {
         val db = Database.getInstance(context)
         val record = db.recordData
         val today = DateUtil.getToday()
-        val firstDayOfCurrentMonth = today // TODO use Util method to obtain real value
-        val daysThisMonth = today - firstDayOfCurrentMonth + 1
+        val dayOfMonth = DateUtil.getDayOfMonth()
         val thisWeek = db.getSteps(today - 6, System.currentTimeMillis()) + since_boot
-        val thisMonth = db.getSteps(firstDayOfCurrentMonth, System.currentTimeMillis()) + since_boot
+        val thisMonth = db.getSteps(today - dayOfMonth + 1, System.currentTimeMillis()) + since_boot
         db.close()
         val numberFormat = FormatUtil.numberFormat
 
@@ -54,7 +53,7 @@ object StatisticsDialog {
             findViewById<TextView>(R.id.averagethisweek).text =
                 numberFormat.format((thisWeek / 7).toLong())
             findViewById<TextView>(R.id.averagethismonth).text =
-                numberFormat.format((thisMonth / daysThisMonth))
+                numberFormat.format((thisMonth / dayOfMonth))
         }
     }
 }

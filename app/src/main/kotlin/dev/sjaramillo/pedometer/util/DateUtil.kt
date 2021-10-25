@@ -33,4 +33,11 @@ object DateUtil {
     fun dayToLocalDate(day: Long): LocalDate {
         return LocalDate.ofEpochDay(day)
     }
+
+    /**
+     * @return Day of the month, from 1 to 31
+     */
+    fun getDayOfMonth(): Int {
+        return LocalDate.now().dayOfMonth
+    }
 }
