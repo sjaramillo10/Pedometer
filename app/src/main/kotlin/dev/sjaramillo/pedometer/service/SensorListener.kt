@@ -29,15 +29,13 @@ import android.os.IBinder
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.Util.today
-import dev.sjaramillo.pedometer.util.Util.tomorrow
 import dev.sjaramillo.pedometer.util.API26Wrapper.getNotificationBuilder
 import dev.sjaramillo.pedometer.receiver.ShutdownReceiver
 import dev.sjaramillo.pedometer.ui.MainActivity
+import dev.sjaramillo.pedometer.util.DateUtil
 import java.lang.Exception
 import java.text.NumberFormat
 import java.util.*
-import kotlin.math.min
 
 /**
  * Background service which keeps the step-sensor listener alive to always get
@@ -78,6 +76,7 @@ class SensorListener : Service(), SensorEventListener {
                         " lastSaveTime=" + Date(lastSaveTime)
             )
             val db = Database.getInstance(this)
+            val today = DateUtil.getToday()
             if (db.getSteps(today) == Int.MIN_VALUE) {
                 db.insertNewDay(today, steps)
             }
@@ -115,7 +114,7 @@ class SensorListener : Service(), SensorEventListener {
         }
 
         // restart service every hour to save the current step count
-        val nextUpdate = min(tomorrow, System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR)
+        val nextUpdate = System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR
         log("next update: " + Date(nextUpdate).toLocaleString())
         val alarmManager = applicationContext.getSystemService(ALARM_SERVICE) as AlarmManager
         val pendingIntent = PendingIntent
@@ -198,6 +197,7 @@ class SensorListener : Service(), SensorEventListener {
             val prefs = context.getSharedPreferences("pedometer", MODE_PRIVATE)
             val goal = prefs.getInt("goal", 10000)
             val db = Database.getInstance(context)
+            val today = DateUtil.getToday()
             var todayOffset = db.getSteps(today)
             if (steps == 0) steps = db.currentSteps // use saved value if we haven't anything better
             db.close()

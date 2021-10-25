@@ -28,17 +28,17 @@ import android.os.Bundle
 import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.service.SensorListener
+import dev.sjaramillo.pedometer.util.DateUtil
+import dev.sjaramillo.pedometer.util.FormatUtil
 import dev.sjaramillo.pedometer.util.Logger
-import dev.sjaramillo.pedometer.util.Util
 import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import kotlin.math.roundToLong
 
@@ -105,7 +105,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
         activity?.actionBar?.setDisplayHomeAsUpEnabled(false)
         val db = Database.getInstance(requireContext())
         // read today's offset
-        todayOffset = db.getSteps(Util.today)
+        todayOffset = db.getSteps(DateUtil.getToday())
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
         sinceBoot = db.currentSteps
@@ -190,7 +190,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             // initializing them with -STEPS_SINCE_BOOT
             todayOffset = (-event.values[0]).toInt()
             val db = Database.getInstance(requireContext())
-            db.insertNewDay(Util.today, event.values[0].toInt())
+            db.insertNewDay(DateUtil.getToday(), event.values[0].toInt())
             db.close()
         }
         sinceBoot = event.values[0].toInt()
@@ -222,7 +222,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
         }
         graph.update()
 
-        val numberFormat = Util.numberFormat
+        val numberFormat = FormatUtil.numberFormat
         if (showSteps) {
             stepsView.text = numberFormat.format(stepsToday.toLong())
             totalView.text = numberFormat.format((totalStart + stepsToday).toLong())
@@ -251,7 +251,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
      * be called when switching from step count to distance.
      */
     private fun updateBars() {
-        val df = SimpleDateFormat("E", Locale.getDefault())
+        val dtf = DateTimeFormatter.ofPattern("E")
         val barChart = requireView().findViewById<BarChart>(R.id.bargraph)
         if (barChart.data.size > 0) barChart.clearChart()
         var steps: Int
@@ -275,18 +275,14 @@ class OverviewFragment : Fragment(), SensorEventListener {
             steps = current.second
             if (steps > 0) {
                 bm = BarModel(
-                    df.format(Date(current.first)), 0f,
+                    dtf.format(DateUtil.dayToLocalDate(current.first)), 0f,
                     if (steps > goal) Color.parseColor("#99CC00") else Color.parseColor("#0099cc")
                 )
                 if (showSteps) {
                     bm.value = steps.toFloat()
                 } else {
                     distance = steps * stepsize
-                    distance /= if (stepSizeCm) {
-                        100000f
-                    } else {
-                        5280f
-                    }
+                    distance /= if (stepSizeCm) 100000f else 5280f
                     distance = (distance * 1000).roundToLong() / 1000f // 3 decimals
                     bm.value = distance
                 }

@@ -20,12 +20,11 @@ import android.content.Context
 import android.view.View
 import android.view.Window
 import android.widget.TextView
-import dev.sjaramillo.pedometer.util.Util.today
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.util.Util
+import dev.sjaramillo.pedometer.util.FormatUtil
+import dev.sjaramillo.pedometer.util.DateUtil
 import java.text.DateFormat
-import java.util.*
 
 // TODO Extend from Dialog class
 object StatisticsDialog {
@@ -33,16 +32,12 @@ object StatisticsDialog {
         // TODO Inject Database
         val db = Database.getInstance(context)
         val record = db.recordData
-        val date = Calendar.getInstance()
-        date.timeInMillis = today
-        val daysThisMonth = date[Calendar.DAY_OF_MONTH]
-        date.add(Calendar.DATE, -6)
-        val thisWeek = db.getSteps(date.timeInMillis, System.currentTimeMillis()) + since_boot
-        date.timeInMillis = today
-        date[Calendar.DAY_OF_MONTH] = 1
-        val thisMonth = db.getSteps(date.timeInMillis, System.currentTimeMillis()) + since_boot
+        val today = DateUtil.getToday()
+        val dayOfMonth = DateUtil.getDayOfMonth()
+        val thisWeek = db.getSteps(today - 6, System.currentTimeMillis()) + since_boot
+        val thisMonth = db.getSteps(today - dayOfMonth + 1, System.currentTimeMillis()) + since_boot
         db.close()
-        val numberFormat = Util.numberFormat
+        val numberFormat = FormatUtil.numberFormat
 
         return Dialog(context).apply {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -58,7 +53,7 @@ object StatisticsDialog {
             findViewById<TextView>(R.id.averagethisweek).text =
                 numberFormat.format((thisWeek / 7).toLong())
             findViewById<TextView>(R.id.averagethismonth).text =
-                numberFormat.format((thisMonth / daysThisMonth).toLong())
+                numberFormat.format((thisMonth / dayOfMonth))
         }
     }
 }

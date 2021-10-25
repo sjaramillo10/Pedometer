@@ -21,7 +21,7 @@ import android.content.Intent
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.Util.today
+import dev.sjaramillo.pedometer.util.DateUtil
 
 class ShutdownReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -36,6 +36,7 @@ class ShutdownReceiver : BroadcastReceiver() {
             .putBoolean("correctShutdown", true).apply()
 
         val db = Database.getInstance(context)
+        val today = DateUtil.getToday()
         // if it's already a new day, add the temp. steps to the last one
         if (db.getSteps(today) == Int.MIN_VALUE) {
             val steps = db.currentSteps
