@@ -223,7 +223,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 FileOutputStream(it.fileDescriptor).use { stream ->
                     if (c.moveToFirst()) {
                         while (!c.isAfterLast) {
-                            val line = "${c.getString(0)};${max(c.getInt(1), 0)}\n"
+                            val line = "${c.getString(0)},${max(c.getInt(1), 0)}\n"
                             stream.write(line.toByteArray())
                             c.moveToNext()
                         }
@@ -268,7 +268,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             contentResolver.openFileDescriptor(uri, "r")?.use {
                 FileReader(it.fileDescriptor).use { reader ->
                     reader.forEachLine { line ->
-                        val data = line.split(";")
+                        val data = line.split(",")
                         try {
                             if (db.insertDayFromBackup(data[0].toLong(), (data[1]).toInt())) {
                                 inserted++
