@@ -22,7 +22,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Pair
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.TimeUtil.today
+import dev.sjaramillo.pedometer.util.Util
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -35,6 +35,7 @@ class Database private constructor(context: Context) :
     }
 
     override fun onCreate(db: SQLiteDatabase) {
+        // TODO Rename table to 'daily_steps' and 'date' -> 'day' when migrating to Room
         db.execSQL("CREATE TABLE $DB_NAME (date INTEGER, steps INTEGER)")
     }
 
@@ -47,7 +48,7 @@ class Database private constructor(context: Context) :
      *
      * @param columns       the columns
      * @param selection     the selection
-     * @param selectionArgs the selction arguments
+     * @param selectionArgs the selection arguments
      * @param groupBy       the group by statement
      * @param having        the having statement
      * @param orderBy       the order by statement
@@ -164,7 +165,7 @@ class Database private constructor(context: Context) :
                     DB_NAME,
                     arrayOf("SUM(steps)"),
                     "steps > 0 AND date > 0 AND date < ?",
-                    arrayOf(today.toString()),
+                    arrayOf(Util.getToday().toString()),
                     null,
                     null,
                     null
@@ -176,7 +177,7 @@ class Database private constructor(context: Context) :
         }
 
     /**
-     * Get the maximum of steps walked in one day and the date that happend
+     * Get the maximum of steps walked in one day and the date that happened
      *
      * @return a pair containing the date (Date) in millis since 1970 and the
      * step value (Integer)
@@ -199,7 +200,7 @@ class Database private constructor(context: Context) :
      *
      *
      * If date is Util.getToday(), this method returns the offset which needs to
-     * be added to the value returned by getCurrentSteps() to get todays steps.
+     * be added to the value returned by getCurrentSteps() to get today's steps.
      *
      * @param date the date in millis since 1970
      * @return the steps taken on this date or Integer.MIN_VALUE if date doesn't
@@ -248,12 +249,12 @@ class Database private constructor(context: Context) :
      * Get the number of steps taken between 'start' and 'end' date
      *
      *
-     * Note that todays entry might have a negative value, so take care of that
+     * Note that today's entry might have a negative value, so take care of that
      * if 'end' >= Util.getToday()!
      *
      * @param start start date in ms since 1970 (steps for this date included)
      * @param end   end date in ms since 1970 (steps for this date included)
-     * @return the number of steps from 'start' to 'end'. Can be < 0 as todays
+     * @return the number of steps from 'start' to 'end'. Can be < 0 as today's
      * entry might have negative value
      */
     fun getSteps(start: Long, end: Long): Int {
@@ -303,7 +304,7 @@ class Database private constructor(context: Context) :
                     DB_NAME,
                     arrayOf("COUNT(*)"),
                     "steps > ? AND date < ? AND date > 0",
-                    arrayOf(0.toString(), today.toString()),
+                    arrayOf(0.toString(), Util.getToday().toString()),
                     null,
                     null,
                     null
