@@ -28,18 +28,17 @@ import android.os.Bundle
 import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.service.SensorListener
+import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import dev.sjaramillo.pedometer.util.Logger
-import dev.sjaramillo.pedometer.util.DateUtil
 import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import kotlin.math.roundToLong
 
@@ -252,7 +251,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
      * be called when switching from step count to distance.
      */
     private fun updateBars() {
-        val df = SimpleDateFormat("E", Locale.getDefault())
+        val dtf = DateTimeFormatter.ofPattern("E")
         val barChart = requireView().findViewById<BarChart>(R.id.bargraph)
         if (barChart.data.size > 0) barChart.clearChart()
         var steps: Int
@@ -275,20 +274,15 @@ class OverviewFragment : Fragment(), SensorEventListener {
             val current = last[i]
             steps = current.second
             if (steps > 0) {
-                // TODO account for change in db from millis to days
                 bm = BarModel(
-                    df.format(Date(current.first)), 0f,
+                    dtf.format(DateUtil.dayToLocalDate(current.first)), 0f,
                     if (steps > goal) Color.parseColor("#99CC00") else Color.parseColor("#0099cc")
                 )
                 if (showSteps) {
                     bm.value = steps.toFloat()
                 } else {
                     distance = steps * stepsize
-                    distance /= if (stepSizeCm) {
-                        100000f
-                    } else {
-                        5280f
-                    }
+                    distance /= if (stepSizeCm) 100000f else 5280f
                     distance = (distance * 1000).roundToLong() / 1000f // 3 decimals
                     bm.value = distance
                 }

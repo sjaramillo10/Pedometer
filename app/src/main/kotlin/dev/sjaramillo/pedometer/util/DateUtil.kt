@@ -16,27 +16,21 @@
 package dev.sjaramillo.pedometer.util
 
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 
 object DateUtil {
 
     /**
-     * @return  unix day calculated as the number of days elapsed since January 1st, 1970 up
-     *          until today.
+     * @return Today's Epoch Day, where day 0 is 1970-01-01
      */
     fun getToday(): Long {
-        val todayLocalDate = LocalDate.now()
-        return getUnixDay(todayLocalDate)
+        return LocalDate.now().toEpochDay()
     }
 
     /**
-     * @return  unix day calculated as the number of days elapsed since January 1st, 1970 up
-     *          until localDate's day.
+     * @return The LocalDate corresponding to the given day
      */
-    internal fun getUnixDay(localDate: LocalDate): Long {
-        val firstUnixDay = LocalDate.of(1970, 1, 1)
-
-        return ChronoUnit.DAYS.between(firstUnixDay, localDate)
+    fun dayToLocalDate(day: Long): LocalDate {
+        return LocalDate.ofEpochDay(day)
     }
 }
