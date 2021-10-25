@@ -7,7 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
 
-class UtilTest {
+class DateUtilTest {
 
     @Before
     fun setUp() {
@@ -20,7 +20,7 @@ class UtilTest {
     @Test
     fun `Given today is Oct 24th, 2021 - unix day should be 18924`() {
         val today = LocalDate.of(2021, 10, 24) // Oct 24th, 2021
-        val unixDays = Util.getUnixDay(today)
+        val unixDays = DateUtil.getUnixDay(today)
 
         assertEquals(18924L, unixDays)
     }

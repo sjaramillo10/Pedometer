@@ -32,7 +32,7 @@ import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.API26Wrapper.getNotificationBuilder
 import dev.sjaramillo.pedometer.receiver.ShutdownReceiver
 import dev.sjaramillo.pedometer.ui.MainActivity
-import dev.sjaramillo.pedometer.util.Util
+import dev.sjaramillo.pedometer.util.DateUtil
 import java.lang.Exception
 import java.text.NumberFormat
 import java.util.*
@@ -76,7 +76,7 @@ class SensorListener : Service(), SensorEventListener {
                         " lastSaveTime=" + Date(lastSaveTime)
             )
             val db = Database.getInstance(this)
-            val today = Util.getToday()
+            val today = DateUtil.getToday()
             if (db.getSteps(today) == Int.MIN_VALUE) {
                 db.insertNewDay(today, steps)
             }
@@ -197,7 +197,7 @@ class SensorListener : Service(), SensorEventListener {
             val prefs = context.getSharedPreferences("pedometer", MODE_PRIVATE)
             val goal = prefs.getInt("goal", 10000)
             val db = Database.getInstance(context)
-            val today = Util.getToday()
+            val today = DateUtil.getToday()
             var todayOffset = db.getSteps(today)
             if (steps == 0) steps = db.currentSteps // use saved value if we haven't anything better
             db.close()

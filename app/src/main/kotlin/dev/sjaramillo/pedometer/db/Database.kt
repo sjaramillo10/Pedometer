@@ -22,7 +22,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Pair
 import dev.sjaramillo.pedometer.util.Logger.log
-import dev.sjaramillo.pedometer.util.Util
+import dev.sjaramillo.pedometer.util.DateUtil
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -165,7 +165,7 @@ class Database private constructor(context: Context) :
                     DB_NAME,
                     arrayOf("SUM(steps)"),
                     "steps > 0 AND date > 0 AND date < ?",
-                    arrayOf(Util.getToday().toString()),
+                    arrayOf(DateUtil.getToday().toString()),
                     null,
                     null,
                     null
@@ -304,7 +304,7 @@ class Database private constructor(context: Context) :
                     DB_NAME,
                     arrayOf("COUNT(*)"),
                     "steps > ? AND date < ? AND date > 0",
-                    arrayOf(0.toString(), Util.getToday().toString()),
+                    arrayOf(0.toString(), DateUtil.getToday().toString()),
                     null,
                     null,
                     null

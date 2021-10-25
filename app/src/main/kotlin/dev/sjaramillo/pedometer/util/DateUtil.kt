@@ -15,13 +15,11 @@
  */
 package dev.sjaramillo.pedometer.util
 
-import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 
-object Util {
+object DateUtil {
 
     /**
      * @return  unix day calculated as the number of days elapsed since January 1st, 1970 up
@@ -41,8 +39,4 @@ object Util {
 
         return ChronoUnit.DAYS.between(firstUnixDay, localDate)
     }
-
-    // TODO Move to a different place.
-    val numberFormat: NumberFormat
-        get() = NumberFormat.getInstance(Locale.getDefault())
 }

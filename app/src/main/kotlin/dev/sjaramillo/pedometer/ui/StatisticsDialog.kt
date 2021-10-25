@@ -22,7 +22,8 @@ import android.view.Window
 import android.widget.TextView
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.util.Util
+import dev.sjaramillo.pedometer.util.FormatUtil
+import dev.sjaramillo.pedometer.util.DateUtil
 import java.text.DateFormat
 
 // TODO Extend from Dialog class
@@ -31,13 +32,13 @@ object StatisticsDialog {
         // TODO Inject Database
         val db = Database.getInstance(context)
         val record = db.recordData
-        val today = Util.getToday()
+        val today = DateUtil.getToday()
         val firstDayOfCurrentMonth = today // TODO use Util method to obtain real value
         val daysThisMonth = today - firstDayOfCurrentMonth + 1
         val thisWeek = db.getSteps(today - 6, System.currentTimeMillis()) + since_boot
         val thisMonth = db.getSteps(firstDayOfCurrentMonth, System.currentTimeMillis()) + since_boot
         db.close()
-        val numberFormat = Util.numberFormat
+        val numberFormat = FormatUtil.numberFormat
 
         return Dialog(context).apply {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
