@@ -44,27 +44,6 @@ class Database private constructor(context: Context) :
     }
 
     /**
-     * Query the 'steps' table. Remember to close the cursor!
-     *
-     * @param columns       the columns
-     * @param selection     the selection
-     * @param selectionArgs the selection arguments
-     * @param groupBy       the group by statement
-     * @param having        the having statement
-     * @param orderBy       the order by statement
-     * @return the cursor
-     */
-    // TODO replace with DailyStepsDao's getAll() method.
-    fun query(
-        columns: Array<String?>?, selection: String?,
-        selectionArgs: Array<String?>?, groupBy: String?, having: String?,
-        orderBy: String?, limit: String?
-    ): Cursor {
-        return readableDatabase
-            .query(DB_NAME, columns, selection, selectionArgs, groupBy, having, orderBy, limit)
-    }
-
-    /**
      * Inserts a new entry in the database, if there is no entry for the given
      * date yet. Steps should be the current number of steps and it's negative
      * value will be used as offset for the new date. Also adds 'steps' steps to

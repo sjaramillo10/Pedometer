@@ -21,6 +21,7 @@ abstract class PedometerDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context): PedometerDatabase {
             return Room.databaseBuilder(context, PedometerDatabase::class.java, "pedometer-db")
+                .allowMainThreadQueries()
                 .build()
         }
     }

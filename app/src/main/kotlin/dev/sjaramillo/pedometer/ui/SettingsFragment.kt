@@ -32,6 +32,7 @@ import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
@@ -216,17 +217,14 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
      */
     private fun writeDataToCsv(uri: Uri) {
         val contentResolver = requireContext().applicationContext.contentResolver
-        val db = Database.getInstance(requireContext())
-        val c = db.query(arrayOf("date", "steps"), "date > 0", null, null, null, "date", null)
+        val db = PedometerDatabase.getInstance(requireContext())
+        val dailySteps = db.dailyStepsDao().getAll()
         try {
             contentResolver.openFileDescriptor(uri, "w")?.use {
                 FileOutputStream(it.fileDescriptor).use { stream ->
-                    if (c.moveToFirst()) {
-                        while (!c.isAfterLast) {
-                            val line = "${c.getString(0)},${max(c.getInt(1), 0)}\n"
-                            stream.write(line.toByteArray())
-                            c.moveToNext()
-                        }
+                    dailySteps.forEach { (day, steps) ->
+                        val line = "${day},${max(steps, 0)}\n"
+                        stream.write(line.toByteArray())
                     }
                 }
             }
@@ -241,9 +239,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 .create().show()
             e.printStackTrace()
             return
-        } finally {
-            c.close()
-            db.close()
         }
 
         // TODO obtain created file name and use it in dialog message
