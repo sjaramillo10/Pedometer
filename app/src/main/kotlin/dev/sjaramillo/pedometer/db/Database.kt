@@ -54,7 +54,7 @@ class Database private constructor(context: Context) :
      * @param orderBy       the order by statement
      * @return the cursor
      */
-    // TODO Modify method so that it returns list of entries instead of cursor
+    // TODO replace with DailyStepsDao's getAll() method.
     fun query(
         columns: Array<String?>?, selection: String?,
         selectionArgs: Array<String?>?, groupBy: String?, having: String?,
