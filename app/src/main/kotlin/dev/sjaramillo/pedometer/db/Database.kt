@@ -156,25 +156,6 @@ class Database private constructor(context: Context) :
         }
 
     /**
-     * Get the maximum of steps walked in one day and the date that happened
-     *
-     * @return a pair containing the date (Date) in millis since 1970 and the
-     * step value (Integer)
-     */
-    val recordData: Pair<Date, Int>
-        get() {
-            val c: Cursor = readableDatabase
-                .query(
-                    DB_NAME, arrayOf("date, steps"), "date > 0", null, null, null,
-                    "steps DESC", "1"
-                )
-            c.moveToFirst()
-            val p = Pair(Date(c.getLong(0)), c.getInt(1))
-            c.close()
-            return p
-        }
-
-    /**
      * Get the number of steps taken for a specific date.
      *
      *
@@ -222,39 +203,6 @@ class Database private constructor(context: Context) :
         }
         c.close()
         return result
-    }
-
-    /**
-     * Get the number of steps taken between 'start' and 'end' date
-     *
-     *
-     * Note that today's entry might have a negative value, so take care of that
-     * if 'end' >= Util.getToday()!
-     *
-     * @param start start date in ms since 1970 (steps for this date included)
-     * @param end   end date in ms since 1970 (steps for this date included)
-     * @return the number of steps from 'start' to 'end'. Can be < 0 as today's
-     * entry might have negative value
-     */
-    fun getSteps(start: Long, end: Long): Int {
-        val c: Cursor = readableDatabase
-            .query(
-                DB_NAME,
-                arrayOf("SUM(steps)"),
-                "date >= ? AND date <= ?",
-                arrayOf(start.toString(), end.toString()),
-                null,
-                null,
-                null
-            )
-        val re: Int = if (c.count == 0) {
-            0
-        } else {
-            c.moveToFirst()
-            c.getInt(0)
-        }
-        c.close()
-        return re
     }
 
     /**
