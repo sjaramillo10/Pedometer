@@ -19,7 +19,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import dev.sjaramillo.pedometer.db.Database
+import dev.sjaramillo.pedometer.data.PedometerDatabase
+import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger.log
 
@@ -29,19 +30,18 @@ class BootReceiver : BroadcastReceiver() {
 
         log("booted")
         val prefs = context.getSharedPreferences("pedometer", Context.MODE_PRIVATE)
-        val db = Database.getInstance(context)
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
         if (!prefs.getBoolean("correctShutdown", false)) {
             log("Incorrect shutdown")
             // can we at least recover some steps?
-            val steps = db.currentSteps.coerceAtLeast(0)
+            val steps = stepsRepository.getStepsSinceBoot()
             log("Trying to recover $steps steps")
-            db.addToLastEntry(steps)
+            stepsRepository.addToLastEntry(steps)
         }
         // last entry might still have a negative step value, so remove that
         // row if that's the case
-        db.removeNegativeEntries()
-        db.saveCurrentSteps(0)
-        db.close()
+        stepsRepository.removeNegativeEntries()
+        stepsRepository.updateStepsSinceBoot(0)
         prefs.edit().remove("correctShutdown").apply()
 
         val serviceIntent = Intent(context, SensorListener::class.java)

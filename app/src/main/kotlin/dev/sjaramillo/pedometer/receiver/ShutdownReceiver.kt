@@ -18,7 +18,8 @@ package dev.sjaramillo.pedometer.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import dev.sjaramillo.pedometer.db.Database
+import dev.sjaramillo.pedometer.data.PedometerDatabase
+import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.DateUtil
@@ -35,16 +36,16 @@ class ShutdownReceiver : BroadcastReceiver() {
         context.getSharedPreferences("pedometer", Context.MODE_PRIVATE).edit()
             .putBoolean("correctShutdown", true).apply()
 
-        val db = Database.getInstance(context)
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
+
         val today = DateUtil.getToday()
         // if it's already a new day, add the temp. steps to the last one
-        if (db.getSteps(today) == Int.MIN_VALUE) {
-            val steps = db.currentSteps
-            db.insertNewDay(today, steps)
+        if (stepsRepository.getSteps(today) == Long.MIN_VALUE) {
+            val steps = stepsRepository.getStepsSinceBoot()
+            stepsRepository.insertNewDay(today, steps)
         } else {
-            db.addToLastEntry(db.currentSteps)
+            stepsRepository.addToLastEntry(stepsRepository.getStepsSinceBoot())
         }
         // current steps will be reset on boot @see BootReceiver
-        db.close()
     }
 }
