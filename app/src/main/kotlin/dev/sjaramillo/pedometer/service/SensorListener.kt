@@ -26,8 +26,9 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
-import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.data.PedometerDatabase
+import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.API26Wrapper.getNotificationBuilder
 import dev.sjaramillo.pedometer.receiver.ShutdownReceiver
@@ -75,13 +76,12 @@ class SensorListener : Service(), SensorEventListener {
                 "saving steps: steps=" + steps + " lastSave=" + lastSaveSteps +
                         " lastSaveTime=" + Date(lastSaveTime)
             )
-            val db = Database.getInstance(this)
+            val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
             val today = DateUtil.getToday()
-            if (db.getSteps(today) == Int.MIN_VALUE) {
-                db.insertNewDay(today, steps)
+            if (stepsRepository.getSteps(today) == Long.MIN_VALUE) {
+                stepsRepository.insertNewDay(today, steps.toLong())
             }
-            db.saveCurrentSteps(steps)
-            db.close()
+            stepsRepository.updateStepsSinceBoot(steps.toLong())
             lastSaveSteps = steps
             lastSaveTime = System.currentTimeMillis()
             showNotification() // update notification
@@ -196,11 +196,10 @@ class SensorListener : Service(), SensorEventListener {
             log("getNotification")
             val prefs = context.getSharedPreferences("pedometer", MODE_PRIVATE)
             val goal = prefs.getInt("goal", 10000)
-            val db = Database.getInstance(context)
+            val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
             val today = DateUtil.getToday()
-            var todayOffset = db.getSteps(today)
-            if (steps == 0) steps = db.currentSteps // use saved value if we haven't anything better
-            db.close()
+            var todayOffset = stepsRepository.getSteps(today).toInt()
+            if (steps == 0) steps = stepsRepository.getStepsSinceBoot().toInt() // use saved value if we haven't anything better
             val notificationBuilder =
                 if (Build.VERSION.SDK_INT >= 26) getNotificationBuilder(context) else Notification.Builder(
                     context

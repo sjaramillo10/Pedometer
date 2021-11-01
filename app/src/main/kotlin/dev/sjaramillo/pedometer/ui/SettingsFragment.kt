@@ -32,10 +32,14 @@ import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.db.Database
+import dev.sjaramillo.pedometer.data.PedometerDatabase
+import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
-import java.io.*
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.FileReader
+import java.io.IOException
 import java.util.*
 import kotlin.math.max
 
@@ -216,17 +220,14 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
      */
     private fun writeDataToCsv(uri: Uri) {
         val contentResolver = requireContext().applicationContext.contentResolver
-        val db = Database.getInstance(requireContext())
-        val c = db.query(arrayOf("date", "steps"), "date > 0", null, null, null, "date", null)
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
+        val dailySteps = stepsRepository.getAll()
         try {
             contentResolver.openFileDescriptor(uri, "w")?.use {
                 FileOutputStream(it.fileDescriptor).use { stream ->
-                    if (c.moveToFirst()) {
-                        while (!c.isAfterLast) {
-                            val line = "${c.getString(0)},${max(c.getInt(1), 0)}\n"
-                            stream.write(line.toByteArray())
-                            c.moveToNext()
-                        }
+                    dailySteps.forEach { (day, steps) ->
+                        val line = "${day},${max(steps, 0)}\n"
+                        stream.write(line.toByteArray())
                     }
                 }
             }
@@ -241,9 +242,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 .create().show()
             e.printStackTrace()
             return
-        } finally {
-            c.close()
-            db.close()
         }
 
         // TODO obtain created file name and use it in dialog message
@@ -260,7 +258,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
      */
     private fun readDataFromCsv(uri: Uri) {
         val contentResolver = requireContext().applicationContext.contentResolver
-        val db = Database.getInstance(requireContext())
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
         var ignored = 0
         var inserted = 0
         var overwritten = 0
@@ -268,9 +266,9 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             contentResolver.openFileDescriptor(uri, "r")?.use {
                 FileReader(it.fileDescriptor).use { reader ->
                     reader.forEachLine { line ->
-                        val data = line.split(",")
+                        val data = line.split(",").map { item -> item.toLong() }
                         try {
-                            if (db.insertDayFromBackup(data[0].toLong(), (data[1]).toInt())) {
+                            if (stepsRepository.insertDayFromBackup(data[0], data[1])) {
                                 inserted++
                             } else {
                                 overwritten++
@@ -288,8 +286,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 .create().show()
             e.printStackTrace()
             return
-        } finally {
-            db.close()
         }
         var message = getString(R.string.entries_imported, inserted + overwritten)
         if (overwritten > 0) message += "\n\n" + getString(

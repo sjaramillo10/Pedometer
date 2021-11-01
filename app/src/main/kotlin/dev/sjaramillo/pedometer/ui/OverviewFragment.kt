@@ -29,7 +29,8 @@ import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.db.Database
+import dev.sjaramillo.pedometer.data.PedometerDatabase
+import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
@@ -103,12 +104,12 @@ class OverviewFragment : Fragment(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         activity?.actionBar?.setDisplayHomeAsUpEnabled(false)
-        val db = Database.getInstance(requireContext())
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
         // read today's offset
-        todayOffset = db.getSteps(DateUtil.getToday())
+        todayOffset = stepsRepository.getSteps(DateUtil.getToday()).toInt()
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
-        sinceBoot = db.currentSteps
+        sinceBoot = stepsRepository.getStepsSinceBoot().toInt()
 
         // register a sensor listener to live update the UI if a step is taken
         val sm = context?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -122,10 +123,10 @@ class OverviewFragment : Fragment(), SensorEventListener {
         } else {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
-        totalStart = db.totalWithoutToday
-        totalDays = db.days
-        db.close()
+        totalStart = stepsRepository.getTotalWithoutToday().toInt()
+        totalDays = stepsRepository.getDays().toInt()
         stepsDistanceChanged()
+        Int.MAX_VALUE
     }
 
     /**
@@ -153,9 +154,8 @@ class OverviewFragment : Fragment(), SensorEventListener {
         } catch (e: Exception) {
             Logger.log(e)
         }
-        val db = Database.getInstance(requireContext())
-        db.saveCurrentSteps(sinceBoot)
-        db.close()
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
+        stepsRepository.updateStepsSinceBoot(sinceBoot.toLong())
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -189,9 +189,8 @@ class OverviewFragment : Fragment(), SensorEventListener {
             // we dont know when the reboot was, so set todays steps to 0 by
             // initializing them with -STEPS_SINCE_BOOT
             todayOffset = (-event.values[0]).toInt()
-            val db = Database.getInstance(requireContext())
-            db.insertNewDay(DateUtil.getToday(), event.values[0].toInt())
-            db.close()
+            val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
+            stepsRepository.insertNewDay(DateUtil.getToday(), event.values[0].toLong())
         }
         sinceBoot = event.values[0].toInt()
         updatePie()
@@ -267,15 +266,14 @@ class OverviewFragment : Fragment(), SensorEventListener {
         }
         barChart.isShowDecimal = !showSteps // show decimal in distance view only
         var bm: BarModel
-        val db = Database.getInstance(requireContext())
-        val last = db.getLastEntries(8)
-        db.close()
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
+        val last = stepsRepository.getLastEntries(8)
         for (i in last.size - 1 downTo 1) {
             val current = last[i]
-            steps = current.second
+            steps = current.steps.toInt()
             if (steps > 0) {
                 bm = BarModel(
-                    dtf.format(DateUtil.dayToLocalDate(current.first)), 0f,
+                    dtf.format(DateUtil.dayToLocalDate(current.day)), 0f,
                     if (steps > goal) Color.parseColor("#99CC00") else Color.parseColor("#0099cc")
                 )
                 if (showSteps) {

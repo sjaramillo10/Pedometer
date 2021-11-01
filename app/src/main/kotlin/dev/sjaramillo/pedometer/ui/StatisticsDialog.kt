@@ -20,23 +20,26 @@ import android.content.Context
 import android.view.View
 import android.view.Window
 import android.widget.TextView
-import dev.sjaramillo.pedometer.db.Database
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.data.PedometerDatabase
+import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.FormatUtil
 import dev.sjaramillo.pedometer.util.DateUtil
-import java.text.DateFormat
+import java.time.format.DateTimeFormatter
 
 // TODO Extend from Dialog class
+// TODO Maybe wait to add a StatsFragment instead?
 object StatisticsDialog {
-    fun getDialog(context: Context, since_boot: Int): Dialog {
-        // TODO Inject Database
-        val db = Database.getInstance(context)
-        val record = db.recordData
+    fun getDialog(context: Context, sinceBoot: Int): Dialog {
+        // TODO Inject Repository or ViewModel
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
+        val record = stepsRepository.getRecord()
+        val recordDate = DateUtil.dayToLocalDate(record.day)
         val today = DateUtil.getToday()
         val dayOfMonth = DateUtil.getDayOfMonth()
-        val thisWeek = db.getSteps(today - 6, System.currentTimeMillis()) + since_boot
-        val thisMonth = db.getSteps(today - dayOfMonth + 1, System.currentTimeMillis()) + since_boot
-        db.close()
+        val thisWeek = stepsRepository.getStepsFromDayRange(today - 6, today) + sinceBoot
+        val thisMonth = stepsRepository
+            .getStepsFromDayRange(today - dayOfMonth + 1, today) + sinceBoot
         val numberFormat = FormatUtil.numberFormat
 
         return Dialog(context).apply {
@@ -44,14 +47,11 @@ object StatisticsDialog {
             setContentView(R.layout.statistics)
             findViewById<View>(R.id.close).setOnClickListener { dismiss() }
             findViewById<TextView>(R.id.record).text =
-                (numberFormat.format(record.second) + " @ "
-                    + DateFormat.getDateInstance().format(record.first))
-            findViewById<TextView>(R.id.totalthisweek).text =
-                numberFormat.format(thisWeek.toLong())
-            findViewById<TextView>(R.id.totalthismonth).text =
-                numberFormat.format(thisMonth.toLong())
-            findViewById<TextView>(R.id.averagethisweek).text =
-                numberFormat.format((thisWeek / 7).toLong())
+                (numberFormat.format(record.steps) + " @ "
+                        + DateTimeFormatter.ofPattern("d MMM uuuu").format(recordDate))
+            findViewById<TextView>(R.id.totalthisweek).text = numberFormat.format(thisWeek)
+            findViewById<TextView>(R.id.totalthismonth).text = numberFormat.format(thisMonth)
+            findViewById<TextView>(R.id.averagethisweek).text = numberFormat.format(thisWeek / 7)
             findViewById<TextView>(R.id.averagethismonth).text =
                 numberFormat.format((thisMonth / dayOfMonth))
         }
