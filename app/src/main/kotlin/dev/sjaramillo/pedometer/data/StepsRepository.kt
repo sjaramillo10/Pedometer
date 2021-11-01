@@ -7,6 +7,10 @@ class StepsRepository(db: PedometerDatabase) {
 
     private val dailyStepsDao = db.dailyStepsDao()
 
+    fun getAll(): List<DailySteps> {
+        return dailyStepsDao.getAll()
+    }
+
     /**
      * If date is Util.getToday(), this method returns the offset which needs to
      * be added to the value returned by getCurrentSteps() to get today's steps.
@@ -18,8 +22,16 @@ class StepsRepository(db: PedometerDatabase) {
         return dailyStepsDao.getSteps(day) ?: Long.MIN_VALUE
     }
 
+    fun getRecord(): DailySteps {
+        return dailyStepsDao.getRecord()
+    }
+
     fun getLastEntries(num: Int): List<DailySteps> {
         return dailyStepsDao.getLastEntries(num)
+    }
+
+    fun getStepsFromDayRange(start: Long, end: Long): Long {
+        return dailyStepsDao.getStepsFromDayRange(start, end)
     }
 
     fun getTotalWithoutToday(): Long {

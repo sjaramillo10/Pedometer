@@ -220,8 +220,8 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
      */
     private fun writeDataToCsv(uri: Uri) {
         val contentResolver = requireContext().applicationContext.contentResolver
-        val db = PedometerDatabase.getInstance(requireContext())
-        val dailySteps = db.dailyStepsDao().getAll()
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
+        val dailySteps = stepsRepository.getAll()
         try {
             contentResolver.openFileDescriptor(uri, "w")?.use {
                 FileOutputStream(it.fileDescriptor).use { stream ->
