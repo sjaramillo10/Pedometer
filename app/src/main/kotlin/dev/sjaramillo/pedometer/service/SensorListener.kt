@@ -16,10 +16,8 @@
 package dev.sjaramillo.pedometer.service
 
 import android.app.*
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -31,7 +29,6 @@ import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.API26Wrapper.getNotificationBuilder
-import dev.sjaramillo.pedometer.receiver.ShutdownReceiver
 import dev.sjaramillo.pedometer.ui.MainActivity
 import dev.sjaramillo.pedometer.util.DateUtil
 import java.lang.Exception
@@ -47,8 +44,6 @@ import java.util.*
  * step-value without waiting for a sensor event
  */
 class SensorListener : Service(), SensorEventListener {
-
-    private val shutdownReceiver: BroadcastReceiver = ShutdownReceiver()
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
         // nobody knows what happens here: step value might magically decrease
@@ -107,7 +102,7 @@ class SensorListener : Service(), SensorEventListener {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         reRegisterSensor()
-        registerBroadcastReceiver()
+
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
         val steps = stepsRepository.getStepsSinceBoot().toInt()
         if (!updateIfNecessary(steps)) {
@@ -151,17 +146,9 @@ class SensorListener : Service(), SensorEventListener {
         try {
             val sm = getSystemService(SENSOR_SERVICE) as SensorManager
             sm.unregisterListener(this)
-            unregisterReceiver(shutdownReceiver)
         } catch (e: Exception) {
             log(e)
         }
-    }
-
-    private fun registerBroadcastReceiver() {
-        log("register broadcast receiver")
-        val filter = IntentFilter()
-        filter.addAction(Intent.ACTION_SHUTDOWN)
-        registerReceiver(shutdownReceiver, filter)
     }
 
     private fun reRegisterSensor() {
