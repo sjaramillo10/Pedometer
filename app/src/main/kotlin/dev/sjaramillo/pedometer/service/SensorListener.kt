@@ -60,15 +60,14 @@ class SensorListener : Service(), SensorEventListener {
         if (event.values[0] > Int.MAX_VALUE) {
             log("probably not a real value: " + event.values[0])
         } else {
-            steps = event.values[0].toInt()
-            updateIfNecessary()
+            updateIfNecessary(event.values[0].toInt())
         }
     }
 
     /**
      * @return true, if notification was updated
      */
-    private fun updateIfNecessary(): Boolean {
+    private fun updateIfNecessary(steps: Int): Boolean {
         return if (steps > lastSaveSteps + SAVE_OFFSET_STEPS ||
             steps > 0 && System.currentTimeMillis() > lastSaveTime + SAVE_OFFSET_TIME
         ) {
@@ -109,7 +108,9 @@ class SensorListener : Service(), SensorEventListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         reRegisterSensor()
         registerBroadcastReceiver()
-        if (!updateIfNecessary()) {
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
+        val steps = stepsRepository.getStepsSinceBoot().toInt()
+        if (!updateIfNecessary(steps)) {
             showNotification()
         }
 
@@ -188,7 +189,6 @@ class SensorListener : Service(), SensorEventListener {
         private const val MICROSECONDS_IN_ONE_MINUTE: Long = 60000000
         private const val SAVE_OFFSET_TIME = AlarmManager.INTERVAL_HOUR
         private const val SAVE_OFFSET_STEPS = 500
-        private var steps = 0
         private var lastSaveSteps = 0
         private var lastSaveTime: Long = 0
 
@@ -199,7 +199,7 @@ class SensorListener : Service(), SensorEventListener {
             val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
             val today = DateUtil.getToday()
             var todayOffset = stepsRepository.getSteps(today).toInt()
-            if (steps == 0) steps = stepsRepository.getStepsSinceBoot().toInt() // use saved value if we haven't anything better
+            val steps = stepsRepository.getStepsSinceBoot().toInt()
             val notificationBuilder =
                 if (Build.VERSION.SDK_INT >= 26) getNotificationBuilder(context) else Notification.Builder(
                     context
