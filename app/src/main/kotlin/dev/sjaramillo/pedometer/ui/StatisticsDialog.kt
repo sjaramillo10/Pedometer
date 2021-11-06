@@ -30,16 +30,15 @@ import java.time.format.DateTimeFormatter
 // TODO Extend from Dialog class
 // TODO Maybe wait to add a StatsFragment instead?
 object StatisticsDialog {
-    fun getDialog(context: Context, sinceBoot: Int): Dialog {
+    fun getDialog(context: Context): Dialog {
         // TODO Inject Repository or ViewModel
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
         val record = stepsRepository.getRecord()
         val recordDate = DateUtil.dayToLocalDate(record.day)
         val today = DateUtil.getToday()
         val dayOfMonth = DateUtil.getDayOfMonth()
-        val thisWeek = stepsRepository.getStepsFromDayRange(today - 6, today) + sinceBoot
-        val thisMonth = stepsRepository
-            .getStepsFromDayRange(today - dayOfMonth + 1, today) + sinceBoot
+        val thisWeek = stepsRepository.getStepsFromDayRange(today - 6, today)
+        val thisMonth = stepsRepository.getStepsFromDayRange(today - dayOfMonth + 1, today)
         val numberFormat = FormatUtil.numberFormat
 
         return Dialog(context).apply {

@@ -40,7 +40,6 @@ import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
 import java.time.format.DateTimeFormatter
-import kotlin.math.max
 import kotlin.math.roundToLong
 
 // TODO cleanup this file
@@ -53,16 +52,18 @@ class OverviewFragment : Fragment(), SensorEventListener {
     private lateinit var sliceGoal: PieModel
     private lateinit var sliceCurrent: PieModel
     private lateinit var graph: PieChart
-    private var todayOffset = 0
-    private var totalStart = 0
+    private var stepsUntilToday: Long = 0
     private var goal = 0
-    private var sinceBoot = 0
     private var totalDays = 0
     private var showSteps = true
+
+    private lateinit var stepsRepository: StepsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
 
         val serviceIntent = Intent(context, SensorListener::class.java)
         if (Build.VERSION.SDK_INT >= 26) {
@@ -104,12 +105,9 @@ class OverviewFragment : Fragment(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         activity?.actionBar?.setDisplayHomeAsUpEnabled(false)
-        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
-        // read today's offset
-        todayOffset = stepsRepository.getSteps(DateUtil.getToday()).toInt()
+
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
-        sinceBoot = stepsRepository.getStepsSinceBoot().toInt()
 
         // register a sensor listener to live update the UI if a step is taken
         val sm = context?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -123,10 +121,9 @@ class OverviewFragment : Fragment(), SensorEventListener {
         } else {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
-        totalStart = stepsRepository.getTotalWithoutToday().toInt()
+        stepsUntilToday = stepsRepository.getStepsUntilToday()
         totalDays = stepsRepository.getDays().toInt()
         stepsDistanceChanged()
-        Int.MAX_VALUE
     }
 
     /**
@@ -142,7 +139,8 @@ class OverviewFragment : Fragment(), SensorEventListener {
             unit = if (unit == "cm") "km" else "mi"
             requireView().findViewById<TextView>(R.id.unit).text = unit
         }
-        updatePie()
+        val stepsToday = stepsRepository.getStepsToday()
+        updatePie(stepsToday)
         updateBars()
     }
 
@@ -154,8 +152,6 @@ class OverviewFragment : Fragment(), SensorEventListener {
         } catch (e: Exception) {
             Logger.log(e)
         }
-        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
-        stepsRepository.updateStepsSinceBoot(sinceBoot.toLong())
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -165,10 +161,8 @@ class OverviewFragment : Fragment(), SensorEventListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_split_count -> {
-                SplitDialog.getDialog(
-                    requireContext(),
-                    totalStart + max(todayOffset + sinceBoot, 0)
-                ).show()
+                val stepsToday = stepsRepository.getStepsToday()
+                SplitDialog.getDialog(requireContext(), stepsUntilToday + stepsToday).show()
                 true
             }
             else -> (activity as MainActivity).optionsItemSelected(item)
@@ -180,20 +174,13 @@ class OverviewFragment : Fragment(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        val msg = "UI - sensorChanged | todayOffset: $todayOffset since boot: ${event.values[0]}"
+        val msg = "UI - sensorChanged | since boot: ${event.values[0]}"
         Logger.log(msg)
         if (event.values[0] > Int.MAX_VALUE || event.values[0] == 0f) return
 
-        if (todayOffset == Int.MIN_VALUE) {
-            // no values for today
-            // we dont know when the reboot was, so set todays steps to 0 by
-            // initializing them with -STEPS_SINCE_BOOT
-            todayOffset = (-event.values[0]).toInt()
-            val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
-            stepsRepository.insertNewDay(DateUtil.getToday(), event.values[0].toLong())
-        }
-        sinceBoot = event.values[0].toInt()
-        updatePie()
+        val steps = event.values[0].toLong()
+        val stepsToday = stepsRepository.updateStepsSinceBoot(steps)
+        updatePie(stepsToday)
     }
 
     /**
@@ -201,10 +188,8 @@ class OverviewFragment : Fragment(), SensorEventListener {
      * yesterday and total values. Should be called when switching from step
      * count to distance.
      */
-    private fun updatePie() {
-        Logger.log("UI - update steps: $sinceBoot")
-        // todayOffset might still be Integer.MIN_VALUE on first start
-        val stepsToday = (todayOffset + sinceBoot).coerceAtLeast(0)
+    private fun updatePie(stepsToday: Long) {
+        Logger.log("UI - update stepsToday: $stepsToday")
         sliceCurrent.value = stepsToday.toFloat()
         if (goal - stepsToday > 0) {
             // goal not reached yet
@@ -223,15 +208,15 @@ class OverviewFragment : Fragment(), SensorEventListener {
 
         val numberFormat = FormatUtil.numberFormat
         if (showSteps) {
-            stepsView.text = numberFormat.format(stepsToday.toLong())
-            totalView.text = numberFormat.format((totalStart + stepsToday).toLong())
-            averageView.text = numberFormat.format(((totalStart + stepsToday) / totalDays).toLong())
+            stepsView.text = numberFormat.format(stepsToday)
+            totalView.text = numberFormat.format(stepsUntilToday + stepsToday)
+            averageView.text = numberFormat.format((stepsUntilToday + stepsToday) / totalDays)
         } else {
             // update only every 10 steps when displaying distance
             val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
             val stepSize = prefs.getFloat("step_size_value", SettingsFragment.DEFAULT_STEP_SIZE)
             var distanceToday = stepsToday * stepSize
-            var distanceTotal = (totalStart + stepsToday) * stepSize
+            var distanceTotal = (stepsUntilToday + stepsToday) * stepSize
             if (prefs.getString("step_size_unit", SettingsFragment.DEFAULT_STEP_UNIT) == "cm") {
                 distanceToday /= 100000f
                 distanceTotal /= 100000f
@@ -266,10 +251,9 @@ class OverviewFragment : Fragment(), SensorEventListener {
         }
         barChart.isShowDecimal = !showSteps // show decimal in distance view only
         var bm: BarModel
-        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
-        val last = stepsRepository.getLastEntries(8)
-        for (i in last.size - 1 downTo 1) {
-            val current = last[i]
+        val lastEntries = stepsRepository.getLastEntries(8)
+        for (i in lastEntries.size - 1 downTo 1) {
+            val current = lastEntries[i]
             steps = current.steps.toInt()
             if (steps > 0) {
                 bm = BarModel(
@@ -289,7 +273,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
         }
         if (barChart.data.size > 0) {
             barChart.setOnClickListener {
-                StatisticsDialog.getDialog(requireContext(), sinceBoot).show()
+                StatisticsDialog.getDialog(requireContext()).show()
             }
             barChart.startAnimation()
         } else {

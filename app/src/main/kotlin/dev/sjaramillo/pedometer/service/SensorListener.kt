@@ -16,10 +16,8 @@
 package dev.sjaramillo.pedometer.service
 
 import android.app.*
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -31,9 +29,7 @@ import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.API26Wrapper.getNotificationBuilder
-import dev.sjaramillo.pedometer.receiver.ShutdownReceiver
 import dev.sjaramillo.pedometer.ui.MainActivity
-import dev.sjaramillo.pedometer.util.DateUtil
 import java.lang.Exception
 import java.text.NumberFormat
 import java.util.*
@@ -48,8 +44,6 @@ import java.util.*
  */
 class SensorListener : Service(), SensorEventListener {
 
-    private val shutdownReceiver: BroadcastReceiver = ShutdownReceiver()
-
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
         // nobody knows what happens here: step value might magically decrease
         // when this method is called...
@@ -60,15 +54,14 @@ class SensorListener : Service(), SensorEventListener {
         if (event.values[0] > Int.MAX_VALUE) {
             log("probably not a real value: " + event.values[0])
         } else {
-            steps = event.values[0].toInt()
-            updateIfNecessary()
+            updateIfNecessary(event.values[0].toInt())
         }
     }
 
     /**
      * @return true, if notification was updated
      */
-    private fun updateIfNecessary(): Boolean {
+    private fun updateIfNecessary(steps: Int): Boolean {
         return if (steps > lastSaveSteps + SAVE_OFFSET_STEPS ||
             steps > 0 && System.currentTimeMillis() > lastSaveTime + SAVE_OFFSET_TIME
         ) {
@@ -77,10 +70,6 @@ class SensorListener : Service(), SensorEventListener {
                         " lastSaveTime=" + Date(lastSaveTime)
             )
             val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
-            val today = DateUtil.getToday()
-            if (stepsRepository.getSteps(today) == Long.MIN_VALUE) {
-                stepsRepository.insertNewDay(today, steps.toLong())
-            }
             stepsRepository.updateStepsSinceBoot(steps.toLong())
             lastSaveSteps = steps
             lastSaveTime = System.currentTimeMillis()
@@ -108,8 +97,11 @@ class SensorListener : Service(), SensorEventListener {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         reRegisterSensor()
-        registerBroadcastReceiver()
-        if (!updateIfNecessary()) {
+
+        // Update notification
+        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
+        val steps = stepsRepository.getStepsSinceBoot().toInt()
+        if (!updateIfNecessary(steps)) {
             showNotification()
         }
 
@@ -150,17 +142,9 @@ class SensorListener : Service(), SensorEventListener {
         try {
             val sm = getSystemService(SENSOR_SERVICE) as SensorManager
             sm.unregisterListener(this)
-            unregisterReceiver(shutdownReceiver)
         } catch (e: Exception) {
             log(e)
         }
-    }
-
-    private fun registerBroadcastReceiver() {
-        log("register broadcast receiver")
-        val filter = IntentFilter()
-        filter.addAction(Intent.ACTION_SHUTDOWN)
-        registerReceiver(shutdownReceiver, filter)
     }
 
     private fun reRegisterSensor() {
@@ -188,7 +172,6 @@ class SensorListener : Service(), SensorEventListener {
         private const val MICROSECONDS_IN_ONE_MINUTE: Long = 60000000
         private const val SAVE_OFFSET_TIME = AlarmManager.INTERVAL_HOUR
         private const val SAVE_OFFSET_STEPS = 500
-        private var steps = 0
         private var lastSaveSteps = 0
         private var lastSaveTime: Long = 0
 
@@ -197,26 +180,23 @@ class SensorListener : Service(), SensorEventListener {
             val prefs = context.getSharedPreferences("pedometer", MODE_PRIVATE)
             val goal = prefs.getInt("goal", 10000)
             val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
-            val today = DateUtil.getToday()
-            var todayOffset = stepsRepository.getSteps(today).toInt()
-            if (steps == 0) steps = stepsRepository.getStepsSinceBoot().toInt() // use saved value if we haven't anything better
+            val todaySteps = stepsRepository.getStepsToday().toInt()
             val notificationBuilder =
                 if (Build.VERSION.SDK_INT >= 26) getNotificationBuilder(context) else Notification.Builder(
                     context
                 )
-            if (steps > 0) {
-                if (todayOffset == Int.MIN_VALUE) todayOffset = -steps
+            if (todaySteps > 0) {
                 val format = NumberFormat.getInstance(Locale.getDefault())
-                notificationBuilder.setProgress(goal, todayOffset + steps, false).setContentText(
-                    if (todayOffset + steps >= goal) context.getString(
+                notificationBuilder.setProgress(goal, todaySteps, false).setContentText(
+                    if (todaySteps >= goal) context.getString(
                         R.string.goal_reached_notification,
-                        format.format((todayOffset + steps).toLong())
+                        format.format(todaySteps.toLong())
                     ) else context.getString(
                         R.string.notification_text,
-                        format.format((goal - todayOffset - steps).toLong())
+                        format.format((goal - todaySteps).toLong())
                     )
                 ).setContentTitle(
-                    format.format((todayOffset + steps).toLong()) + " " + context.getString(R.string.steps)
+                    format.format((todaySteps).toLong()) + " " + context.getString(R.string.steps)
                 )
             } else { // still no step value?
                 notificationBuilder.setContentText(
