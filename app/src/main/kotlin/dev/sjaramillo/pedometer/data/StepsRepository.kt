@@ -18,10 +18,9 @@ class StepsRepository(db: PedometerDatabase) {
     }
 
     /**
-     * Returns the steps taken on this day or 0 if date doesn't
-     * exist in the database
+     * Returns the steps taken on the given day, or 0 if day doesn't exist in the database.
      */
-    fun getSteps(day: Long): Long {
+    private fun getSteps(day: Long): Long {
         return dailyStepsDao.getSteps(day) ?: 0
     }
 
@@ -37,7 +36,7 @@ class StepsRepository(db: PedometerDatabase) {
         return dailyStepsDao.getStepsFromDayRange(start, end)
     }
 
-    fun getTotalWithoutToday(): Long {
+    fun getStepsUntilToday(): Long {
         return dailyStepsDao.getStepsFromDayRange(start = 0, end = DateUtil.getToday() - 1)
     }
 
@@ -53,16 +52,21 @@ class StepsRepository(db: PedometerDatabase) {
     }
 
     /**
-     * TODO
+     * This method is probably the most important one here, its function is to update the stored
+     * copy of steps since boot AND do some calculations to update today's steps count. If there is
+     * no entry for today in the daily_steps db table, it means that it is a new day already, so
+     * this method also creates a new entry with zero steps.
+     *
+     * @param stepsSinceBoot  the steps sensor steps since boot count.
      */
-    fun updateStepsSinceBoot(steps: Long): Long {
+    fun updateStepsSinceBoot(stepsSinceBoot: Long): Long {
         val today = DateUtil.getToday()
         val todaySteps = dailyStepsDao.getSteps(today)
         val storedStepsSinceBoot = getStepsSinceBoot()
 
         // Make sure stepsDiff is at least 0. The only time when steps could be less than
         // storedStepsSinceBoot is when the phone reboots.
-        val stepsDiff = max(steps - storedStepsSinceBoot, 0L)
+        val stepsDiff = max(stepsSinceBoot - storedStepsSinceBoot, 0L)
 
         if (todaySteps == null) {
             // This is a new day, update last day and insert a new one
@@ -74,8 +78,8 @@ class StepsRepository(db: PedometerDatabase) {
         }
 
         // Update copy of steps since boot in db
-        val stepsSinceBoot = DailySteps(day = -1, steps = steps)
-        dailyStepsDao.insert(stepsSinceBoot)
+        val newStepsSinceBoot = DailySteps(day = -1, steps = stepsSinceBoot)
+        dailyStepsDao.insert(newStepsSinceBoot)
 
         return getSteps(today)
     }
@@ -85,7 +89,7 @@ class StepsRepository(db: PedometerDatabase) {
     }
 
     /**
-     * TODO
+     * Inserts a new entry in the db for today, initializing it with zero steps.
      *
      * @param today  the Epoc Day, where day 0 is 1970-01-01
      */
@@ -101,9 +105,9 @@ class StepsRepository(db: PedometerDatabase) {
      * Use this method for restoring data from a backup.
      *
      * @param day   the Epoc Day, where day 0 is 1970-01-01
-     * @param steps the step value for 'date'; must be >= 0
+     * @param steps the step value for 'day'; must be >= 0
      * @return true if a new entry was created, false if there was already an
-     * entry for 'date' (and it was overwritten)
+     * entry for 'day' (and it was overwritten)
      */
     fun insertDayFromBackup(day: Long, steps: Long): Boolean {
         val dailySteps = DailySteps(day = day, steps = steps)
