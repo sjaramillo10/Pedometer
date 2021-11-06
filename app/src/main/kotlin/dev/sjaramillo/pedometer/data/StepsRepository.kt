@@ -17,13 +17,6 @@ class StepsRepository(db: PedometerDatabase) {
         return getSteps(today)
     }
 
-    /**
-     * Returns the steps taken on the given day, or 0 if day doesn't exist in the database.
-     */
-    private fun getSteps(day: Long): Long {
-        return dailyStepsDao.getSteps(day) ?: 0
-    }
-
     fun getRecord(): DailySteps {
         return dailyStepsDao.getRecord()
     }
@@ -38,13 +31,6 @@ class StepsRepository(db: PedometerDatabase) {
 
     fun getStepsUntilToday(): Long {
         return dailyStepsDao.getStepsFromDayRange(start = 0, end = DateUtil.getToday() - 1)
-    }
-
-    /**
-     * Returns the current number of steps saved in the database or 0 if there is no entry
-     */ // TODO Make private
-    fun getStepsSinceBoot(): Long {
-        return dailyStepsDao.getSteps(-1) ?: 0
     }
 
     fun getDays(): Long {
@@ -86,22 +72,6 @@ class StepsRepository(db: PedometerDatabase) {
         return getSteps(today)
     }
 
-    private fun addToLastEntry(steps: Long) {
-        dailyStepsDao.addToLastEntry(steps)
-    }
-
-    /**
-     * Inserts a new entry in the db for today, initializing it with zero steps.
-     *
-     * @param today  the Epoc Day, where day 0 is 1970-01-01
-     */
-    private fun insertTodayEntry(today: Long) {
-        if (dailyStepsDao.getSteps(today) == null) {
-            val todaySteps = DailySteps(day = today, steps = 0)
-            dailyStepsDao.insert(todaySteps)
-        }
-    }
-
     /**
      * Inserts a new entry in the database, overwriting any existing entry for the given date.
      * Use this method for restoring data from a backup.
@@ -119,5 +89,32 @@ class StepsRepository(db: PedometerDatabase) {
             return true
         }
         return false
+    }
+
+    /**
+     * Returns the steps taken on the given day, or 0 if day doesn't exist in the database.
+     */
+    private fun getSteps(day: Long): Long {
+        return dailyStepsDao.getSteps(day) ?: 0
+    }
+
+    private fun getStepsSinceBoot(): Long {
+        return getSteps(-1)
+    }
+
+    private fun addToLastEntry(steps: Long) {
+        dailyStepsDao.addToLastEntry(steps)
+    }
+
+    /**
+     * Inserts a new entry in the db for today, initializing it with zero steps.
+     *
+     * @param today  the Epoc Day, where day 0 is 1970-01-01
+     */
+    private fun insertTodayEntry(today: Long) {
+        if (dailyStepsDao.getSteps(today) == null) {
+            val todaySteps = DailySteps(day = today, steps = 0)
+            dailyStepsDao.insert(todaySteps)
+        }
     }
 }

@@ -19,7 +19,7 @@ import java.time.Duration
  * Attempts to obtain a reading from the device's step sensor to update the app's
  * step count.
  */
-class StepsUpdaterJob: JobService(), SensorEventListener {
+class StepsUpdaterJob : JobService(), SensorEventListener {
 
     override fun onStartJob(params: JobParameters?): Boolean {
         log("StepsUpdaterJob onJobStart()")
@@ -56,10 +56,12 @@ class StepsUpdaterJob: JobService(), SensorEventListener {
         private const val JOB_ID = 1001
 
         fun scheduleStepsUpdaterJob(context: Context) {
-            val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+            val jobScheduler =
+                context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
             val componentName = ComponentName(context, StepsUpdaterJob::class.java)
             val jobInfo = JobInfo.Builder(JOB_ID, componentName)
                 .setPeriodic(Duration.ofMinutes(15).toMillis())
+                .setPersisted(true)
                 .build()
 
             jobScheduler.schedule(jobInfo)

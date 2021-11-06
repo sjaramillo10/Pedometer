@@ -23,6 +23,7 @@ import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.service.StepsUpdaterJob
 import dev.sjaramillo.pedometer.util.Logger.log
 
+// TODO Figure out if this Receiver is necessary. StepsUpdaterJob is persisted.
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
