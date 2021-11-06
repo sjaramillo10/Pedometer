@@ -92,9 +92,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
     override fun onResume() {
         super.onResume()
         requireActivity().actionBar?.setDisplayHomeAsUpEnabled(true)
-        if (Build.VERSION.SDK_INT >= 26) { // notification settings might have changed
-            requireContext().startForegroundService(Intent(context, SensorListener::class.java))
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

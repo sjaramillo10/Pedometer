@@ -18,10 +18,9 @@ package dev.sjaramillo.pedometer.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
-import dev.sjaramillo.pedometer.service.SensorListener
+import dev.sjaramillo.pedometer.service.StepsUpdaterJob
 import dev.sjaramillo.pedometer.util.Logger.log
 
 class BootReceiver : BroadcastReceiver() {
@@ -34,11 +33,6 @@ class BootReceiver : BroadcastReceiver() {
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
         stepsRepository.updateStepsSinceBoot(0)
 
-        val serviceIntent = Intent(context, SensorListener::class.java)
-        if (Build.VERSION.SDK_INT >= 26) {
-            context.startForegroundService(serviceIntent)
-        } else {
-            context.startService(serviceIntent)
-        }
+        StepsUpdaterJob.scheduleStepsUpdaterJob(context)
     }
 }
