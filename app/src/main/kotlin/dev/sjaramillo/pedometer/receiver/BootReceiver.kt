@@ -29,14 +29,9 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
         log("booted")
+
+        // Make sure to reset the steps since boot in the db
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
-
-        val steps = stepsRepository.getStepsSinceBoot()
-        log("Recovering $steps steps from boot")
-        stepsRepository.addToLastEntry(steps)
-
-        // last entry might have a negative step value, so remove that row if that's the case
-        stepsRepository.removeNegativeEntries()
         stepsRepository.updateStepsSinceBoot(0)
 
         val serviceIntent = Intent(context, SensorListener::class.java)

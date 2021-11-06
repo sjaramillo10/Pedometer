@@ -29,11 +29,11 @@ internal object SplitDialog {
 
     private var isSplitActive = false
 
-    fun getDialog(context: Context, totalSteps: Int): Dialog {
+    fun getDialog(context: Context, totalSteps: Long): Dialog {
         // TODO Inject Database
         val prefs = context.getSharedPreferences("pedometer", Context.MODE_MULTI_PROCESS)
         val splitDate = prefs.getLong("split_date", -1)
-        val splitSteps = prefs.getInt("split_steps", totalSteps)
+        val splitSteps = prefs.getLong("split_steps", totalSteps)
         val stepSize = prefs.getFloat("step_size_value", SettingsFragment.DEFAULT_STEP_SIZE)
         var distance = (totalSteps - splitSteps) * stepSize
         val distanceUnit: String
@@ -68,7 +68,7 @@ internal object SplitDialog {
         startStopButton.setOnClickListener {
             if (!isSplitActive) {
                 prefs.edit().putLong("split_date", System.currentTimeMillis())
-                    .putInt("split_steps", totalSteps).apply()
+                    .putLong("split_steps", totalSteps).apply()
                 isSplitActive = true
                 dialog.dismiss()
             } else {

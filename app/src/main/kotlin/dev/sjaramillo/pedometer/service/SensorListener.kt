@@ -30,7 +30,6 @@ import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.Logger.log
 import dev.sjaramillo.pedometer.util.API26Wrapper.getNotificationBuilder
 import dev.sjaramillo.pedometer.ui.MainActivity
-import dev.sjaramillo.pedometer.util.DateUtil
 import java.lang.Exception
 import java.text.NumberFormat
 import java.util.*
@@ -71,10 +70,6 @@ class SensorListener : Service(), SensorEventListener {
                         " lastSaveTime=" + Date(lastSaveTime)
             )
             val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
-            val today = DateUtil.getToday()
-            if (stepsRepository.getSteps(today) == Long.MIN_VALUE) {
-                stepsRepository.insertNewDay(today, steps.toLong())
-            }
             stepsRepository.updateStepsSinceBoot(steps.toLong())
             lastSaveSteps = steps
             lastSaveTime = System.currentTimeMillis()
@@ -103,6 +98,7 @@ class SensorListener : Service(), SensorEventListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         reRegisterSensor()
 
+        // Update notification
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
         val steps = stepsRepository.getStepsSinceBoot().toInt()
         if (!updateIfNecessary(steps)) {
@@ -184,26 +180,23 @@ class SensorListener : Service(), SensorEventListener {
             val prefs = context.getSharedPreferences("pedometer", MODE_PRIVATE)
             val goal = prefs.getInt("goal", 10000)
             val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
-            val today = DateUtil.getToday()
-            var todayOffset = stepsRepository.getSteps(today).toInt()
-            val steps = stepsRepository.getStepsSinceBoot().toInt()
+            val todaySteps = stepsRepository.getStepsToday().toInt()
             val notificationBuilder =
                 if (Build.VERSION.SDK_INT >= 26) getNotificationBuilder(context) else Notification.Builder(
                     context
                 )
-            if (steps > 0) {
-                if (todayOffset == Int.MIN_VALUE) todayOffset = -steps
+            if (todaySteps > 0) {
                 val format = NumberFormat.getInstance(Locale.getDefault())
-                notificationBuilder.setProgress(goal, todayOffset + steps, false).setContentText(
-                    if (todayOffset + steps >= goal) context.getString(
+                notificationBuilder.setProgress(goal, todaySteps, false).setContentText(
+                    if (todaySteps >= goal) context.getString(
                         R.string.goal_reached_notification,
-                        format.format((todayOffset + steps).toLong())
+                        format.format(todaySteps.toLong())
                     ) else context.getString(
                         R.string.notification_text,
-                        format.format((goal - todayOffset - steps).toLong())
+                        format.format((goal - todaySteps).toLong())
                     )
                 ).setContentTitle(
-                    format.format((todayOffset + steps).toLong()) + " " + context.getString(R.string.steps)
+                    format.format((todaySteps).toLong()) + " " + context.getString(R.string.steps)
                 )
             } else { // still no step value?
                 notificationBuilder.setContentText(
