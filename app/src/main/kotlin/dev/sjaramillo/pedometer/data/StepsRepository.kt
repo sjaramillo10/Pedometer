@@ -58,14 +58,16 @@ class StepsRepository(db: PedometerDatabase) {
      * this method also creates a new entry with zero steps.
      *
      * @param stepsSinceBoot  the steps sensor steps since boot count.
+     *
+     * @return the updated steps for today
      */
     fun updateStepsSinceBoot(stepsSinceBoot: Long): Long {
         val today = DateUtil.getToday()
         val todaySteps = dailyStepsDao.getSteps(today)
         val storedStepsSinceBoot = getStepsSinceBoot()
 
-        // Make sure stepsDiff is at least 0. The only time when steps could be less than
-        // storedStepsSinceBoot is when the phone reboots.
+        // Make sure stepsDiff is at least 0. The only time when stepsSinceBoot could be less than
+        // storedStepsSinceBoot is when the device reboots.
         val stepsDiff = max(stepsSinceBoot - storedStepsSinceBoot, 0L)
 
         if (todaySteps == null) {
