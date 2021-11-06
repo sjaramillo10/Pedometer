@@ -21,8 +21,12 @@ import java.time.Duration
  */
 class StepsUpdaterJob : JobService(), SensorEventListener {
 
+    private lateinit var params: JobParameters
+
     override fun onStartJob(params: JobParameters?): Boolean {
         log("StepsUpdaterJob onJobStart()")
+
+        this.params = params ?: return false
 
         val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)?.let { sensor ->
@@ -34,7 +38,8 @@ class StepsUpdaterJob : JobService(), SensorEventListener {
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
-        return true
+        unregisterSensorListener()
+        return false
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -44,6 +49,11 @@ class StepsUpdaterJob : JobService(), SensorEventListener {
             val stepsRepository = StepsRepository(PedometerDatabase.getInstance(this))
             stepsRepository.updateStepsSinceBoot(steps.toLong())
         }
+
+        unregisterSensorListener()
+
+        // Mark job as finished to avoid wasting resources
+        jobFinished(params, false)
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -52,9 +62,17 @@ class StepsUpdaterJob : JobService(), SensorEventListener {
         log(sensor?.name + " accuracy changed: " + accuracy)
     }
 
+    private fun unregisterSensorListener() {
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensorManager.unregisterListener(this)
+    }
+
     companion object {
         private const val JOB_ID = 1001
 
+        /**
+         * Schedules the StepsUpdaterJob to run at most every 15 minutes.
+         */
         fun scheduleStepsUpdaterJob(context: Context) {
             val jobScheduler =
                 context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
