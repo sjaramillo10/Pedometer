@@ -30,7 +30,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.service.StepsUpdaterJob
+import dev.sjaramillo.pedometer.worker.StepsUpdaterWorker
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,8 +50,8 @@ class MainActivity : AppCompatActivity() {
             transaction.commit()
         }
 
+        StepsUpdaterWorker.enqueuePeriodicWork(this)
         checkActivityRecognitionPermission()
-        StepsUpdaterJob.scheduleStepsUpdaterJob(this)
     }
 
     private fun checkActivityRecognitionPermission() {

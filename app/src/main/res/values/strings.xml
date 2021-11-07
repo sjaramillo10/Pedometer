@@ -49,4 +49,9 @@
     <string name="activity_recognition_permission_required_title">Activity Recognition permission required</string>
     <string name="activity_recognition_permission_required_message">Without the Activity Recognition permission, Pedometer is not able to count your steps.\n\nIf you want to use Pedometer, please grant the Activity Recognition permission in your device\'s settings.</string>
     <string name="activity_recognition_permission_required_positive_button">I understand</string>
+
+    <string name="notification_channel_name">Info</string>
+    <string name="notification_channel_description">Regular updates</string>
+    <string name="notification_title">Pedometer</string>
+    <string name="notification_content">Pedometer is obtaining the latest step count…</string>
 </resources>

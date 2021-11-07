@@ -18,7 +18,7 @@ package dev.sjaramillo.pedometer.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import dev.sjaramillo.pedometer.service.StepsUpdaterJob
+import dev.sjaramillo.pedometer.worker.StepsUpdaterWorker
 import dev.sjaramillo.pedometer.util.Logger
 
 class AppUpdatedReceiver : BroadcastReceiver() {
@@ -27,6 +27,6 @@ class AppUpdatedReceiver : BroadcastReceiver() {
 
         Logger.log("app updated")
 
-        StepsUpdaterJob.scheduleStepsUpdaterJob(context)
+        StepsUpdaterWorker.enqueuePeriodicWork(context)
     }
 }

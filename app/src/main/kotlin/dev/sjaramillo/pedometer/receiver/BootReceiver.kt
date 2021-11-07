@@ -20,10 +20,10 @@ import android.content.Context
 import android.content.Intent
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
-import dev.sjaramillo.pedometer.service.StepsUpdaterJob
+import dev.sjaramillo.pedometer.worker.StepsUpdaterWorker
 import dev.sjaramillo.pedometer.util.Logger.log
 
-// TODO Figure out if this Receiver is necessary. StepsUpdaterJob is persisted.
+// TODO Figure out if this Receiver is necessary. WorkManager is persisted.
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
@@ -34,6 +34,6 @@ class BootReceiver : BroadcastReceiver() {
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
         stepsRepository.updateStepsSinceBoot(0)
 
-        StepsUpdaterJob.scheduleStepsUpdaterJob(context)
+        StepsUpdaterWorker.enqueuePeriodicWork(context)
     }
 }
