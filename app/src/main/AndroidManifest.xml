@@ -6,7 +6,6 @@
 
     <!-- Normal permissions -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/> <!-- TODO verify if needed -->
 
     <!-- Runtime permissions or sensitive permissions -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
