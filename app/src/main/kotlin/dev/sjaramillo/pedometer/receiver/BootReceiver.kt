@@ -20,7 +20,7 @@ import android.content.Context
 import android.content.Intent
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
-import dev.sjaramillo.pedometer.worker.StepsUpdaterWorker
+import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 import dev.sjaramillo.pedometer.util.Logger.log
 
 // TODO Figure out if this Receiver is necessary. WorkManager is persisted.
@@ -34,6 +34,6 @@ class BootReceiver : BroadcastReceiver() {
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))
         stepsRepository.updateStepsSinceBoot(0)
 
-        StepsUpdaterWorker.enqueuePeriodicWork(context)
+        StepsCounterWorker.enqueuePeriodicWork(context)
     }
 }

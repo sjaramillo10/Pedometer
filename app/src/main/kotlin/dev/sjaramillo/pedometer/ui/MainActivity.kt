@@ -30,7 +30,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.worker.StepsUpdaterWorker
+import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             transaction.commit()
         }
 
-        StepsUpdaterWorker.enqueuePeriodicWork(this)
+        StepsCounterWorker.enqueuePeriodicWork(this)
         checkActivityRecognitionPermission()
     }
 

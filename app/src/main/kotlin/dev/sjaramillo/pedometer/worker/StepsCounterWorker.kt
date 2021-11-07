@@ -25,7 +25,7 @@ import kotlin.coroutines.suspendCoroutine
  * Attempts to obtain a reading from the device's step sensor to update the app's
  * step count.
  */
-class StepsUpdaterWorker(appContext: Context, workerParams: WorkerParameters) :
+class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
     private lateinit var stepsRepository: StepsRepository
@@ -90,7 +90,7 @@ class StepsUpdaterWorker(appContext: Context, workerParams: WorkerParameters) :
 
         // Create a Notification channel if necessary
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createChannel()
+            createNotificationChannel()
         }
 
         val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
@@ -106,7 +106,7 @@ class StepsUpdaterWorker(appContext: Context, workerParams: WorkerParameters) :
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun createChannel() {
+    private fun createNotificationChannel() {
         val channelName = applicationContext.getString(R.string.notification_channel_name)
         val description = applicationContext.getString(R.string.notification_channel_description)
         val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -124,15 +124,16 @@ class StepsUpdaterWorker(appContext: Context, workerParams: WorkerParameters) :
         private const val NOTIFICATION_CHANNEL_ID = "Notification"
 
         fun enqueuePeriodicWork(context: Context) {
-            val stepsWorker = PeriodicWorkRequestBuilder<StepsUpdaterWorker>(15, TimeUnit.MINUTES)
-                //.setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
-                .addTag("stepsWork")
-                .build()
+            val stepsCounterWorker =
+                PeriodicWorkRequestBuilder<StepsCounterWorker>(15, TimeUnit.MINUTES)
+                    //.setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
+                    .addTag("stepsWork")
+                    .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                "periodicStepCounter",
+                "periodicStepCounterWorker",
                 ExistingPeriodicWorkPolicy.REPLACE,
-                stepsWorker
+                stepsCounterWorker
             )
         }
     }
