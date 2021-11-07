@@ -51,7 +51,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
     private lateinit var graph: PieChart
     private var stepsUntilToday: Long = 0
     private var goal = 0
-    private var totalDays = 0
+    private var totalDays = 0L
     private var showSteps = true
 
     private lateinit var stepsRepository: StepsRepository
@@ -112,7 +112,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
         stepsUntilToday = stepsRepository.getStepsUntilToday()
-        totalDays = stepsRepository.getDays().toInt()
+        totalDays = stepsRepository.getTotalDays()
         stepsDistanceChanged()
     }
 

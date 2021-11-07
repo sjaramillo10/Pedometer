@@ -20,9 +20,8 @@ interface DailyStepsDao {
     @Query("SELECT SUM(steps) FROM daily_steps WHERE day>=:start AND day<=:end")
     fun getStepsFromDayRange(start: Long, end: Long): Long
 
-    // TODO We might want to make this method more generic
-    @Query("SELECT COUNT(*) FROM daily_steps WHERE steps>0 AND day>0 AND day<:today")
-    fun getDaysWithoutToday(today: Long): Long
+    @Query("SELECT COUNT(*) FROM daily_steps WHERE day>0")
+    fun getTotalDays(): Long
 
     @Query("UPDATE daily_steps SET steps=steps+:steps WHERE day=(SELECT MAX(day) FROM daily_steps)")
     fun addToLastEntry(steps: Long)
@@ -32,7 +31,4 @@ interface DailyStepsDao {
 
     @Update
     fun update(vararg dailySteps: DailySteps): Int
-
-    @Query("DELETE FROM daily_steps WHERE steps<0")
-    fun removeNegativeEntries()
 }

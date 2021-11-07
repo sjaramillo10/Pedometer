@@ -33,8 +33,8 @@ class StepsRepository(db: PedometerDatabase) {
         return dailyStepsDao.getStepsFromDayRange(start = 0, end = DateUtil.getToday() - 1)
     }
 
-    fun getDays(): Long {
-        return dailyStepsDao.getDaysWithoutToday(DateUtil.getToday()) + 1
+    fun getTotalDays(): Long {
+        return dailyStepsDao.getTotalDays()
     }
 
     /**
