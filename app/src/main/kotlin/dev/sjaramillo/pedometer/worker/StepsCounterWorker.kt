@@ -101,7 +101,7 @@ class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
             .setOngoing(true)
             .build()
 
-        return ForegroundInfo(1 /* What is this? */, notification)
+        return ForegroundInfo(NOTIFICATION_ID_UPDATING_STEPS, notification)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -121,6 +121,7 @@ class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
 
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "Notification"
+        private const val NOTIFICATION_ID_UPDATING_STEPS = 1
 
         fun enqueuePeriodicWork(context: Context) {
             val stepsCounterWorker =
