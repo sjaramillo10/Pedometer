@@ -84,7 +84,7 @@ class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
     /*
      * Creates an instance of ForegroundInfo required to run this Worker as expedited.
      */
-    override suspend fun getForegroundInfo(): ForegroundInfo {
+    private fun getForegroundInfo(): ForegroundInfo {
         val title = applicationContext.getString(R.string.notification_title)
         val content = applicationContext.getString(R.string.notification_content)
 
@@ -103,7 +103,6 @@ class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
 
         return ForegroundInfo(1 /* What is this? */, notification)
     }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {

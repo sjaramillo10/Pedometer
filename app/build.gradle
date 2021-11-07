@@ -3,11 +3,11 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt' // TODO Migrate to KSP when stable
 
 android {
-    compileSdkVersion = 31
+    compileSdkVersion = 30
 
     defaultConfig {
         applicationId "dev.sjaramillo.pedometer"
-        targetSdkVersion 31
+        targetSdkVersion 30
         minSdkVersion 21
         versionCode 1
         versionName "0.1.0"
@@ -48,7 +48,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 
     def roomVersion = "2.3.0"
-    def work_version = "2.7.0"
+    def work_version = "2.6.0"
 
     implementation 'androidx.activity:activity-ktx:1.3.1'
     implementation 'androidx.appcompat:appcompat:1.3.1'
