@@ -21,14 +21,14 @@ import android.content.Intent
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.worker.StepsCounterWorker
-import dev.sjaramillo.pedometer.util.Logger.log
+import logcat.logcat
 
 // TODO Figure out if this Receiver is necessary. WorkManager is persisted.
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
-        log("booted")
+        logcat { "Device booted" }
 
         // Make sure to reset the steps since boot in the db
         val stepsRepository = StepsRepository(PedometerDatabase.getInstance(context))

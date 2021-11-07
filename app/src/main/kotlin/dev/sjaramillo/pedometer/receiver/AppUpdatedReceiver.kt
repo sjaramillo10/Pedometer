@@ -19,13 +19,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import dev.sjaramillo.pedometer.worker.StepsCounterWorker
-import dev.sjaramillo.pedometer.util.Logger
+import logcat.logcat
 
 class AppUpdatedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
 
-        Logger.log("app updated")
+        logcat { "App updated" }
 
         StepsCounterWorker.enqueuePeriodicWork(context)
     }

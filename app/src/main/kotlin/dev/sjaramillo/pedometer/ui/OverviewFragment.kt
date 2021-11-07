@@ -31,7 +31,8 @@ import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
-import dev.sjaramillo.pedometer.util.Logger
+import logcat.asLog
+import logcat.logcat
 import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
@@ -140,7 +141,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             val sm = context?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
             sm.unregisterListener(this)
         } catch (e: Exception) {
-            Logger.log(e)
+            logcat { e.asLog() }
         }
     }
 
@@ -164,8 +165,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        val msg = "UI - sensorChanged | since boot: ${event.values[0]}"
-        Logger.log(msg)
+        logcat { "UI - sensorChanged | since boot: ${event.values[0]}" }
         if (event.values[0] > Int.MAX_VALUE || event.values[0] == 0f) return
 
         val steps = event.values[0].toLong()
@@ -179,7 +179,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
      * count to distance.
      */
     private fun updatePie(stepsToday: Long) {
-        Logger.log("UI - update stepsToday: $stepsToday")
+        logcat { "UI - update stepsToday: $stepsToday" }
         sliceCurrent.value = stepsToday.toFloat()
         if (goal - stepsToday > 0) {
             // goal not reached yet

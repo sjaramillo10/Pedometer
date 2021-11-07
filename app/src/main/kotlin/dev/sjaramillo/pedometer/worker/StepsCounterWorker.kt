@@ -15,7 +15,7 @@ import androidx.work.*
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
-import dev.sjaramillo.pedometer.util.Logger
+import logcat.logcat
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -60,7 +60,7 @@ class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
 
                 event?.values?.firstOrNull()?.let { steps ->
                     val stepsToday = stepsRepository.updateStepsSinceBoot(steps.toLong())
-                    Logger.log("Step count: $steps, steps today: $stepsToday")
+                    logcat { "Step count: $steps, steps today: $stepsToday" }
                     continuation.resume(true)
                     return
                 }
@@ -70,7 +70,7 @@ class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
                 // nobody knows what happens here: step value might magically decrease
                 // when this method is called...
-                Logger.log(sensor?.name + " accuracy changed: " + accuracy)
+                logcat { sensor?.name + " accuracy changed: " + accuracy }
             }
         }
 
