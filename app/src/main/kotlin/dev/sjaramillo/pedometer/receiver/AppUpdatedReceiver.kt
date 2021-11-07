@@ -18,8 +18,7 @@ package dev.sjaramillo.pedometer.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import dev.sjaramillo.pedometer.service.SensorListener
+import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 import dev.sjaramillo.pedometer.util.Logger
 
 class AppUpdatedReceiver : BroadcastReceiver() {
@@ -27,11 +26,7 @@ class AppUpdatedReceiver : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
 
         Logger.log("app updated")
-        val serviceIntent = Intent(context, SensorListener::class.java)
-        if (Build.VERSION.SDK_INT >= 26) {
-            context.startForegroundService(serviceIntent)
-        } else {
-            context.startService(serviceIntent)
-        }
+
+        StepsCounterWorker.enqueuePeriodicWork(context)
     }
 }

@@ -17,13 +17,11 @@ package dev.sjaramillo.pedometer.ui
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
@@ -31,7 +29,6 @@ import androidx.fragment.app.Fragment
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
-import dev.sjaramillo.pedometer.service.SensorListener
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import dev.sjaramillo.pedometer.util.Logger
@@ -54,7 +51,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
     private lateinit var graph: PieChart
     private var stepsUntilToday: Long = 0
     private var goal = 0
-    private var totalDays = 0
+    private var totalDays = 0L
     private var showSteps = true
 
     private lateinit var stepsRepository: StepsRepository
@@ -64,13 +61,6 @@ class OverviewFragment : Fragment(), SensorEventListener {
         setHasOptionsMenu(true)
 
         stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
-
-        val serviceIntent = Intent(context, SensorListener::class.java)
-        if (Build.VERSION.SDK_INT >= 26) {
-            requireContext().startForegroundService(serviceIntent)
-        } else {
-            requireContext().startService(serviceIntent)
-        }
     }
 
     override fun onCreateView(
@@ -122,7 +112,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
         stepsUntilToday = stepsRepository.getStepsUntilToday()
-        totalDays = stepsRepository.getDays().toInt()
+        totalDays = stepsRepository.getTotalDays()
         stepsDistanceChanged()
     }
 

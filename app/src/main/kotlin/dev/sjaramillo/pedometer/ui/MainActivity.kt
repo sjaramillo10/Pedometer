@@ -30,14 +30,13 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.service.SensorListener
+import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        startService(Intent(this, SensorListener::class.java))
         if (savedInstanceState == null) {
             // Create new fragment and transaction
             val newFragment: Fragment = OverviewFragment()
@@ -51,6 +50,7 @@ class MainActivity : AppCompatActivity() {
             transaction.commit()
         }
 
+        StepsCounterWorker.enqueuePeriodicWork(this)
         checkActivityRecognitionPermission()
     }
 

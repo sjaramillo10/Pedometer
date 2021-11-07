@@ -18,24 +18,19 @@ package dev.sjaramillo.pedometer.ui
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.RadioGroup
-import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
-import dev.sjaramillo.pedometer.service.SensorListener
-import dev.sjaramillo.pedometer.util.API26Wrapper.launchNotificationSettings
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.FileReader
@@ -54,28 +49,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
 
-        findPreference<Preference>("import")?.onPreferenceClickListener = this
-        findPreference<Preference>("export")?.onPreferenceClickListener = this
-
-        if (Build.VERSION.SDK_INT >= 26) {
-            findPreference<Preference>("notification")?.onPreferenceClickListener = this
-        } else {
-            findPreference<CheckBoxPreference>("notification")?.setOnPreferenceChangeListener { _, newValue ->
-                prefs.edit().putBoolean("notification", (newValue as Boolean?)!!).apply()
-                val manager: NotificationManager = requireContext()
-                    .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                if (newValue) {
-                    manager.notify(
-                        SensorListener.NOTIFICATION_ID,
-                        SensorListener.getNotification(requireContext())
-                    )
-                } else {
-                    manager.cancel(SensorListener.NOTIFICATION_ID)
-                }
-                true
-            }
-        }
-
         val goal = findPreference<Preference>("goal")
         goal?.onPreferenceClickListener = this
         goal?.summary = getString(R.string.goal_summary, prefs.getInt("goal", DEFAULT_GOAL))
@@ -87,14 +60,14 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             prefs.getFloat("step_size_value", DEFAULT_STEP_SIZE),
             prefs.getString("step_size_unit", DEFAULT_STEP_UNIT)
         )
+
+        findPreference<Preference>("export")?.onPreferenceClickListener = this
+        findPreference<Preference>("import")?.onPreferenceClickListener = this
     }
 
     override fun onResume() {
         super.onResume()
         requireActivity().actionBar?.setDisplayHomeAsUpEnabled(true)
-        if (Build.VERSION.SDK_INT >= 26) { // notification settings might have changed
-            requireContext().startForegroundService(Intent(context, SensorListener::class.java))
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -128,10 +101,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                     prefs.edit().putInt("goal", np.value).apply()
                     preference.summary = getString(R.string.goal_summary, np.value)
                     dialog.dismiss()
-                    requireContext().startService(
-                        Intent(context, SensorListener::class.java)
-                            .putExtra("updateNotificationState", true)
-                    )
                 }
                 builder.setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 val dialog: Dialog = builder.create()
@@ -172,7 +141,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 builder.setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 builder.create().show()
             }
-            "notification" -> launchNotificationSettings(requireContext())
             "export" -> requestCsvUriToExportData()
             "import" -> requestCsvUriToImportData()
         }
