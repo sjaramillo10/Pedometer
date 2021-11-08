@@ -42,7 +42,7 @@ import kotlin.math.roundToLong
 
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
-class OverviewFragment : Fragment(), SensorEventListener {
+class HomeFragment : Fragment(), SensorEventListener {
 
     private lateinit var stepsView: TextView
     private lateinit var totalView: TextView
@@ -69,7 +69,7 @@ class OverviewFragment : Fragment(), SensorEventListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val v = inflater.inflate(R.layout.fragment_overview, container, false)
+        val v = inflater.inflate(R.layout.fragment_home, container, false)
         stepsView = v.findViewById<View>(R.id.steps) as TextView
         totalView = v.findViewById<View>(R.id.total) as TextView
         averageView = v.findViewById<View>(R.id.average) as TextView

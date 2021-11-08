@@ -28,7 +28,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 
@@ -36,19 +36,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        if (savedInstanceState == null) {
-            // Create new fragment and transaction
-            val newFragment: Fragment = OverviewFragment()
-            val transaction = supportFragmentManager.beginTransaction()
-
-            // Replace whatever is in the fragment_container view with this
-            // fragment, and add the transaction to the back stack
-            transaction.replace(android.R.id.content, newFragment)
-
-            // Commit the transaction
-            transaction.commit()
-        }
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
 
         StepsCounterWorker.enqueuePeriodicWork(this)
         checkActivityRecognitionPermission()
@@ -141,7 +133,6 @@ class MainActivity : AppCompatActivity() {
 
     fun optionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> supportFragmentManager.popBackStackImmediate()
             R.id.action_settings -> supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, SettingsFragment()).addToBackStack(null)
                 .commit()
