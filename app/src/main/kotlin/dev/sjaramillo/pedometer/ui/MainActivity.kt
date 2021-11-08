@@ -29,6 +29,8 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 
@@ -41,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
+        findViewById<BottomNavigationView>(R.id.bottom_nav)
+            .setupWithNavController(navController)
 
         StepsCounterWorker.enqueuePeriodicWork(this)
         checkActivityRecognitionPermission()
