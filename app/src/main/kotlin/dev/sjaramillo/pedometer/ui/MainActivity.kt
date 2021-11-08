@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dev.sjaramillo.pedometer.R
@@ -49,11 +50,13 @@ class MainActivity : AppCompatActivity() {
         findViewById<BottomNavigationView>(R.id.bottom_nav)
             .setupWithNavController(navController)
 
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
         val appBarConfiguration = AppBarConfiguration(
-            topLevelDestinationIds = setOf(R.id.home_fragment, R.id.settings_fragment)
+            setOf(R.id.dest_home, R.id.dest_settings)
         )
-        findViewById<Toolbar>(R.id.toolbar)
-            .setupWithNavController(navController, appBarConfiguration)
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
         StepsCounterWorker.enqueuePeriodicWork(this)
         checkActivityRecognitionPermission()
@@ -136,24 +139,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStackImmediate()
-        } else {
-            finish()
-        }
-    }
-
-    fun optionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_settings -> supportFragmentManager.beginTransaction()
-                .replace(android.R.id.content, SettingsFragment()).addToBackStack(null)
-                .commit()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // This should work once faq is a destination
+        // val navController = findNavController(R.id.nav_host_fragment)
+        // return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+        return when (item.itemId) {
             R.id.action_faq -> {
                 val faqUri = Uri.parse("http://j4velin.de/faq/index.php?app=pm")
                 val intent = Intent(Intent.ACTION_VIEW, faqUri)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
+                true
             }
             R.id.action_about -> {
                 val tv = TextView(this).apply {
@@ -174,9 +170,10 @@ class MainActivity : AppCompatActivity() {
                     setView(tv)
                     setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
                 }.also { it.create().show() }
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        return true
     }
 
     companion object {
