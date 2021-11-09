@@ -28,7 +28,12 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import androidx.appcompat.widget.Toolbar
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 
@@ -36,19 +41,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        if (savedInstanceState == null) {
-            // Create new fragment and transaction
-            val newFragment: Fragment = OverviewFragment()
-            val transaction = supportFragmentManager.beginTransaction()
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
 
-            // Replace whatever is in the fragment_container view with this
-            // fragment, and add the transaction to the back stack
-            transaction.replace(android.R.id.content, newFragment)
+        findViewById<BottomNavigationView>(R.id.bottom_nav)
+            .setupWithNavController(navController)
 
-            // Commit the transaction
-            transaction.commit()
-        }
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        val appBarConfiguration = AppBarConfiguration(
+            setOf(R.id.dest_home, R.id.dest_settings)
+        )
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
         StepsCounterWorker.enqueuePeriodicWork(this)
         checkActivityRecognitionPermission()
@@ -131,25 +139,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStackImmediate()
-        } else {
-            finish()
-        }
-    }
-
-    fun optionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> supportFragmentManager.popBackStackImmediate()
-            R.id.action_settings -> supportFragmentManager.beginTransaction()
-                .replace(android.R.id.content, SettingsFragment()).addToBackStack(null)
-                .commit()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // This should work once faq is a destination
+        // val navController = findNavController(R.id.nav_host_fragment)
+        // return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+        return when (item.itemId) {
             R.id.action_faq -> {
                 val faqUri = Uri.parse("http://j4velin.de/faq/index.php?app=pm")
                 val intent = Intent(Intent.ACTION_VIEW, faqUri)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
+                true
             }
             R.id.action_about -> {
                 val tv = TextView(this).apply {
@@ -170,9 +170,10 @@ class MainActivity : AppCompatActivity() {
                     setView(tv)
                     setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
                 }.also { it.create().show() }
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        return true
     }
 
     companion object {

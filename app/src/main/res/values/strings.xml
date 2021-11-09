@@ -54,4 +54,7 @@
     <string name="notification_channel_description">Regular updates</string>
     <string name="notification_title">Pedometer</string>
     <string name="notification_content">Pedometer is obtaining the latest step count…</string>
+
+    <string name="bottom_nav_home">Home</string>
+    <string name="bottom_nav_settings">Settings</string>
 </resources>

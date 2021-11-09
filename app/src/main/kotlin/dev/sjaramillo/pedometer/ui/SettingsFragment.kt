@@ -65,23 +65,13 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         findPreference<Preference>("import")?.onPreferenceClickListener = this
     }
 
-    override fun onResume() {
-        super.onResume()
-        requireActivity().actionBar?.setDisplayHomeAsUpEnabled(true)
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.main, menu)
+        inflater.inflate(R.menu.menu_main, menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        menu.findItem(R.id.action_settings).isVisible = false
         menu.findItem(R.id.action_split_count).isVisible = false
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return (activity as MainActivity).optionsItemSelected(item)
     }
 
     override fun onPreferenceClick(preference: Preference): Boolean {

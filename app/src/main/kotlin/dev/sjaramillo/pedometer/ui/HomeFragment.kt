@@ -42,7 +42,7 @@ import kotlin.math.roundToLong
 
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
-class OverviewFragment : Fragment(), SensorEventListener {
+class HomeFragment : Fragment(), SensorEventListener {
 
     private lateinit var stepsView: TextView
     private lateinit var totalView: TextView
@@ -57,19 +57,15 @@ class OverviewFragment : Fragment(), SensorEventListener {
 
     private lateinit var stepsRepository: StepsRepository
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-
-        stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val v = inflater.inflate(R.layout.fragment_overview, container, false)
+        setHasOptionsMenu(true)
+        stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
+
+        val v = inflater.inflate(R.layout.fragment_home, container, false)
         stepsView = v.findViewById<View>(R.id.steps) as TextView
         totalView = v.findViewById<View>(R.id.total) as TextView
         averageView = v.findViewById<View>(R.id.average) as TextView
@@ -95,7 +91,6 @@ class OverviewFragment : Fragment(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        activity?.actionBar?.setDisplayHomeAsUpEnabled(false)
 
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
@@ -146,18 +141,16 @@ class OverviewFragment : Fragment(), SensorEventListener {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.main, menu)
+        inflater.inflate(R.menu.menu_main, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_split_count -> {
-                val stepsToday = stepsRepository.getStepsToday()
-                SplitDialog.getDialog(requireContext(), stepsUntilToday + stepsToday).show()
-                true
-            }
-            else -> (activity as MainActivity).optionsItemSelected(item)
+        if (item.itemId == R.id.action_split_count) {
+            val stepsToday = stepsRepository.getStepsToday()
+            SplitDialog.getDialog(requireContext(), stepsUntilToday + stepsToday).show()
+            return true
         }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
