@@ -28,7 +28,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
@@ -259,7 +258,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
         if (barChart.data.size > 0) {
             barChart.setOnClickListener {
-                StatisticsDialog.getDialog(requireContext()).show()
+                StatisticsDialog.getDialog(requireContext(), stepsRepository).show()
             }
             barChart.startAnimation()
         } else {

@@ -22,25 +22,33 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.WindowManager
 import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.RadioGroup
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.IOException
 import java.util.*
+import javax.inject.Inject
 import kotlin.math.max
 
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
+@AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener {
+
+    @Inject
+    lateinit var stepsRepository: StepsRepository
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings, rootKey)
@@ -178,7 +186,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
      */
     private fun writeDataToCsv(uri: Uri) {
         val contentResolver = requireContext().applicationContext.contentResolver
-        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
         val dailySteps = stepsRepository.getAll()
         try {
             contentResolver.openFileDescriptor(uri, "w")?.use {
@@ -216,7 +223,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
      */
     private fun readDataFromCsv(uri: Uri) {
         val contentResolver = requireContext().applicationContext.contentResolver
-        val stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
         var ignored = 0
         var inserted = 0
         var overwritten = 0

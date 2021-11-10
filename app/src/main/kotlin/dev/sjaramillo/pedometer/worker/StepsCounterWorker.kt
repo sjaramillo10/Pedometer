@@ -16,7 +16,6 @@ import androidx.work.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import logcat.logcat
 import java.util.concurrent.TimeUnit
