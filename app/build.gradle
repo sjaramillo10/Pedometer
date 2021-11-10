@@ -1,6 +1,8 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt' // TODO Migrate to KSP when stable
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt' // TODO Migrate to KSP when stable
+}
 
 android {
     compileSdkVersion = 30
@@ -48,42 +50,38 @@ dependencies {
     // Enable Java 8+ API desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 
-    def nav_version = "2.3.5"
-    def roomVersion = "2.3.0"
-    def work_version = "2.6.0" // Check https://github.com/sjaramillo10/Pedometer/pull/14 before increasing version
-
     // AndroidX
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'androidx.activity:activity-ktx:1.3.1'
-    implementation 'androidx.fragment:fragment-ktx:1.3.6'
-    implementation 'androidx.preference:preference-ktx:1.1.1'
+    implementation libs.appcompat
+    implementation libs.activity
+    implementation libs.fragment
+    implementation libs.preference
 
     // Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
 
     // Material Components
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation libs.material
 
     // Room
-    implementation "androidx.room:room-runtime:$roomVersion"
-    implementation "androidx.room:room-ktx:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
+    implementation libs.room.core
+    implementation libs.room.runtime
+    kapt libs.room.compiler
 
     // WorkManager
-    implementation "androidx.work:work-runtime-ktx:$work_version"
+    implementation libs.work.runtime
 
     // Other
-    implementation 'com.squareup.logcat:logcat:0.1'
-    implementation 'com.github.j4velin.EazeGraph:EazeGraph:1.0.3'
+    implementation libs.logcat
+    implementation libs.eaze.graph
 
     // Testing
-    testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.arch.core:core-testing:2.1.0"
-    androidTestImplementation "androidx.test.ext:junit:1.1.3"
-    androidTestImplementation "androidx.test:rules:1.4.0"
-    androidTestImplementation "androidx.test:runner:1.4.0"
-    androidTestImplementation "androidx.work:work-testing:$work_version"
+    testImplementation libs.junit
+    androidTestImplementation libs.core.testing
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.test.rules
+    androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation libs.work.testing
 }
 
 def props = new Properties()
