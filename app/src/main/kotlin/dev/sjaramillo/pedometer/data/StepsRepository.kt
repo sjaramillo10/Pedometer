@@ -1,10 +1,10 @@
 package dev.sjaramillo.pedometer.data
 
 import dev.sjaramillo.pedometer.util.DateUtil
+import javax.inject.Inject
 import kotlin.math.max
 
-// TODO Provide through DI
-class StepsRepository(db: PedometerDatabase) {
+class StepsRepository @Inject constructor(db: PedometerDatabase) {
 
     private val dailyStepsDao = db.dailyStepsDao()
 

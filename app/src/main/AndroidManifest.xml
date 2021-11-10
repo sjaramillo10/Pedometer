@@ -49,6 +49,14 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
         </receiver>
+
+        <!-- Remove androidx.startup to allow custom WorkManager initialization -->
+        <!-- More info: https://developer.android.com/training/dependency-injection/hilt-jetpack#workmanager -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove">
+        </provider>
     </application>
 
 </manifest>
