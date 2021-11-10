@@ -26,6 +26,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
@@ -38,11 +39,16 @@ import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 import kotlin.math.roundToLong
 
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
+@AndroidEntryPoint
 class HomeFragment : Fragment(), SensorEventListener {
+
+    @Inject
+    lateinit var stepsRepository: StepsRepository
 
     private lateinit var stepsView: TextView
     private lateinit var totalView: TextView
@@ -55,15 +61,12 @@ class HomeFragment : Fragment(), SensorEventListener {
     private var totalDays = 0L
     private var showSteps = true
 
-    private lateinit var stepsRepository: StepsRepository
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         setHasOptionsMenu(true)
-        stepsRepository = StepsRepository(PedometerDatabase.getInstance(requireContext()))
 
         val v = inflater.inflate(R.layout.fragment_home, container, false)
         stepsView = v.findViewById<View>(R.id.steps) as TextView
