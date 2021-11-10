@@ -58,6 +58,8 @@ dependencies {
     implementation libs.preference
 
     // Hilt
+    implementation libs.androidx.hilt.work
+    kapt libs.androidx.hilt.compiler
     implementation libs.hilt.core
     kapt libs.hilt.compiler
 

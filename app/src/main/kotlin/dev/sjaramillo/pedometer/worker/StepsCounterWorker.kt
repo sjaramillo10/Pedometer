@@ -11,28 +11,33 @@ import android.hardware.SensorManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.hilt.work.HiltWorker
 import androidx.work.*
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.PedometerDatabase
 import dev.sjaramillo.pedometer.data.StepsRepository
 import logcat.logcat
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-// TODO Inject repository
 /**
  * Attempts to obtain a reading from the device's step sensor to update the app's
  * step count.
  */
-class StepsCounterWorker(appContext: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(appContext, workerParams) {
+@HiltWorker
+class StepsCounterWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters
+) : CoroutineWorker(appContext, workerParams) {
 
-    private lateinit var stepsRepository: StepsRepository
+    @Inject
+    lateinit var stepsRepository: StepsRepository
 
     override suspend fun doWork(): Result {
-
-        stepsRepository = StepsRepository(PedometerDatabase.getInstance(applicationContext))
 
         setForeground(getForegroundInfo())
 
