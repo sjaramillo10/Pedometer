@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion = 30
+    compileSdk = 30
 
     defaultConfig {
         applicationId "dev.sjaramillo.pedometer"
-        targetSdkVersion 30 // Check https://github.com/sjaramillo10/Pedometer/pull/14 before increasing version
-        minSdkVersion 21
+        targetSdk 30 // Check https://github.com/sjaramillo10/Pedometer/pull/14 before increasing version
+        minSdk 21
         versionCode 1
         versionName "0.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
