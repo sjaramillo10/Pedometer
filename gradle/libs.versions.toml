@@ -7,6 +7,7 @@ appcompat = "1.3.1"
 core-testing = "2.1.0"
 eaze-graph = "1.0.3"
 fragment = "1.3.6"
+hilt = "2.40"
 junit = "4.13.2"
 kotlin = "1.5.30"
 logcat = "0.1"
@@ -26,6 +27,10 @@ appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat"
 core-testing = { module = "androidx.arch.core:core-testing", version.ref = "core-testing" }
 eaze-graph = { module = "com.github.j4velin.EazeGraph:EazeGraph", version.ref = "eaze-graph"}
 fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
+hilt-core = { module ="com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-testing = { module ="com.google.dagger:hilt-android-testing", version.ref = "hilt" }
+hilt-compiler = { module ="com.google.dagger:hilt-compiler", version.ref = "hilt" }
+hilt-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }

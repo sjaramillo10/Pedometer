@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'dagger.hilt.android.plugin'
     id 'kotlin-android'
     id 'kotlin-kapt' // TODO Migrate to KSP when stable
 }
@@ -56,12 +57,16 @@ dependencies {
     implementation libs.fragment
     implementation libs.preference
 
-    // Navigation
-    implementation libs.navigation.fragment
-    implementation libs.navigation.ui
+    // Hilt
+    implementation libs.hilt.core
+    kapt libs.hilt.compiler
 
     // Material Components
     implementation libs.material
+
+    // Navigation
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
 
     // Room
     implementation libs.room.core
@@ -75,13 +80,21 @@ dependencies {
     implementation libs.logcat
     implementation libs.eaze.graph
 
-    // Testing
+    // Unit Tests
     testImplementation libs.junit
-    androidTestImplementation libs.core.testing
+
+    // Instrumentation tests
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.test.rules
     androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation libs.hilt.testing
+    androidTestImplementation libs.core.testing
     androidTestImplementation libs.work.testing
+    kaptAndroidTest libs.hilt.compiler
+}
+
+kapt {
+    correctErrorTypes true
 }
 
 def props = new Properties()
