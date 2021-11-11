@@ -7,6 +7,12 @@
         android:title="@string/bottom_nav_home" />
 
     <item
+        android:id="@id/dest_stats"
+        android:enabled="true"
+        android:icon="@drawable/ic_nav_stats"
+        android:title="@string/bottom_nav_stats" />
+
+    <item
         android:id="@+id/dest_settings"
         android:enabled="true"
         android:icon="@drawable/ic_nav_settings"

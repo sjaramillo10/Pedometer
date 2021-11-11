@@ -12,8 +12,14 @@
         tools:layout="@layout/fragment_home"/>
 
     <fragment
+        android:id="@+id/dest_stats"
+        android:name="dev.sjaramillo.pedometer.ui.StatsFragment"
+        android:label="@string/stats_title"
+        tools:layout="@layout/fragment_stats" />
+
+    <fragment
         android:id="@+id/dest_settings"
         android:name="dev.sjaramillo.pedometer.ui.SettingsFragment"
-        android:label="@string/settings" />
+        android:label="@string/settings_title" />
 
 </navigation>
