@@ -17,6 +17,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        compose true
+    }
+
     signingConfigs {
         release
     }
@@ -24,6 +28,10 @@ android {
     compileOptions {
         // Flag to enable support for the new language APIs
         coreLibraryDesugaringEnabled = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.5'
     }
 
     buildTypes {
@@ -46,9 +54,15 @@ dependencies {
 
     // AndroidX
     implementation libs.appcompat
-    implementation libs.activity
+    implementation libs.activity.core
     implementation libs.fragment
     implementation libs.preference
+
+    // Compose
+    implementation libs.activity.compose
+    implementation libs.compose.material.core
+    implementation libs.compose.material.theme.adapter
+    implementation libs.compose.ui.tooling
 
     // Hilt
     implementation libs.androidx.hilt.work
@@ -83,6 +97,7 @@ dependencies {
     androidTestImplementation libs.androidx.test.rules
     androidTestImplementation libs.androidx.test.runner
     androidTestImplementation libs.hilt.testing
+    androidTestImplementation libs.compose.ui.test.junit
     androidTestImplementation libs.core.testing
     androidTestImplementation libs.work.testing
     kaptAndroidTest libs.hilt.compiler
