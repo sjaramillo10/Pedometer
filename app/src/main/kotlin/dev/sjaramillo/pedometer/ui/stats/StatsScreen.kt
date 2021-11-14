@@ -11,24 +11,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.util.DateUtil
-import dev.sjaramillo.pedometer.util.FormatUtil
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
 
     val statsData = viewModel.getStatsData().collectAsState(initial = StatsData())
-
-    // TODO Should move all this formatting to ViewModel?
-    val record = statsData.value.record
-    val recordSteps = FormatUtil.numberFormat.format(record.steps)
-    val recordDate = DateTimeFormatter.ofPattern("d MMM uuuu")
-        .format(DateUtil.dayToLocalDate(record.day))
-    val totalLast7Days = FormatUtil.numberFormat.format(statsData.value.totalLast7Days)
-    val averageLast7Days = FormatUtil.numberFormat.format(statsData.value.averageLast7Days)
-    val totalThisMonth = FormatUtil.numberFormat.format(statsData.value.totalThisMonth)
-    val averageThisMonth = FormatUtil.numberFormat.format(statsData.value.averageThisMonth)
 
     Column(
         modifier = Modifier
@@ -36,23 +23,27 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
             .padding(dimensionResource(id = R.dimen.spacing_medium))
     ) {
         ListItem(
-            value = stringResource(id = R.string.stats_record_format, recordSteps, recordDate),
+            value = stringResource(
+                id = R.string.stats_record_format,
+                statsData.value.recordSteps,
+                statsData.value.recordDate
+            ),
             description = stringResource(id = R.string.stats_record),
         )
         ListItem(
-            value = totalLast7Days,
+            value = statsData.value.totalStepsLast7Days,
             description = stringResource(id = R.string.stats_total_last_7_days),
         )
         ListItem(
-            value = averageLast7Days,
+            value = statsData.value.averageStepsLast7Days,
             description = stringResource(id = R.string.stats_average_last_7_days),
         )
         ListItem(
-            value = totalThisMonth,
+            value = statsData.value.totalStepsThisMonth,
             description = stringResource(id = R.string.stats_total_this_month),
         )
         ListItem(
-            value = averageThisMonth,
+            value = statsData.value.averageStepsThisMonth,
             description = stringResource(id = R.string.stats_average_this_month),
         )
     }
