@@ -82,6 +82,10 @@ dependencies {
     implementation libs.room.runtime
     kapt libs.room.compiler
 
+    // ViewModel
+    implementation libs.viewmodel.compose
+    implementation libs.viewmodel.core
+
     // WorkManager
     implementation libs.work.runtime
 

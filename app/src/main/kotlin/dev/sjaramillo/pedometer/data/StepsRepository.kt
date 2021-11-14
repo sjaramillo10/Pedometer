@@ -1,6 +1,7 @@
 package dev.sjaramillo.pedometer.data
 
 import dev.sjaramillo.pedometer.util.DateUtil
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -17,7 +18,7 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
         return getSteps(today)
     }
 
-    fun getRecord(): DailySteps {
+    fun getRecord(): Flow<DailySteps> {
         return dailyStepsDao.getRecord()
     }
 
@@ -25,8 +26,8 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
         return dailyStepsDao.getLastEntries(num)
     }
 
-    fun getStepsFromDayRange(start: Long, end: Long): Long {
-        return dailyStepsDao.getStepsFromDayRange(start, end)
+    fun getStepsFromDayRangeFlow(start: Long, end: Long): Flow<Long> {
+        return dailyStepsDao.getStepsFromDayRangeFlow(start, end)
     }
 
     fun getStepsUntilToday(): Long {

@@ -22,11 +22,6 @@
     <string name="faq">FAQ</string>
     <string name="total">Total</string>
     <string name="average">Average</string>
-    <string name="record">Record</string>
-    <string name="total_last_7_days">Total last 7 days</string>
-    <string name="average_last_7_days">Average last 7 days</string>
-    <string name="total_this_month">Total this month</string>
-    <string name="average_this_month">Average this month</string>
     <string name="about_text_links">This app was created by Thomas Hoffmann (<a href="https://www.j4velin.de">www.j4velin.de</a>) and uses <a href="https://github.com/blackfizz/EazeGraph">EazeGraph</a> by Paul Cech and <a href="https://github.com/attenzione/android-ColorPickerPreference">ColorPickerPreference</a> by Sergey Margaritov.\n\nPedometer is open source! Get the code and the full list of contributors from <a href="https://github.com/j4velin/Pedometer">GitHub</a>.\n\n</string>
     <string name="about_app_version">App version: %s</string>
     <string name="since">Since %s</string>
@@ -40,7 +35,16 @@
     <string name="distance_unit_km">km</string>
     <string name="distance_unit_mi">mi</string>
 
+    <!-- Stats screen -->
     <string name="stats_title">Stats</string>
+    <string name="stats_record">Record</string>
+    <string name="stats_record_format">%1$s at %2$s</string>
+    <string name="stats_total_last_7_days">Total last 7 days</string>
+    <string name="stats_average_last_7_days">Average last 7 days</string>
+    <string name="stats_total_this_month">Total this month</string>
+    <string name="stats_average_this_month">Average this month</string>
+
+    <!-- Stats screen -->
     <string name="settings_title">Settings</string>
 
     <string name="activity_recognition_permission_rationale_title">Activity Recognition permission required</string>

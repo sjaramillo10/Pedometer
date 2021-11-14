@@ -9,14 +9,9 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.composethemeadapter.MdcTheme
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.data.StepsRepository
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class StatsFragment : Fragment() {
-
-    @Inject
-    lateinit var stepsRepository: StepsRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,

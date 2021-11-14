@@ -257,9 +257,6 @@ class HomeFragment : Fragment(), SensorEventListener {
             }
         }
         if (barChart.data.size > 0) {
-            barChart.setOnClickListener {
-                StatisticsDialog.getDialog(requireContext(), stepsRepository).show()
-            }
             barChart.startAnimation()
         } else {
             barChart.visibility = View.GONE
