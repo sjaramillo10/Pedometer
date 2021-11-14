@@ -1,4 +1,4 @@
-package dev.sjaramillo.pedometer.ui
+package dev.sjaramillo.pedometer.ui.stats
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

@@ -13,7 +13,7 @@
 
     <fragment
         android:id="@+id/dest_stats"
-        android:name="dev.sjaramillo.pedometer.ui.StatsFragment"
+        android:name="dev.sjaramillo.pedometer.ui.stats.StatsFragment"
         android:label="@string/stats_title"
         tools:layout="@layout/fragment_stats" />
 

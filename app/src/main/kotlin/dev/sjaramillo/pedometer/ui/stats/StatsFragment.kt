@@ -1,4 +1,4 @@
-package dev.sjaramillo.pedometer.ui
+package dev.sjaramillo.pedometer.ui.stats
 
 import android.os.Bundle
 import android.view.LayoutInflater
