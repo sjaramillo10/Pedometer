@@ -16,7 +16,7 @@ material = "1.4.0"
 navigation = "2.3.5"
 preference = "1.1.1"
 room = "2.3.0"
-work = "2.6.0" # Check https://github.com/sjaramillo10/Pedometer/pull/14 before increasing version
+work = "2.7.0"
 
 [libraries]
 activity = { module = "androidx.activity:activity-ktx", version.ref = "activity" }

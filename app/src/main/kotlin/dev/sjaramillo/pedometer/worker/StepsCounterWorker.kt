@@ -85,10 +85,7 @@ class StepsCounterWorker @AssistedInject constructor(
         )
     }
 
-    /*
-     * Creates an instance of ForegroundInfo required to run this Worker as expedited.
-     */
-    private fun getForegroundInfo(): ForegroundInfo {
+    override suspend fun getForegroundInfo(): ForegroundInfo {
         val title = applicationContext.getString(R.string.notification_title)
         val content = applicationContext.getString(R.string.notification_content)
 
