@@ -85,10 +85,7 @@ class StepsCounterWorker @AssistedInject constructor(
         )
     }
 
-    /*
-     * Creates an instance of ForegroundInfo required to run this Worker as expedited.
-     */
-    private fun getForegroundInfo(): ForegroundInfo {
+    override suspend fun getForegroundInfo(): ForegroundInfo {
         val title = applicationContext.getString(R.string.notification_title)
         val content = applicationContext.getString(R.string.notification_content)
 
@@ -130,7 +127,7 @@ class StepsCounterWorker @AssistedInject constructor(
         fun enqueuePeriodicWork(context: Context) {
             val stepsCounterWorker =
                 PeriodicWorkRequestBuilder<StepsCounterWorker>(15, TimeUnit.MINUTES)
-                    //.setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
+                    //.setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST) Use this when expedited jobs can have a delay/be periodic
                     .addTag("stepsWork")
                     .build()
 
