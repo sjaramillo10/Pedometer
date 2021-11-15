@@ -127,7 +127,7 @@ class StepsCounterWorker @AssistedInject constructor(
         fun enqueuePeriodicWork(context: Context) {
             val stepsCounterWorker =
                 PeriodicWorkRequestBuilder<StepsCounterWorker>(15, TimeUnit.MINUTES)
-                    //.setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
+                    //.setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST) Use this when expedited jobs can have a delay/be periodic
                     .addTag("stepsWork")
                     .build()
 

@@ -50,6 +50,11 @@
     <string name="activity_recognition_permission_required_message">Without the Activity Recognition permission, Pedometer is not able to count your steps.\n\nIf you want to use Pedometer, please grant the Activity Recognition permission in your device\'s settings.</string>
     <string name="activity_recognition_permission_required_positive_button">I understand</string>
 
+    <string name="ignore_battery_optimization_title">Ignore battery optimization</string>
+    <string name="ignore_battery_optimization_message">Pedometer tries to use the least amount of battery possible, but in order to work properly it needs the ability to run periodic jobs in the background.\n\nPlease allow Pedometer the ability to run such jobs in the background.</string>
+    <string name="ignore_battery_optimization_positive_button">Allow</string>
+    <string name="ignore_battery_optimization_negative_button">No Thanks</string>
+
     <string name="notification_channel_name">Info</string>
     <string name="notification_channel_description">Regular updates</string>
     <string name="notification_title">Pedometer</string>

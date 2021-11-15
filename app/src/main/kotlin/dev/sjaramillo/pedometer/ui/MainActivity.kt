@@ -17,12 +17,15 @@ package dev.sjaramillo.pedometer.ui
 
 import android.Manifest
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.text.method.LinkMovementMethod
 import android.view.MenuItem
 import android.widget.TextView
@@ -61,21 +64,32 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         StepsCounterWorker.enqueuePeriodicWork(this)
-        checkActivityRecognitionPermission()
     }
 
-    private fun checkActivityRecognitionPermission() {
+    override fun onResume() {
+        super.onResume()
+        if (checkActivityRecognitionPermission()) {
+            checkBatteryOptimizationStatus()
+        }
+    }
+
+    /**
+     * Returns true if the permission is either granted or not required, false otherwise.
+     */
+    private fun checkActivityRecognitionPermission(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-            return // We are good, Activity Recognition permission is not required before Android Q
+            return true // We are good, Activity Recognition permission is not required before Android Q
 
         if (isActivityRecognitionPermissionGranted())
-            return // We are good, Activity Recognition permission already granted
+            return true // We are good, Activity Recognition permission already granted
 
         if (shouldShowRequestPermissionRationale(Manifest.permission.ACTIVITY_RECOGNITION)) {
             showActivityRecognitionPermissionRationaleDialog()
         } else {
             requestActivityRecognitionPermission()
         }
+
+        return false
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -84,7 +98,6 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Create and show a rationale dialog which explains why is permission needed.
-     * Positive button leads to the settings
      */
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun showActivityRecognitionPermissionRationaleDialog() {
@@ -120,6 +133,7 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == PERMISSION_REQUEST_ACTIVITY_RECOGNITION) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                checkBatteryOptimizationStatus()
                 return // We are good, Activity Recognition permission was granted
             } else {
                 showActivityRecognitionPermissionRequiredDialog()
@@ -135,6 +149,35 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity.finish()
             }
             setCancelable(false)
+        }.run {
+            create()
+            show()
+        }
+    }
+
+    private fun checkBatteryOptimizationStatus() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+            return // Battery Optimization is only available since Android M
+
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (powerManager.isIgnoringBatteryOptimizations(packageName).not()) {
+            showIgnoreBatteryOptimizationDialog()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun showIgnoreBatteryOptimizationDialog() {
+        AlertDialog.Builder(this).apply {
+            setTitle(R.string.ignore_battery_optimization_title)
+            setMessage(R.string.ignore_battery_optimization_message)
+            setPositiveButton(R.string.ignore_battery_optimization_positive_button) { _, _ ->
+                val intent = Intent()
+                intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                startActivity(intent)
+            }
+            setNegativeButton(R.string.ignore_battery_optimization_negative_button) { dialog, _ ->
+                dialog.dismiss()
+            }
         }.run {
             create()
             show()
