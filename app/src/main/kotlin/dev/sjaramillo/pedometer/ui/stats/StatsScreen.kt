@@ -30,37 +30,45 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
             ),
             description = stringResource(id = R.string.stats_record),
         )
-        ListItem(
-            value = statsData.value.totalStepsLast7Days,
-            description = stringResource(id = R.string.stats_total_last_7_days),
-        )
-        ListItem(
-            value = statsData.value.averageStepsLast7Days,
-            description = stringResource(id = R.string.stats_average_last_7_days),
-        )
-        ListItem(
-            value = statsData.value.totalStepsThisMonth,
-            description = stringResource(id = R.string.stats_total_this_month),
-        )
-        ListItem(
-            value = statsData.value.averageStepsThisMonth,
-            description = stringResource(id = R.string.stats_average_this_month),
-        )
+        Row {
+            ListItem(
+                value = statsData.value.totalStepsLast7Days,
+                description = stringResource(id = R.string.stats_total_last_7_days),
+                modifier = Modifier.weight(1f),
+            )
+            ListItem(
+                value = statsData.value.averageStepsLast7Days,
+                description = stringResource(id = R.string.stats_average_last_7_days),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Row {
+            ListItem(
+                value = statsData.value.totalStepsThisMonth,
+                description = stringResource(id = R.string.stats_total_this_month),
+                modifier = Modifier.weight(1f),
+            )
+            ListItem(
+                value = statsData.value.averageStepsThisMonth,
+                description = stringResource(id = R.string.stats_average_this_month),
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
 @Composable
-fun ListItem(value: String, description: String) {
-    Column {
+fun ListItem(value: String, description: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         Text(
             text = value,
-            style = MaterialTheme.typography.h5,
+            style = MaterialTheme.typography.h6,
             modifier = Modifier
                 .fillMaxWidth()
         )
         Text(
             text = description,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.body2,
             modifier = Modifier
                 .fillMaxWidth()
         )
