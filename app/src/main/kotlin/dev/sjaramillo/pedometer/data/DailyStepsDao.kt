@@ -1,6 +1,7 @@
 package dev.sjaramillo.pedometer.data
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DailyStepsDao {
@@ -13,12 +14,14 @@ interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day DESC LIMIT :num")
     fun getLastEntries(num: Int): List<DailySteps>
 
-    // TODO Verify what happens when there is no record yet (fresh install)
     @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY steps DESC LIMIT 1")
-    fun getRecord(): DailySteps
+    fun getRecord(): Flow<DailySteps>
 
     @Query("SELECT SUM(steps) FROM daily_steps WHERE day>=:start AND day<=:end")
     fun getStepsFromDayRange(start: Long, end: Long): Long
+
+    @Query("SELECT SUM(steps) FROM daily_steps WHERE day>=:start AND day<=:end")
+    fun getStepsFromDayRangeFlow(start: Long, end: Long): Flow<Long>
 
     @Query("SELECT COUNT(*) FROM daily_steps WHERE day>0")
     fun getTotalDays(): Long

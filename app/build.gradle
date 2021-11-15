@@ -17,13 +17,12 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    signingConfigs {
-        release
+    buildFeatures {
+        compose true
     }
 
-    lintOptions{
-        disable 'MissingTranslation'
-        disable 'ExtraTranslation'
+    signingConfigs {
+        release
     }
 
     compileOptions {
@@ -31,10 +30,13 @@ android {
         coreLibraryDesugaringEnabled = true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.5'
+    }
+
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            zipAlignEnabled true
             minifyEnabled true
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -42,7 +44,6 @@ android {
         debug {
             debuggable true
             signingConfig signingConfigs.release
-            zipAlignEnabled true
             minifyEnabled false
         }
     }
@@ -53,9 +54,15 @@ dependencies {
 
     // AndroidX
     implementation libs.appcompat
-    implementation libs.activity
+    implementation libs.activity.core
     implementation libs.fragment
     implementation libs.preference
+
+    // Compose
+    implementation libs.activity.compose
+    implementation libs.compose.material.core
+    implementation libs.compose.material.theme.adapter
+    implementation libs.compose.ui.tooling
 
     // Hilt
     implementation libs.androidx.hilt.work
@@ -75,6 +82,10 @@ dependencies {
     implementation libs.room.runtime
     kapt libs.room.compiler
 
+    // ViewModel
+    implementation libs.viewmodel.compose
+    implementation libs.viewmodel.core
+
     // WorkManager
     implementation libs.work.runtime
 
@@ -90,6 +101,7 @@ dependencies {
     androidTestImplementation libs.androidx.test.rules
     androidTestImplementation libs.androidx.test.runner
     androidTestImplementation libs.hilt.testing
+    androidTestImplementation libs.compose.ui.test.junit
     androidTestImplementation libs.core.testing
     androidTestImplementation libs.work.testing
     kaptAndroidTest libs.hilt.compiler
