@@ -7,4 +7,6 @@ data class StatsData(
     val averageStepsLast7Days: String = "0",
     val totalStepsThisMonth: String = "0",
     val averageStepsThisMonth: String = "0",
+    val totalStepsThisYear: String = "0",
+    val averageStepsThisYear: String = "0",
 )

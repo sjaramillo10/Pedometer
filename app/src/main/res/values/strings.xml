@@ -43,6 +43,8 @@
     <string name="stats_average_last_7_days">Average last 7 days</string>
     <string name="stats_total_this_month">Total this month</string>
     <string name="stats_average_this_month">Average this month</string>
+    <string name="stats_total_this_year">Total this year</string>
+    <string name="stats_average_this_year">Average this year</string>
 
     <!-- Stats screen -->
     <string name="settings_title">Settings</string>

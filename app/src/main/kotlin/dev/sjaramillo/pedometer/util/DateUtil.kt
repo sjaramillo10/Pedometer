@@ -40,4 +40,11 @@ object DateUtil {
     fun getDayOfMonth(): Int {
         return LocalDate.now().dayOfMonth
     }
+
+    /**
+     * @return Day of the year, from 1 to 365, or 366 in a leap year
+     */
+    fun getDayOfYear(): Int {
+        return LocalDate.now().dayOfYear
+    }
 }

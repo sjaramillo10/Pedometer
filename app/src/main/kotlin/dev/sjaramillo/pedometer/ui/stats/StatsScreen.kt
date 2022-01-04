@@ -54,6 +54,18 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
                 modifier = Modifier.weight(1f),
             )
         }
+        Row {
+            ListItem(
+                value = statsData.value.totalStepsThisYear,
+                description = stringResource(id = R.string.stats_total_this_month),
+                modifier = Modifier.weight(1f),
+            )
+            ListItem(
+                value = statsData.value.averageStepsThisYear,
+                description = stringResource(id = R.string.stats_average_this_month),
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 

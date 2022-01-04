@@ -20,12 +20,14 @@ class StatsViewModel @Inject constructor(
     fun getStatsData(): Flow<StatsData> {
         val today = DateUtil.getToday()
         val dayOfMonth = DateUtil.getDayOfMonth()
+        val dayOfYear = DateUtil.getDayOfYear()
 
         return combine(
             stepsRepository.getRecord(),
             stepsRepository.getStepsFromDayRangeFlow(today - 6, today),
-            stepsRepository.getStepsFromDayRangeFlow(today - dayOfMonth + 1, today)
-        ) { record, totalLast7Days, totalThisMonth ->
+            stepsRepository.getStepsFromDayRangeFlow(today - dayOfMonth + 1, today),
+            stepsRepository.getStepsFromDayRangeFlow(today - dayOfYear + 1, today),
+        ) { record, totalLast7Days, totalThisMonth, totalThisYear ->
             StatsData(
                 recordSteps = numberFormat.format(record.steps),
                 recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
@@ -33,6 +35,8 @@ class StatsViewModel @Inject constructor(
                 averageStepsLast7Days = numberFormat.format(totalLast7Days / 7),
                 totalStepsThisMonth = numberFormat.format(totalThisMonth),
                 averageStepsThisMonth = numberFormat.format(totalThisMonth / dayOfMonth),
+                totalStepsThisYear = numberFormat.format(totalThisYear),
+                averageStepsThisYear = numberFormat.format(totalThisYear / dayOfYear)
             )
         }
     }
