@@ -2,7 +2,12 @@
 <resources>
 
     <style name="PedometerTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- TODO customize theme -->
+        <!-- Color -->
+        <item name="colorPrimary">#43a047</item>
+
+        <!-- Typography -->
+
+        <!-- Shape -->
     </style>
 
 </resources>
