@@ -15,7 +15,7 @@ import dev.sjaramillo.pedometer.R
 @Composable
 fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
 
-    val statsData = viewModel.getStatsData().collectAsState(initial = StatsData())
+    val statsData = viewModel.getStatsDataFlow().collectAsState(initial = StatsData())
 
     Column(
         modifier = Modifier

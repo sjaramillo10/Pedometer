@@ -15,7 +15,7 @@ interface DailyStepsDao {
     fun getLastEntries(num: Int): List<DailySteps>
 
     @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY steps DESC LIMIT 1")
-    fun getRecord(): Flow<DailySteps>
+    suspend fun getRecord(): DailySteps
 
     @Query("SELECT SUM(steps) FROM daily_steps WHERE day>=:start AND day<=:end")
     fun getStepsFromDayRange(start: Long, end: Long): Long

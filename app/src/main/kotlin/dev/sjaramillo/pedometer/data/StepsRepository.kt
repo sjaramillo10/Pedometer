@@ -18,7 +18,7 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
         return getSteps(today)
     }
 
-    fun getRecord(): Flow<DailySteps> {
+    suspend fun getRecord(): DailySteps {
         return dailyStepsDao.getRecord()
     }
 

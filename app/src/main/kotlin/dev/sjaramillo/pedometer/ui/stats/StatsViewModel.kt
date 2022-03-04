@@ -6,7 +6,9 @@ import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,17 +19,18 @@ class StatsViewModel @Inject constructor(
     private val numberFormat = FormatUtil.numberFormat
     private val dateFormat = FormatUtil.dateFormat
 
-    fun getStatsData(): Flow<StatsData> {
+    fun getStatsDataFlow(): Flow<StatsData> = flow {
         val today = DateUtil.getToday()
         val dayOfMonth = DateUtil.getDayOfMonth()
         val dayOfYear = DateUtil.getDayOfYear()
 
-        return combine(
-            stepsRepository.getRecord(),
+        val record = stepsRepository.getRecord()
+
+        combine(
             stepsRepository.getStepsFromDayRangeFlow(today - 6, today),
             stepsRepository.getStepsFromDayRangeFlow(today - dayOfMonth + 1, today),
             stepsRepository.getStepsFromDayRangeFlow(today - dayOfYear + 1, today),
-        ) { record, totalLast7Days, totalThisMonth, totalThisYear ->
+        ) { totalLast7Days, totalThisMonth, totalThisYear ->
             StatsData(
                 recordSteps = numberFormat.format(record.steps),
                 recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
@@ -38,6 +41,6 @@ class StatsViewModel @Inject constructor(
                 totalStepsThisYear = numberFormat.format(totalThisYear),
                 averageStepsThisYear = numberFormat.format(totalThisYear / dayOfYear)
             )
-        }
+        }.collect { emit(it) }
     }
 }
