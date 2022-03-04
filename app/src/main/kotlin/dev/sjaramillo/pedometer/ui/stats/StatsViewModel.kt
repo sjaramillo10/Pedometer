@@ -7,7 +7,6 @@ import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -25,22 +24,28 @@ class StatsViewModel @Inject constructor(
         val dayOfYear = DateUtil.getDayOfYear()
 
         val record = stepsRepository.getRecord()
+        val totalLast6Days = stepsRepository.getStepsFromDayRange(today - 6, today - 1)
+        val almostThisMonth =
+            stepsRepository.getStepsFromDayRange(today - dayOfMonth + 1, today - 1)
+        val almostThisYear = stepsRepository.getStepsFromDayRange(today - dayOfYear + 1, today - 1)
 
-        combine(
-            stepsRepository.getStepsFromDayRangeFlow(today - 6, today),
-            stepsRepository.getStepsFromDayRangeFlow(today - dayOfMonth + 1, today),
-            stepsRepository.getStepsFromDayRangeFlow(today - dayOfYear + 1, today),
-        ) { totalLast7Days, totalThisMonth, totalThisYear ->
-            StatsData(
-                recordSteps = numberFormat.format(record.steps),
-                recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
-                totalStepsLast7Days = numberFormat.format(totalLast7Days),
-                averageStepsLast7Days = numberFormat.format(totalLast7Days / 7),
-                totalStepsThisMonth = numberFormat.format(totalThisMonth),
-                averageStepsThisMonth = numberFormat.format(totalThisMonth / dayOfMonth),
-                totalStepsThisYear = numberFormat.format(totalThisYear),
-                averageStepsThisYear = numberFormat.format(totalThisYear / dayOfYear)
+        stepsRepository.getStepsTodayFlow().collect { stepsToday ->
+            val totalLast7Days = totalLast6Days + stepsToday
+            val totalThisMonth = almostThisMonth + stepsToday
+            val totalThisYear = almostThisYear + stepsToday
+
+            emit(
+                StatsData(
+                    recordSteps = numberFormat.format(record.steps),
+                    recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
+                    totalStepsLast7Days = numberFormat.format(totalLast7Days),
+                    averageStepsLast7Days = numberFormat.format(totalLast7Days / 7),
+                    totalStepsThisMonth = numberFormat.format(totalThisMonth),
+                    averageStepsThisMonth = numberFormat.format(totalThisMonth / dayOfMonth),
+                    totalStepsThisYear = numberFormat.format(totalThisYear),
+                    averageStepsThisYear = numberFormat.format(totalThisYear / dayOfYear)
+                )
             )
-        }.collect { emit(it) }
+        }
     }
 }
