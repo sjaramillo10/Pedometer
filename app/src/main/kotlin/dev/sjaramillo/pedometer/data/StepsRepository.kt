@@ -40,8 +40,12 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
         return dailyStepsDao.getStepsFromDayRangeOld(start = 0, end = DateUtil.getToday() - 1)
     }
 
-    fun getTotalDays(): Long {
+    suspend fun getTotalDays(): Long {
         return dailyStepsDao.getTotalDays()
+    }
+
+    fun getTotalDaysOld(): Long {
+        return dailyStepsDao.getTotalDaysOld()
     }
 
     /**

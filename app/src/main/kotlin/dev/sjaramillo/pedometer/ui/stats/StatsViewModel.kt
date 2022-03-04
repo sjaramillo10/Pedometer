@@ -22,28 +22,34 @@ class StatsViewModel @Inject constructor(
         val today = DateUtil.getToday()
         val dayOfMonth = DateUtil.getDayOfMonth()
         val dayOfYear = DateUtil.getDayOfYear()
+        val totalDays = stepsRepository.getTotalDays()
 
         val record = stepsRepository.getRecord()
-        val totalLast6Days = stepsRepository.getStepsFromDayRange(today - 6, today - 1)
-        val almostThisMonth =
+        val totalStepsPrevious6Days = stepsRepository.getStepsFromDayRange(today - 6, today - 1)
+        val totalStepsThisMonthUntilToday =
             stepsRepository.getStepsFromDayRange(today - dayOfMonth + 1, today - 1)
-        val almostThisYear = stepsRepository.getStepsFromDayRange(today - dayOfYear + 1, today - 1)
+        val totalStepsThisYearUntilToday =
+            stepsRepository.getStepsFromDayRange(today - dayOfYear + 1, today - 1)
+        val totalStepsUntilToday = stepsRepository.getStepsFromDayRange(0, today - 1)
 
         stepsRepository.getStepsTodayFlow().collect { stepsToday ->
-            val totalLast7Days = totalLast6Days + stepsToday
-            val totalThisMonth = almostThisMonth + stepsToday
-            val totalThisYear = almostThisYear + stepsToday
+            val totalStepsLast7Days = totalStepsPrevious6Days + stepsToday
+            val totalStepsThisMonth = totalStepsThisMonthUntilToday + stepsToday
+            val totalStepsThisYear = totalStepsThisYearUntilToday + stepsToday
+            val totalStepsAllTime = totalStepsUntilToday + stepsToday
 
             emit(
                 StatsData(
                     recordSteps = numberFormat.format(record.steps),
                     recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
-                    totalStepsLast7Days = numberFormat.format(totalLast7Days),
-                    averageStepsLast7Days = numberFormat.format(totalLast7Days / 7),
-                    totalStepsThisMonth = numberFormat.format(totalThisMonth),
-                    averageStepsThisMonth = numberFormat.format(totalThisMonth / dayOfMonth),
-                    totalStepsThisYear = numberFormat.format(totalThisYear),
-                    averageStepsThisYear = numberFormat.format(totalThisYear / dayOfYear)
+                    totalStepsLast7Days = numberFormat.format(totalStepsLast7Days),
+                    averageStepsLast7Days = numberFormat.format(totalStepsLast7Days / 7),
+                    totalStepsThisMonth = numberFormat.format(totalStepsThisMonth),
+                    averageStepsThisMonth = numberFormat.format(totalStepsThisMonth / dayOfMonth),
+                    totalStepsThisYear = numberFormat.format(totalStepsThisYear),
+                    averageStepsThisYear = numberFormat.format(totalStepsThisYear / dayOfYear),
+                    totalStepsAllTime = numberFormat.format(totalStepsAllTime),
+                    averageStepsAllTime = numberFormat.format(totalStepsAllTime / totalDays),
                 )
             )
         }

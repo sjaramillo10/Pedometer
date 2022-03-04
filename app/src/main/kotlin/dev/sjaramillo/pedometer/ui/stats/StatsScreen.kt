@@ -66,6 +66,18 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
                 modifier = Modifier.weight(1f),
             )
         }
+        Row {
+            ListItem(
+                value = statsData.value.totalStepsAllTime,
+                description = stringResource(id = R.string.stats_total_all_time),
+                modifier = Modifier.weight(1f),
+            )
+            ListItem(
+                value = statsData.value.averageStepsAllTime,
+                description = stringResource(id = R.string.stats_average_all_time),
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 

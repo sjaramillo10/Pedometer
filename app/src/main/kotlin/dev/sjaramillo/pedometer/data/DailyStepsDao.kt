@@ -30,7 +30,10 @@ interface DailyStepsDao {
     fun getStepsFromDayRangeFlow(start: Long, end: Long): Flow<Long>
 
     @Query("SELECT COUNT(*) FROM daily_steps WHERE day>0")
-    fun getTotalDays(): Long
+    suspend fun getTotalDays(): Long
+
+    @Query("SELECT COUNT(*) FROM daily_steps WHERE day>0")
+    fun getTotalDaysOld(): Long
 
     @Query("UPDATE daily_steps SET steps=steps+:steps WHERE day=(SELECT MAX(day) FROM daily_steps)")
     fun addToLastEntry(steps: Long)

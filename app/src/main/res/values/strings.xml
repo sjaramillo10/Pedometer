@@ -45,6 +45,8 @@
     <string name="stats_average_this_month">Average this month</string>
     <string name="stats_total_this_year">Total this year</string>
     <string name="stats_average_this_year">Average this year</string>
+    <string name="stats_total_all_time">All time total</string>
+    <string name="stats_average_all_time">All time average</string>
 
     <!-- Stats screen -->
     <string name="settings_title">Settings</string>

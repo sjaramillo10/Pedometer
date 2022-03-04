@@ -110,7 +110,7 @@ class HomeFragment : Fragment(), SensorEventListener {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
         stepsUntilToday = stepsRepository.getStepsUntilToday()
-        totalDays = stepsRepository.getTotalDays()
+        totalDays = stepsRepository.getTotalDaysOld()
         stepsDistanceChanged()
     }
 
