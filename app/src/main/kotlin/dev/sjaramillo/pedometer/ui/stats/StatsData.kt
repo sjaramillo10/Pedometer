@@ -9,4 +9,6 @@ data class StatsData(
     val averageStepsThisMonth: String = "0",
     val totalStepsThisYear: String = "0",
     val averageStepsThisYear: String = "0",
+    val totalStepsAllTime: String = "0",
+    val averageStepsAllTime: String = "0",
 )
