@@ -31,20 +31,20 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.5'
+        kotlinCompilerExtensionVersion libs.versions.compose.get()
     }
 
     buildTypes {
+        debug {
+            debuggable true
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled true
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            debuggable true
-            signingConfig signingConfigs.release
-            minifyEnabled false
         }
     }
 }
