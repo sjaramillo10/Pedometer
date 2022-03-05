@@ -26,11 +26,13 @@ import android.os.Bundle
 import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
+import kotlinx.coroutines.launch
 import logcat.asLog
 import logcat.logcat
 import org.eazegraph.lib.charts.BarChart
@@ -46,18 +48,14 @@ import kotlin.math.roundToLong
 @AndroidEntryPoint
 class HomeFragment : Fragment(), SensorEventListener {
 
-    @Inject
+    @Inject // TODO Move to ViewModel
     lateinit var stepsRepository: StepsRepository
 
     private lateinit var stepsView: TextView
-    private lateinit var totalView: TextView
-    private lateinit var averageView: TextView
     private lateinit var sliceGoal: PieModel
     private lateinit var sliceCurrent: PieModel
     private lateinit var graph: PieChart
-    private var stepsUntilToday: Long = 0
     private var goal = 0
-    private var totalDays = 0L
     private var showSteps = true
 
     override fun onCreateView(
@@ -69,8 +67,6 @@ class HomeFragment : Fragment(), SensorEventListener {
 
         val v = inflater.inflate(R.layout.fragment_home, container, false)
         stepsView = v.findViewById<View>(R.id.steps) as TextView
-        totalView = v.findViewById<View>(R.id.total) as TextView
-        averageView = v.findViewById<View>(R.id.average) as TextView
         graph = v.findViewById<View>(R.id.graph) as PieChart
 
         // slice for the steps taken today
@@ -109,8 +105,6 @@ class HomeFragment : Fragment(), SensorEventListener {
         } else {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
-        stepsUntilToday = stepsRepository.getStepsUntilToday()
-        totalDays = stepsRepository.getTotalDaysOld()
         stepsDistanceChanged()
     }
 
@@ -148,8 +142,10 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_split_count) {
-            val stepsToday = stepsRepository.getStepsToday()
-            SplitDialog.getDialog(requireContext(), stepsUntilToday + stepsToday).show()
+            lifecycleScope.launch {
+                val totalSteps = stepsRepository.getStepsFromDayRange(0, DateUtil.getToday())
+                SplitDialog.getDialog(requireContext(), totalSteps).show()
+            }
             return true
         }
         return super.onOptionsItemSelected(item)
@@ -194,24 +190,17 @@ class HomeFragment : Fragment(), SensorEventListener {
         val numberFormat = FormatUtil.numberFormat
         if (showSteps) {
             stepsView.text = numberFormat.format(stepsToday)
-            totalView.text = numberFormat.format(stepsUntilToday + stepsToday)
-            averageView.text = numberFormat.format((stepsUntilToday + stepsToday) / totalDays)
         } else {
             // update only every 10 steps when displaying distance
             val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
             val stepSize = prefs.getFloat("step_size_value", SettingsFragment.DEFAULT_STEP_SIZE)
             var distanceToday = stepsToday * stepSize
-            var distanceTotal = (stepsUntilToday + stepsToday) * stepSize
             if (prefs.getString("step_size_unit", SettingsFragment.DEFAULT_STEP_UNIT) == "cm") {
                 distanceToday /= 100000f
-                distanceTotal /= 100000f
             } else {
                 distanceToday /= 5280f
-                distanceTotal /= 5280f
             }
             stepsView.text = numberFormat.format(distanceToday.toDouble())
-            totalView.text = numberFormat.format(distanceTotal.toDouble())
-            averageView.text = numberFormat.format((distanceTotal / totalDays).toDouble())
         }
     }
 
