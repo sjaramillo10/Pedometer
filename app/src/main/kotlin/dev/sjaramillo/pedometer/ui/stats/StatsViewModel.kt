@@ -27,7 +27,7 @@ class StatsViewModel @Inject constructor(
     }
 
     private suspend fun generateStatsUiState() {
-        delay(500) // Just a touch to show the loading animation 😁
+        delay(250) // Just a touch to show the loading animation 😁
 
         val today = DateUtil.getToday()
         val dayOfMonth = DateUtil.getDayOfMonth()
