@@ -7,7 +7,9 @@ import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
