@@ -17,7 +17,6 @@ package dev.sjaramillo.pedometer.util
 
 import java.time.LocalDate
 
-
 object DateUtil {
 
     /**

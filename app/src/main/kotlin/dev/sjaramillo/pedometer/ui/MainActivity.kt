@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun isActivityRecognitionPermissionGranted() = PackageManager.PERMISSION_GRANTED ==
-            checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)
+        checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)
 
     /**
      * Create and show a rationale dialog which explains why is permission needed.

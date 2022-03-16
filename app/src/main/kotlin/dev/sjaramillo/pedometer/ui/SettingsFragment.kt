@@ -38,7 +38,7 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.IOException
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -191,7 +191,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             contentResolver.openFileDescriptor(uri, "w")?.use {
                 FileOutputStream(it.fileDescriptor).use { stream ->
                     dailySteps.forEach { (day, steps) ->
-                        val line = "${day},${max(steps, 0)}\n"
+                        val line = "$day,${max(steps, 0)}\n"
                         stream.write(line.toByteArray())
                     }
                 }

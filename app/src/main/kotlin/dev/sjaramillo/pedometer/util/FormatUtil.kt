@@ -2,7 +2,7 @@ package dev.sjaramillo.pedometer.util
 
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Locale
 
 object FormatUtil {
     val numberFormat: NumberFormat
