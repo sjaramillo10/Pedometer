@@ -18,6 +18,17 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // https://developer.android.com/jetpack/androidx/releases/room#compiler-options
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += mapOf(
+                    "room.schemaLocation" to "$projectDir/schemas",
+                    "room.incremental" to "true",
+                    "room.expandProjection" to "true"
+                )
+            }
+        }
     }
 
     buildFeatures {
@@ -55,6 +66,12 @@ android {
         }
 
         // TODO Add release signing configs
+    }
+
+    sourceSets.configureEach {
+        // Workaround so that ktlint considers contents inside the kotlin folders by default
+        // More info: https://github.com/JLLeitschuh/ktlint-gradle/issues/524#issuecomment-915639053
+        java.srcDirs("src/$name/kotlin")
     }
 }
 
@@ -118,5 +135,5 @@ dependencies {
 }
 
 kapt {
-    correctErrorTypes  = true
+    correctErrorTypes = true
 }
