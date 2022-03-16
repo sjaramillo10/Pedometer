@@ -12,7 +12,12 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ForegroundInfo
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dev.sjaramillo.pedometer.R
@@ -127,7 +132,7 @@ class StepsCounterWorker @AssistedInject constructor(
         fun enqueuePeriodicWork(context: Context) {
             val stepsCounterWorker =
                 PeriodicWorkRequestBuilder<StepsCounterWorker>(15, TimeUnit.MINUTES)
-                    //.setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST) Use this when expedited jobs can have a delay/be periodic
+                    // .setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST) Use this when expedited jobs can have a delay/be periodic
                     .addTag("stepsWork")
                     .build()
 
