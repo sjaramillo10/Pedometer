@@ -33,7 +33,7 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
     }
 
     suspend fun getStepsFromDayRange(start: Long, end: Long): Long {
-        return dailyStepsDao.getStepsFromDayRange(start, end)
+        return dailyStepsDao.getStepsFromDayRange(start, end) ?: 0L
     }
 
     suspend fun getTotalDays(): Long {

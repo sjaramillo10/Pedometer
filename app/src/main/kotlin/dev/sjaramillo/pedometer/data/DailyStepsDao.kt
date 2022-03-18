@@ -25,10 +25,7 @@ interface DailyStepsDao {
     suspend fun getRecord(): DailySteps
 
     @Query("SELECT SUM(steps) FROM daily_steps WHERE day>=:start AND day<=:end")
-    suspend fun getStepsFromDayRange(start: Long, end: Long): Long
-
-    @Query("SELECT SUM(steps) FROM daily_steps WHERE day>=:start AND day<=:end")
-    fun getStepsFromDayRangeFlow(start: Long, end: Long): Flow<Long>
+    suspend fun getStepsFromDayRange(start: Long, end: Long): Long?
 
     @Query("SELECT COUNT(*) FROM daily_steps WHERE day>0")
     suspend fun getTotalDays(): Long
