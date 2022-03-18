@@ -86,10 +86,7 @@ dependencies {
     implementation(libs.preference)
 
     // Compose
-    implementation(libs.activity.compose)
-    implementation(libs.compose.material.core)
-    implementation(libs.compose.material.theme.adapter)
-    implementation(libs.compose.ui.tooling)
+    implementation(libs.bundles.compose)
 
     // Hilt
     implementation(libs.androidx.hilt.work)

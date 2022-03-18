@@ -58,5 +58,8 @@ viewmodel-core = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", versio
 work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 work-testing = { module = "androidx.work:work-testing", version.ref = "work" }
 
+[bundles]
+compose = ["activity-compose", "compose-material-core", "compose-material-theme-adapter", "compose-ui-tooling"]
+
 [plugins]
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
