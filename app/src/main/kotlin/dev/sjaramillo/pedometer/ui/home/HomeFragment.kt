@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.sjaramillo.pedometer.ui
+package dev.sjaramillo.pedometer.ui.home
 
 import android.app.AlertDialog
 import android.content.Context
@@ -31,10 +31,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.data.StepsRepository
+import dev.sjaramillo.pedometer.ui.SettingsFragment
+import dev.sjaramillo.pedometer.ui.SplitDialog
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import kotlinx.coroutines.launch
@@ -45,16 +47,12 @@ import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
 import java.time.format.DateTimeFormatter
-import javax.inject.Inject
 import kotlin.math.roundToLong
 
-// TODO cleanup this file
-// TODO Use ViewBinding or not? Maybe go straight to Compose!
 @AndroidEntryPoint
 class HomeFragment : Fragment(), SensorEventListener {
 
-    @Inject // TODO Move to ViewModel
-    lateinit var stepsRepository: StepsRepository
+    private val viewModel: HomeViewModel by viewModels()
 
     private lateinit var stepsView: TextView
     private lateinit var sliceGoal: PieModel
@@ -86,8 +84,6 @@ class HomeFragment : Fragment(), SensorEventListener {
             showSteps = !showSteps
             stepsDistanceChanged()
         }
-        graph.isDrawValueInPie = false
-        graph.isUsePieRotation = true
         graph.startAnimation()
         return v
     }
@@ -126,7 +122,7 @@ class HomeFragment : Fragment(), SensorEventListener {
             unit = if (unit == "cm") "km" else "mi"
             requireView().findViewById<TextView>(R.id.unit).text = unit
         }
-        val stepsToday = stepsRepository.getStepsToday()
+        val stepsToday = viewModel.getStepsToday()
         updatePie(stepsToday)
         updateBars()
     }
@@ -148,7 +144,7 @@ class HomeFragment : Fragment(), SensorEventListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_split_count) {
             lifecycleScope.launch {
-                val totalSteps = stepsRepository.getStepsFromDayRange(0, DateUtil.getToday())
+                val totalSteps = viewModel.getTotalSteps()
                 SplitDialog.getDialog(requireContext(), totalSteps).show()
             }
             return true
@@ -165,7 +161,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         if (event.values[0] > Int.MAX_VALUE || event.values[0] == 0f) return
 
         val steps = event.values[0].toLong()
-        val stepsToday = stepsRepository.updateStepsSinceBoot(steps)
+        val stepsToday = viewModel.updateStepsSinceBoot(steps)
         updatePie(stepsToday)
     }
 
@@ -230,7 +226,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
         barChart.isShowDecimal = !showSteps // show decimal in distance view only
         var bm: BarModel
-        val lastEntries = stepsRepository.getLastEntries(8)
+        val lastEntries = viewModel.getLastEntries(8)
         for (i in lastEntries.size - 1 downTo 1) {
             val current = lastEntries[i]
             steps = current.steps.toInt()
