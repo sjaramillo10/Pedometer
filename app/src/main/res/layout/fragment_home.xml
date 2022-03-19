@@ -13,6 +13,8 @@
         android:layout_marginTop="40dp"
         app:egHighlightStrength="1"
         app:egInnerPadding="75"
+        app:egUsePieRotation="true"
+        app:egDrawValueInPie="false"
         app:egInnerPaddingColor="?android:attr/colorBackground"
         app:egLegendHeight="0dp" />
 
