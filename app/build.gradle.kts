@@ -77,7 +77,7 @@ android {
 
 dependencies {
     // Enable Java 8+ API desugaring
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.3")
 
     // AndroidX
     implementation(libs.appcompat)
