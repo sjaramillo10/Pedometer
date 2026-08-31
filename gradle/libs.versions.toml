@@ -1,5 +1,5 @@
 [versions]
-activity = "1.4.0"
+activity = "1.13.0"
 android-gradle = "9.3.0"
 androidx-hilt = "1.0.0"
 androidx-junit = "1.1.3"
