@@ -8,7 +8,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class StepsCounterWorkerTest {
-
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -18,7 +17,9 @@ class StepsCounterWorkerTest {
     @Test // TODO Figure out how to mock the SensorManager
     fun testStepsCounterWorker_readsStepsCount_returnsStepsCount() {
         val work =
-            TestListenableWorkerBuilder<StepsCounterWorker>(workerManagerTestRule.targetContext).build()
+            TestListenableWorkerBuilder<StepsCounterWorker>(
+                workerManagerTestRule.targetContext,
+            ).build()
 
         runBlocking {
             val result = work.doWork()
