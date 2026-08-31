@@ -12,10 +12,9 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class PersistenceModule {
-
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): PedometerDatabase {
-        return PedometerDatabase.getInstance(context)
-    }
+    fun provideDatabase(
+        @ApplicationContext context: Context,
+    ): PedometerDatabase = PedometerDatabase.getInstance(context)
 }

@@ -15,9 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StatsViewModel @Inject constructor(
-    private val stepsRepository: StepsRepository
+    private val stepsRepository: StepsRepository,
 ) : ViewModel() {
-
     private val numberFormat = FormatUtil.numberFormat
     private val dateFormat = FormatUtil.dateFormat
 
@@ -50,18 +49,19 @@ class StatsViewModel @Inject constructor(
             val totalStepsThisYear = totalStepsThisYearUntilToday + stepsToday
             val totalStepsAllTime = totalStepsUntilToday + stepsToday
 
-            val statsData = StatsData(
-                recordSteps = numberFormat.format(record.steps),
-                recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
-                totalStepsLast7Days = numberFormat.format(totalStepsLast7Days),
-                averageStepsLast7Days = numberFormat.format(totalStepsLast7Days / 7),
-                totalStepsThisMonth = numberFormat.format(totalStepsThisMonth),
-                averageStepsThisMonth = numberFormat.format(totalStepsThisMonth / dayOfMonth),
-                totalStepsThisYear = numberFormat.format(totalStepsThisYear),
-                averageStepsThisYear = numberFormat.format(totalStepsThisYear / dayOfYear),
-                totalStepsAllTime = numberFormat.format(totalStepsAllTime),
-                averageStepsAllTime = numberFormat.format(totalStepsAllTime / totalDays),
-            )
+            val statsData =
+                StatsData(
+                    recordSteps = numberFormat.format(record.steps),
+                    recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
+                    totalStepsLast7Days = numberFormat.format(totalStepsLast7Days),
+                    averageStepsLast7Days = numberFormat.format(totalStepsLast7Days / 7),
+                    totalStepsThisMonth = numberFormat.format(totalStepsThisMonth),
+                    averageStepsThisMonth = numberFormat.format(totalStepsThisMonth / dayOfMonth),
+                    totalStepsThisYear = numberFormat.format(totalStepsThisYear),
+                    averageStepsThisYear = numberFormat.format(totalStepsThisYear / dayOfYear),
+                    totalStepsAllTime = numberFormat.format(totalStepsAllTime),
+                    averageStepsAllTime = numberFormat.format(totalStepsAllTime / totalDays),
+                )
 
             _uiState.value = StatsUiState.Success(statsData)
         }
@@ -70,5 +70,6 @@ class StatsViewModel @Inject constructor(
 
 sealed class StatsUiState {
     object Loading : StatsUiState()
+
     data class Success(val statsData: StatsData) : StatsUiState()
 }

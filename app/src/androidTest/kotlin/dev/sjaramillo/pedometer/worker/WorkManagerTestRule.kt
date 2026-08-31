@@ -22,10 +22,12 @@ class WorkManagerTestRule : TestWatcher() {
     override fun starting(description: Description?) {
         targetContext = InstrumentationRegistry.getInstrumentation().targetContext
         testContext = InstrumentationRegistry.getInstrumentation().context
-        configuration = Configuration.Builder()
-            .setMinimumLoggingLevel(Log.DEBUG)
-            .setExecutor(SynchronousExecutor())
-            .build()
+        configuration =
+            Configuration
+                .Builder()
+                .setMinimumLoggingLevel(Log.DEBUG)
+                .setExecutor(SynchronousExecutor())
+                .build()
         WorkManagerTestInitHelper.initializeTestWorkManager(targetContext, configuration)
         workManager = WorkManager.getInstance(targetContext)
     }

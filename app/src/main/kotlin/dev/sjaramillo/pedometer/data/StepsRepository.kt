@@ -7,12 +7,9 @@ import javax.inject.Inject
 import kotlin.math.max
 
 class StepsRepository @Inject constructor(db: PedometerDatabase) {
-
     private val dailyStepsDao = db.dailyStepsDao()
 
-    fun getAll(): List<DailySteps> {
-        return dailyStepsDao.getAll()
-    }
+    fun getAll(): List<DailySteps> = dailyStepsDao.getAll()
 
     fun getStepsToday(): Long {
         val today = DateUtil.getToday()
@@ -24,21 +21,16 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
         return getStepsFlow(today)
     }
 
-    suspend fun getRecord(): DailySteps {
-        return dailyStepsDao.getRecord()
-    }
+    suspend fun getRecord(): DailySteps = dailyStepsDao.getRecord()
 
-    fun getLastEntries(num: Int): List<DailySteps> {
-        return dailyStepsDao.getLastEntries(num)
-    }
+    fun getLastEntries(num: Int): List<DailySteps> = dailyStepsDao.getLastEntries(num)
 
-    suspend fun getStepsFromDayRange(start: Long, end: Long): Long {
-        return dailyStepsDao.getStepsFromDayRange(start, end) ?: 0L
-    }
+    suspend fun getStepsFromDayRange(
+        start: Long,
+        end: Long,
+    ): Long = dailyStepsDao.getStepsFromDayRange(start, end) ?: 0L
 
-    suspend fun getTotalDays(): Long {
-        return dailyStepsDao.getTotalDays()
-    }
+    suspend fun getTotalDays(): Long = dailyStepsDao.getTotalDays()
 
     /**
      * This method is probably the most important one here, its function is to update the stored
@@ -84,7 +76,10 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
      * @return true if a new entry was created, false if there was already an
      * entry for 'day' (and it was overwritten)
      */
-    fun insertDayFromBackup(day: Long, steps: Long): Boolean {
+    fun insertDayFromBackup(
+        day: Long,
+        steps: Long,
+    ): Boolean {
         val dailySteps = DailySteps(day = day, steps = steps)
         val updatedRows = dailyStepsDao.update(dailySteps)
         if (updatedRows == 0) {
@@ -97,17 +92,11 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
     /**
      * Returns the steps taken on the given day, or 0 if day doesn't exist in the database.
      */
-    private fun getSteps(day: Long): Long {
-        return dailyStepsDao.getSteps(day) ?: 0
-    }
+    private fun getSteps(day: Long): Long = dailyStepsDao.getSteps(day) ?: 0
 
-    private fun getStepsFlow(day: Long): Flow<Long> {
-        return dailyStepsDao.getStepsFlow(day).map { it ?: 0 }
-    }
+    private fun getStepsFlow(day: Long): Flow<Long> = dailyStepsDao.getStepsFlow(day).map { it ?: 0 }
 
-    private fun getStepsSinceBoot(): Long {
-        return getSteps(-1)
-    }
+    private fun getStepsSinceBoot(): Long = getSteps(-1)
 
     private fun addToLastEntry(steps: Long) {
         dailyStepsDao.addToLastEntry(steps)

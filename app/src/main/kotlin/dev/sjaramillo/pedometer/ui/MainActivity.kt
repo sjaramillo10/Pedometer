@@ -1,12 +1,12 @@
 /*
  * Copyright 2013 Thomas Hoffmann
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,7 +43,6 @@ import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -58,9 +57,10 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.dest_home, R.id.dest_stats, R.id.dest_settings)
-        )
+        val appBarConfiguration =
+            AppBarConfiguration(
+                setOf(R.id.dest_home, R.id.dest_stats, R.id.dest_settings),
+            )
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         StepsCounterWorker.enqueuePeriodicWork(this)
@@ -77,11 +77,13 @@ class MainActivity : AppCompatActivity() {
      * Returns true if the permission is either granted or not required, false otherwise.
      */
     private fun checkActivityRecognitionPermission(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             return true // We are good, Activity Recognition permission is not required before Android Q
+        }
 
-        if (isActivityRecognitionPermissionGranted())
+        if (isActivityRecognitionPermissionGranted()) {
             return true // We are good, Activity Recognition permission already granted
+        }
 
         if (shouldShowRequestPermissionRationale(Manifest.permission.ACTIVITY_RECOGNITION)) {
             showActivityRecognitionPermissionRationaleDialog()
@@ -93,41 +95,44 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun isActivityRecognitionPermissionGranted() = PackageManager.PERMISSION_GRANTED ==
-        checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)
+    private fun isActivityRecognitionPermissionGranted() =
+        PackageManager.PERMISSION_GRANTED ==
+            checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)
 
     /**
      * Create and show a rationale dialog which explains why is permission needed.
      */
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun showActivityRecognitionPermissionRationaleDialog() {
-        AlertDialog.Builder(this).apply {
-            setTitle(R.string.activity_recognition_permission_rationale_title)
-            setMessage(R.string.activity_recognition_permission_rationale_message)
-            setPositiveButton(R.string.activity_recognition_permission_rationale_positive_button) { _, _ ->
-                requestActivityRecognitionPermission()
+        AlertDialog
+            .Builder(this)
+            .apply {
+                setTitle(R.string.activity_recognition_permission_rationale_title)
+                setMessage(R.string.activity_recognition_permission_rationale_message)
+                setPositiveButton(R.string.activity_recognition_permission_rationale_positive_button) { _, _ ->
+                    requestActivityRecognitionPermission()
+                }
+                setNegativeButton(R.string.activity_recognition_permission_rationale_negative_button) { _, _ ->
+                    showActivityRecognitionPermissionRequiredDialog()
+                }
+            }.run {
+                create()
+                show()
             }
-            setNegativeButton(R.string.activity_recognition_permission_rationale_negative_button) { _, _ ->
-                showActivityRecognitionPermissionRequiredDialog()
-            }
-        }.run {
-            create()
-            show()
-        }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestActivityRecognitionPermission() {
         requestPermissions(
             arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
-            PERMISSION_REQUEST_ACTIVITY_RECOGNITION
+            PERMISSION_REQUEST_ACTIVITY_RECOGNITION,
         )
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
@@ -142,22 +147,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showActivityRecognitionPermissionRequiredDialog() {
-        AlertDialog.Builder(this).apply {
-            setTitle(R.string.activity_recognition_permission_required_title)
-            setMessage(R.string.activity_recognition_permission_required_message)
-            setPositiveButton(R.string.activity_recognition_permission_required_positive_button) { _, _ ->
-                this@MainActivity.finish()
+        AlertDialog
+            .Builder(this)
+            .apply {
+                setTitle(R.string.activity_recognition_permission_required_title)
+                setMessage(R.string.activity_recognition_permission_required_message)
+                setPositiveButton(R.string.activity_recognition_permission_required_positive_button) { _, _ ->
+                    this@MainActivity.finish()
+                }
+                setCancelable(false)
+            }.run {
+                create()
+                show()
             }
-            setCancelable(false)
-        }.run {
-            create()
-            show()
-        }
     }
 
     private fun checkBatteryOptimizationStatus() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return // Battery Optimization is only available since Android M
+        }
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         if (powerManager.isIgnoringBatteryOptimizations(packageName).not()) {
@@ -167,21 +175,23 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun showIgnoreBatteryOptimizationDialog() {
-        AlertDialog.Builder(this).apply {
-            setTitle(R.string.ignore_battery_optimization_title)
-            setMessage(R.string.ignore_battery_optimization_message)
-            setPositiveButton(R.string.ignore_battery_optimization_positive_button) { _, _ ->
-                val intent = Intent()
-                intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-                startActivity(intent)
+        AlertDialog
+            .Builder(this)
+            .apply {
+                setTitle(R.string.ignore_battery_optimization_title)
+                setMessage(R.string.ignore_battery_optimization_message)
+                setPositiveButton(R.string.ignore_battery_optimization_positive_button) { _, _ ->
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                    startActivity(intent)
+                }
+                setNegativeButton(R.string.ignore_battery_optimization_negative_button) { dialog, _ ->
+                    dialog.dismiss()
+                }
+            }.run {
+                create()
+                show()
             }
-            setNegativeButton(R.string.ignore_battery_optimization_negative_button) { dialog, _ ->
-                dialog.dismiss()
-            }
-        }.run {
-            create()
-            show()
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -191,16 +201,18 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_faq -> {
                 val faqUri = Uri.parse("http://j4velin.de/faq/index.php?app=pm")
-                val intent = Intent(Intent.ACTION_VIEW, faqUri)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                val intent =
+                    Intent(Intent.ACTION_VIEW, faqUri)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
                 true
             }
             R.id.action_about -> {
-                val tv = TextView(this).apply {
-                    setPadding(10, 10, 10, 10)
-                    setText(R.string.about_text_links)
-                }
+                val tv =
+                    TextView(this).apply {
+                        setPadding(10, 10, 10, 10)
+                        setText(R.string.about_text_links)
+                    }
                 try {
                     val versionName = packageManager.getPackageInfo(packageName, 0).versionName
                     tv.append(getString(R.string.about_app_version, versionName))
@@ -210,11 +222,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 tv.movementMethod = LinkMovementMethod.getInstance()
 
-                AlertDialog.Builder(this).apply {
-                    setTitle(R.string.about)
-                    setView(tv)
-                    setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                }.also { it.create().show() }
+                AlertDialog
+                    .Builder(this)
+                    .apply {
+                        setTitle(R.string.about)
+                        setView(tv)
+                        setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
+                    }.also { it.create().show() }
                 true
             }
             else -> super.onOptionsItemSelected(item)

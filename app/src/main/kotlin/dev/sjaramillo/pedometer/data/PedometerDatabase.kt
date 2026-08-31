@@ -13,16 +13,15 @@ abstract class PedometerDatabase : RoomDatabase() {
         @Volatile // For Singleton instantiation
         private var instance: PedometerDatabase? = null
 
-        fun getInstance(context: Context): PedometerDatabase {
-            return instance ?: synchronized(this) {
+        fun getInstance(context: Context): PedometerDatabase =
+            instance ?: synchronized(this) {
                 instance ?: buildDatabase(context).also { instance = it }
             }
-        }
 
-        private fun buildDatabase(context: Context): PedometerDatabase {
-            return Room.databaseBuilder(context, PedometerDatabase::class.java, "pedometer-db")
+        private fun buildDatabase(context: Context): PedometerDatabase =
+            Room
+                .databaseBuilder(context, PedometerDatabase::class.java, "pedometer-db")
                 .allowMainThreadQueries()
                 .build()
-        }
     }
 }

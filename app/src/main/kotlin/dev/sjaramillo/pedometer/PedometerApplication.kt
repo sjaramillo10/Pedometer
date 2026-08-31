@@ -9,8 +9,9 @@ import logcat.LogPriority.VERBOSE
 import javax.inject.Inject
 
 @HiltAndroidApp
-class PedometerApplication : Application(), Configuration.Provider {
-
+class PedometerApplication :
+    Application(),
+    Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
@@ -21,7 +22,8 @@ class PedometerApplication : Application(), Configuration.Provider {
     }
 
     override fun getWorkManagerConfiguration() =
-        Configuration.Builder()
+        Configuration
+            .Builder()
             .setWorkerFactory(workerFactory)
             .build()
 }

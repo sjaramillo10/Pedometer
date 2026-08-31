@@ -22,7 +22,10 @@ import dev.sjaramillo.pedometer.worker.StepsCounterWorker
 import logcat.logcat
 
 class AppUpdatedReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         if (intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
 
         logcat { "App updated" }

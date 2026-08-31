@@ -35,18 +35,17 @@ import kotlin.coroutines.suspendCoroutine
 @HiltWorker
 class StepsCounterWorker @AssistedInject constructor(
     @Assisted appContext: Context,
-    @Assisted workerParams: WorkerParameters
+    @Assisted workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
-
     @Inject
     lateinit var stepsRepository: StepsRepository
 
     override suspend fun doWork(): Result {
-
         setForeground(getForegroundInfo())
 
-        val sensorManager = applicationContext
-            .getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensorManager =
+            applicationContext
+                .getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
         return if (stepCounterSensor != null) {
@@ -59,34 +58,37 @@ class StepsCounterWorker @AssistedInject constructor(
 
     private suspend fun getStepsCount(
         sensorManager: SensorManager,
-        stepCounterSensor: Sensor
+        stepCounterSensor: Sensor,
     ) = suspendCoroutine<Boolean> { continuation ->
-        val listener = object : SensorEventListener {
+        val listener =
+            object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    // Make sure to remove listener to avoid wasting resources
+                    sensorManager.unregisterListener(this)
 
-            override fun onSensorChanged(event: SensorEvent?) {
-                // Make sure to remove listener to avoid wasting resources
-                sensorManager.unregisterListener(this)
-
-                event?.values?.firstOrNull()?.let { steps ->
-                    val stepsToday = stepsRepository.updateStepsSinceBoot(steps.toLong())
-                    logcat { "Step count: $steps, steps today: $stepsToday" }
-                    continuation.resume(true)
-                    return
+                    event?.values?.firstOrNull()?.let { steps ->
+                        val stepsToday = stepsRepository.updateStepsSinceBoot(steps.toLong())
+                        logcat { "Step count: $steps, steps today: $stepsToday" }
+                        continuation.resume(true)
+                        return
+                    }
+                    continuation.resume(false)
                 }
-                continuation.resume(false)
-            }
 
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // nobody knows what happens here: step value might magically decrease
-                // when this method is called...
-                logcat { sensor?.name + " accuracy changed: " + accuracy }
+                override fun onAccuracyChanged(
+                    sensor: Sensor?,
+                    accuracy: Int,
+                ) {
+                    // nobody knows what happens here: step value might magically decrease
+                    // when this method is called...
+                    logcat { sensor?.name + " accuracy changed: " + accuracy }
+                }
             }
-        }
 
         sensorManager.registerListener(
             listener,
             stepCounterSensor,
-            SensorManager.SENSOR_DELAY_NORMAL
+            SensorManager.SENSOR_DELAY_NORMAL,
         )
     }
 
@@ -99,13 +101,15 @@ class StepsCounterWorker @AssistedInject constructor(
             createNotificationChannel()
         }
 
-        val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(title)
-            .setTicker(content)
-            .setContentText(content)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setOngoing(true)
-            .build()
+        val notification =
+            NotificationCompat
+                .Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+                .setContentTitle(title)
+                .setTicker(content)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setOngoing(true)
+                .build()
 
         return ForegroundInfo(NOTIFICATION_ID_UPDATING_STEPS, notification)
     }
@@ -120,8 +124,9 @@ class StepsCounterWorker @AssistedInject constructor(
         mChannel.description = description
 
         // Register the channel with the system
-        val notificationManager = applicationContext
-            .getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            applicationContext
+                .getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(mChannel)
     }
 
@@ -139,7 +144,7 @@ class StepsCounterWorker @AssistedInject constructor(
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 "periodicStepCounterWorker",
                 ExistingPeriodicWorkPolicy.REPLACE,
-                stepsCounterWorker
+                stepsCounterWorker,
             )
         }
     }

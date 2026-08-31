@@ -45,12 +45,16 @@ import kotlin.math.max
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
 @AndroidEntryPoint
-class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener {
-
+class SettingsFragment :
+    PreferenceFragmentCompat(),
+    Preference.OnPreferenceClickListener {
     @Inject
     lateinit var stepsRepository: StepsRepository
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferences(
+        savedInstanceState: Bundle?,
+        rootKey: String?,
+    ) {
         setPreferencesFromResource(R.xml.settings, rootKey)
 
         setHasOptionsMenu(true)
@@ -63,17 +67,21 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         val stepSize = findPreference<Preference>("step_size")
         stepSize?.onPreferenceClickListener = this
-        stepSize?.summary = getString(
-            R.string.step_size_summary,
-            prefs.getFloat("step_size_value", DEFAULT_STEP_SIZE),
-            prefs.getString("step_size_unit", DEFAULT_STEP_UNIT)
-        )
+        stepSize?.summary =
+            getString(
+                R.string.step_size_summary,
+                prefs.getFloat("step_size_value", DEFAULT_STEP_SIZE),
+                prefs.getString("step_size_unit", DEFAULT_STEP_UNIT),
+            )
 
         findPreference<Preference>("export")?.onPreferenceClickListener = this
         findPreference<Preference>("import")?.onPreferenceClickListener = this
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.menu_main, menu)
     }
 
@@ -118,19 +126,20 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 builder.setTitle(R.string.set_step_size)
                 builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
                     try {
-                        prefs.edit()
+                        prefs
+                            .edit()
                             .putFloat("step_size_value", value.text.toString().toFloat())
                             .putString(
                                 "step_size_unit",
-                                if (unit.checkedRadioButtonId == R.id.cm) "cm" else "ft"
-                            )
-                            .apply()
+                                if (unit.checkedRadioButtonId == R.id.cm) "cm" else "ft",
+                            ).apply()
 
-                        preference.summary = getString(
-                            R.string.step_size_summary,
-                            value.text.toString().toFloat(),
-                            if (unit.checkedRadioButtonId == R.id.cm) "cm" else "ft"
-                        )
+                        preference.summary =
+                            getString(
+                                R.string.step_size_summary,
+                                value.text.toString().toFloat(),
+                                if (unit.checkedRadioButtonId == R.id.cm) "cm" else "ft",
+                            )
                     } catch (nfe: NumberFormatException) {
                         nfe.printStackTrace()
                     }
@@ -146,26 +155,32 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
     }
 
     private fun requestCsvUriToExportData() {
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "text/csv"
-            // TODO create dynamic file name using current date, i.e. Pedometer-2021-09-28.csv
-            putExtra(Intent.EXTRA_TITLE, "Pedometer.csv")
-        }
+        val intent =
+            Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "text/csv"
+                // TODO create dynamic file name using current date, i.e. Pedometer-2021-09-28.csv
+                putExtra(Intent.EXTRA_TITLE, "Pedometer.csv")
+            }
 
         startActivityForResult(intent, REQUEST_CREATE_FILE)
     }
 
     private fun requestCsvUriToImportData() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "*/*" // TODO Figure out which mime type to use, 'text/csv' does not work
-        }
+        val intent =
+            Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*" // TODO Figure out which mime type to use, 'text/csv' does not work
+            }
 
         startActivityForResult(intent, REQUEST_READ_FILE)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        resultData: Intent?,
+    ) {
         if (requestCode == REQUEST_CREATE_FILE) {
             if (resultCode == Activity.RESULT_OK) {
                 resultData?.data?.also { uri -> writeDataToCsv(uri) }
@@ -201,19 +216,23 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             e.printStackTrace()
             return
         } catch (e: IOException) {
-            AlertDialog.Builder(context)
+            AlertDialog
+                .Builder(context)
                 .setMessage(getString(R.string.error_file, e.message))
                 .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create().show()
+                .create()
+                .show()
             e.printStackTrace()
             return
         }
 
         // TODO obtain created file name and use it in dialog message
-        AlertDialog.Builder(activity)
+        AlertDialog
+            .Builder(activity)
             .setMessage(getString(R.string.data_saved, "f.absolutePath"))
             .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-            .create().show()
+            .create()
+            .show()
     }
 
     /**
@@ -244,22 +263,30 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 }
             }
         } catch (e: IOException) {
-            AlertDialog.Builder(context)
+            AlertDialog
+                .Builder(context)
                 .setMessage(getString(R.string.error_file, e.message))
                 .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create().show()
+                .create()
+                .show()
             e.printStackTrace()
             return
         }
         var message = getString(R.string.entries_imported, inserted + overwritten)
-        if (overwritten > 0) message += "\n\n" + getString(
-            R.string.entries_overwritten,
-            overwritten
-        )
+        if (overwritten > 0) {
+            message += "\n\n" +
+                getString(
+                    R.string.entries_overwritten,
+                    overwritten,
+                )
+        }
         if (ignored > 0) message += "\n\n" + getString(R.string.entries_ignored, ignored)
-        AlertDialog.Builder(context).setMessage(message)
+        AlertDialog
+            .Builder(context)
+            .setMessage(message)
             .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-            .create().show()
+            .create()
+            .show()
     }
 
     companion object {

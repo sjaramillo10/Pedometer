@@ -14,11 +14,10 @@ import dev.sjaramillo.pedometer.R
 
 @AndroidEntryPoint
 class StatsFragment : Fragment() {
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         setHasOptionsMenu(true)
 
@@ -33,7 +32,10 @@ class StatsFragment : Fragment() {
         return view
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.menu_main, menu)
     }
 

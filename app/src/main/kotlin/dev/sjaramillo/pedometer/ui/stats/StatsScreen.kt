@@ -23,7 +23,6 @@ import dev.sjaramillo.pedometer.R
 
 @Composable
 fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
-
     val uiState = viewModel.uiState.collectAsState()
 
     val uiStateValue = uiState.value
@@ -32,16 +31,18 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
         val statsData = uiStateValue.statsData
 
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(id = R.dimen.spacing_medium))
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(dimensionResource(id = R.dimen.spacing_medium)),
         ) {
             ListItem(
-                value = stringResource(
-                    id = R.string.stats_record_format,
-                    statsData.recordSteps,
-                    statsData.recordDate
-                ),
+                value =
+                    stringResource(
+                        id = R.string.stats_record_format,
+                        statsData.recordSteps,
+                        statsData.recordDate,
+                    ),
                 description = stringResource(id = R.string.stats_record),
             )
             Row {
@@ -101,19 +102,25 @@ fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
 }
 
 @Composable
-fun ListItem(value: String, description: String, modifier: Modifier = Modifier) {
+fun ListItem(
+    value: String,
+    description: String,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier = modifier) {
         Text(
             text = value,
             style = MaterialTheme.typography.h6,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .fillMaxWidth(),
         )
         Text(
             text = description,
             style = MaterialTheme.typography.body2,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_medium)))
     }
