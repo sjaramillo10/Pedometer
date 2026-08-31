@@ -1,24 +1,9 @@
 root = true
-ktlint_code_style = android_studio
 
-[app/src/main/kotlin/dev/sjaramillo/pedometer/ui/stats/StatsScreen.kt]
+[*.{kt,kts}]
+# Allow annotations to remain on the compact constructor declaration.
+ktlint_standard_annotation = disabled
+# Keep annotated constructors in the project's compact constructor style.
+ktlint_standard_class-signature = disabled
 # Compose functions conventionally use PascalCase names.
 ktlint_standard_function-naming = disabled
-
-[app/src/main/kotlin/dev/sjaramillo/pedometer/ui/stats/StatsViewModel.kt]
-ktlint_standard_annotation = disabled
-ktlint_standard_class-signature = disabled
-ktlint_standard_function-signature = disabled
-ktlint_standard_no-empty-first-line-in-class = disabled
-
-[app/src/main/kotlin/dev/sjaramillo/pedometer/data/StepsRepository.kt]
-ktlint_standard_annotation = disabled
-ktlint_standard_class-signature = disabled
-ktlint_standard_function-signature = disabled
-ktlint_standard_no-empty-first-line-in-class = disabled
-
-[app/src/main/kotlin/dev/sjaramillo/pedometer/worker/StepsCounterWorker.kt]
-ktlint_standard_annotation = disabled
-ktlint_standard_class-signature = disabled
-ktlint_standard_function-signature = disabled
-ktlint_standard_no-empty-first-line-in-class = disabled

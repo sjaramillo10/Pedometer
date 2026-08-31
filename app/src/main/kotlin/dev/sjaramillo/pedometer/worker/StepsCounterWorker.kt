@@ -75,7 +75,10 @@ class StepsCounterWorker @AssistedInject constructor(
                     continuation.resume(false)
                 }
 
-                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                override fun onAccuracyChanged(
+                    sensor: Sensor?,
+                    accuracy: Int,
+                ) {
                     // nobody knows what happens here: step value might magically decrease
                     // when this method is called...
                     logcat { sensor?.name + " accuracy changed: " + accuracy }

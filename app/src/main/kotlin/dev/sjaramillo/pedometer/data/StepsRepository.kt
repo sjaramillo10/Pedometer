@@ -25,7 +25,10 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
 
     fun getLastEntries(num: Int): List<DailySteps> = dailyStepsDao.getLastEntries(num)
 
-    suspend fun getStepsFromDayRange(start: Long, end: Long): Long = dailyStepsDao.getStepsFromDayRange(start, end) ?: 0L
+    suspend fun getStepsFromDayRange(
+        start: Long,
+        end: Long,
+    ): Long = dailyStepsDao.getStepsFromDayRange(start, end) ?: 0L
 
     suspend fun getTotalDays(): Long = dailyStepsDao.getTotalDays()
 
@@ -73,7 +76,10 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
      * @return true if a new entry was created, false if there was already an
      * entry for 'day' (and it was overwritten)
      */
-    fun insertDayFromBackup(day: Long, steps: Long): Boolean {
+    fun insertDayFromBackup(
+        day: Long,
+        steps: Long,
+    ): Boolean {
         val dailySteps = DailySteps(day = day, steps = steps)
         val updatedRows = dailyStepsDao.update(dailySteps)
         if (updatedRows == 0) {
