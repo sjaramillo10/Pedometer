@@ -1,6 +1,7 @@
 plugins {
-    id("com.google.devtools.ksp") version "2.2.10-2.0.2" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.10" apply false
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.compose) apply false
 }
 
 buildscript {
@@ -13,6 +14,10 @@ buildscript {
         classpath(libs.android.gradle)
         classpath(libs.hilt.gradle)
     }
+}
+
+subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
 }
 
 allprojects {

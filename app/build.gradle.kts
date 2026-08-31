@@ -23,11 +23,12 @@ android {
         // https://developer.android.com/jetpack/androidx/releases/room#compiler-options
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments += mapOf(
-                    "room.schemaLocation" to "$projectDir/schemas",
-                    "room.incremental" to "true",
-                    "room.expandProjection" to "true"
-                )
+                arguments +=
+                    mapOf(
+                        "room.schemaLocation" to "$projectDir/schemas",
+                        "room.incremental" to "true",
+                        "room.expandProjection" to "true",
+                    )
             }
         }
     }
@@ -64,7 +65,6 @@ android {
 
         // TODO Add release signing configs
     }
-
 }
 
 dependencies {
