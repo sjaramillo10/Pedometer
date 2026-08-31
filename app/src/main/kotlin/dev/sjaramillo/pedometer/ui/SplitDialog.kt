@@ -1,12 +1,12 @@
 /*
  * Copyright 2014 Thomas Hoffmann
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,10 +26,12 @@ import java.text.DateFormat
 
 // TODO Extend from Dialog class
 internal object SplitDialog {
-
     private var isSplitActive = false
 
-    fun getDialog(context: Context, totalSteps: Long): Dialog {
+    fun getDialog(
+        context: Context,
+        totalSteps: Long,
+    ): Dialog {
         // TODO Inject Database
         val prefs = context.getSharedPreferences("pedometer", Context.MODE_MULTI_PROCESS)
         val splitDate = prefs.getLong("split_date", -1)
@@ -54,10 +56,11 @@ internal object SplitDialog {
         dialog.findViewById<TextView>(R.id.distanceunit).text = distanceUnit
         dialog.findViewById<TextView>(R.id.distance).text =
             numberFormat.format(distance.toDouble())
-        dialog.findViewById<TextView>(R.id.date).text = context.getString(
-            R.string.since,
-            DateFormat.getDateTimeInstance().format(splitDate)
-        )
+        dialog.findViewById<TextView>(R.id.date).text =
+            context.getString(
+                R.string.since,
+                DateFormat.getDateTimeInstance().format(splitDate),
+            )
         val started = dialog.findViewById<View>(R.id.started)
         val stopped = dialog.findViewById<View>(R.id.stopped)
         isSplitActive = splitDate > 0
@@ -67,14 +70,21 @@ internal object SplitDialog {
         startStopButton.setText(if (isSplitActive) R.string.stop else R.string.start)
         startStopButton.setOnClickListener {
             if (!isSplitActive) {
-                prefs.edit().putLong("split_date", System.currentTimeMillis())
-                    .putLong("split_steps", totalSteps).apply()
+                prefs
+                    .edit()
+                    .putLong("split_date", System.currentTimeMillis())
+                    .putLong("split_steps", totalSteps)
+                    .apply()
                 isSplitActive = true
                 dialog.dismiss()
             } else {
                 started.visibility = View.GONE
                 stopped.visibility = View.VISIBLE
-                prefs.edit().remove("split_date").remove("split_steps").apply()
+                prefs
+                    .edit()
+                    .remove("split_date")
+                    .remove("split_steps")
+                    .apply()
                 isSplitActive = false
             }
             startStopButton.setText(if (isSplitActive) R.string.stop else R.string.start)

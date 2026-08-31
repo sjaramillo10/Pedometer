@@ -27,11 +27,13 @@ import javax.inject.Inject
 // TODO Figure out if this Receiver is necessary. WorkManager is persisted.
 @AndroidEntryPoint
 class BootReceiver : BroadcastReceiver() {
-
     @Inject
     lateinit var stepsRepository: StepsRepository
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
         logcat { "Device booted" }

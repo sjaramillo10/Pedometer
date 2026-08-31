@@ -51,8 +51,9 @@ import kotlin.math.roundToLong
 // TODO cleanup this file
 // TODO Use ViewBinding or not? Maybe go straight to Compose!
 @AndroidEntryPoint
-class HomeFragment : Fragment(), SensorEventListener {
-
+class HomeFragment :
+    Fragment(),
+    SensorEventListener {
     @Inject // TODO Move to ViewModel
     lateinit var stepsRepository: StepsRepository
 
@@ -66,7 +67,7 @@ class HomeFragment : Fragment(), SensorEventListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         setHasOptionsMenu(true)
 
@@ -102,11 +103,14 @@ class HomeFragment : Fragment(), SensorEventListener {
         val sm = context?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val sensor = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         if (sensor == null) {
-            AlertDialog.Builder(context).setTitle(R.string.no_sensor)
+            AlertDialog
+                .Builder(context)
+                .setTitle(R.string.no_sensor)
                 .setMessage(R.string.no_sensor_explain)
                 .setOnDismissListener { activity?.finish() }
                 .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create().show()
+                .create()
+                .show()
         } else {
             sm.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI, 0)
         }
@@ -121,8 +125,10 @@ class HomeFragment : Fragment(), SensorEventListener {
         if (showSteps) {
             requireView().findViewById<TextView>(R.id.unit).text = getString(R.string.steps)
         } else {
-            var unit = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
-                .getString("step_size_unit", SettingsFragment.DEFAULT_STEP_UNIT)
+            var unit =
+                requireContext()
+                    .getSharedPreferences("pedometer", Context.MODE_PRIVATE)
+                    .getString("step_size_unit", SettingsFragment.DEFAULT_STEP_UNIT)
             unit = if (unit == "cm") "km" else "mi"
             requireView().findViewById<TextView>(R.id.unit).text = unit
         }
@@ -141,7 +147,10 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.menu_main, menu)
     }
 
@@ -156,7 +165,10 @@ class HomeFragment : Fragment(), SensorEventListener {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+    override fun onAccuracyChanged(
+        sensor: Sensor,
+        accuracy: Int,
+    ) {
         // won't happen
     }
 
@@ -235,10 +247,12 @@ class HomeFragment : Fragment(), SensorEventListener {
             val current = lastEntries[i]
             steps = current.steps.toInt()
             if (steps > 0) {
-                bm = BarModel(
-                    dtf.format(DateUtil.dayToLocalDate(current.day)), 0f,
-                    if (steps > goal) Color.parseColor("#99CC00") else Color.parseColor("#0099cc")
-                )
+                bm =
+                    BarModel(
+                        dtf.format(DateUtil.dayToLocalDate(current.day)),
+                        0f,
+                        if (steps > goal) Color.parseColor("#99CC00") else Color.parseColor("#0099cc"),
+                    )
                 if (showSteps) {
                     bm.value = steps.toFloat()
                 } else {

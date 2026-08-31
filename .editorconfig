@@ -1,0 +1,5 @@
+root = true
+
+[app/src/main/kotlin/dev/sjaramillo/pedometer/ui/stats/StatsScreen.kt]
+# Compose functions conventionally use PascalCase names.
+ktlint_standard_function-naming = disabled

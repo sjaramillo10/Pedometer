@@ -23,7 +23,8 @@ class WorkManagerTestRule : TestWatcher() {
         targetContext = InstrumentationRegistry.getInstrumentation().targetContext
         testContext = InstrumentationRegistry.getInstrumentation().context
         configuration =
-            Configuration.Builder()
+            Configuration
+                .Builder()
                 .setMinimumLoggingLevel(Log.DEBUG)
                 .setExecutor(SynchronousExecutor())
                 .build()
