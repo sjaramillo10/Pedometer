@@ -4,12 +4,13 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("dagger.hilt.android.plugin")
-    id("kotlin-android")
-    id("kotlin-kapt") // TODO Migrate to KSP when stable
+    id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
-    compileSdk = 31
+    namespace = "dev.sjaramillo.pedometer"
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "dev.sjaramillo.pedometer"
@@ -40,17 +41,13 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.core.get()
-    }
-
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
         }
         getByName("release") {
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
@@ -68,11 +65,6 @@ android {
         // TODO Add release signing configs
     }
 
-    sourceSets.configureEach {
-        // Workaround so that ktlint considers contents inside the kotlin folders by default
-        // More info: https://github.com/JLLeitschuh/ktlint-gradle/issues/524#issuecomment-915639053
-        java.srcDirs("src/$name/kotlin")
-    }
 }
 
 dependencies {
@@ -90,9 +82,9 @@ dependencies {
 
     // Hilt
     implementation(libs.androidx.hilt.work)
-    kapt(libs.androidx.hilt.compiler)
+    ksp(libs.androidx.hilt.compiler)
     implementation(libs.hilt.core)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     // Material Components
     implementation(libs.material)
@@ -104,7 +96,7 @@ dependencies {
     // Room
     implementation(libs.room.core)
     implementation(libs.room.runtime)
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
 
     // ViewModel
     implementation(libs.viewmodel.compose)
@@ -128,9 +120,11 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit)
     androidTestImplementation(libs.core.testing)
     androidTestImplementation(libs.work.testing)
-    kaptAndroidTest(libs.hilt.compiler)
+    kspAndroidTest(libs.hilt.compiler)
 }
 
-kapt {
-    correctErrorTypes = true
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.expandProjection", "true")
 }

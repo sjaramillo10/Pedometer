@@ -1,6 +1,6 @@
 plugins {
-    // There is a "false-positive" error highlighted below. More info: https://youtrack.jetbrains.com/issue/KTIJ-19369
-    alias(libs.plugins.ktlint)
+    id("com.google.devtools.ksp") version "2.2.10-2.0.2" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.10" apply false
 }
 
 buildscript {
@@ -12,15 +12,6 @@ buildscript {
     dependencies {
         classpath(libs.android.gradle)
         classpath(libs.hilt.gradle)
-        classpath(libs.kotlin.gradle)
-    }
-}
-
-subprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
-
-    repositories {
-        mavenCentral()
     }
 }
 
