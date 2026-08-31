@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.sjaramillo.pedometer"
-        targetSdk = 31
+        targetSdk = 34
         minSdk = 21
         versionCode = 1
         versionName = "0.1.0"
