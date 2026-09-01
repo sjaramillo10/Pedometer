@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "dev.sjaramillo.pedometer"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "dev.sjaramillo.pedometer"
-        targetSdk = 34
-        minSdk = 21
+        targetSdk = 37
+        minSdk = 37
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -86,6 +86,9 @@ dependencies {
     implementation(libs.hilt.core)
     ksp(libs.hilt.compiler)
 
+    // Health Connect
+    implementation(libs.health.connect.client)
+
     // Material Components
     implementation(libs.material)
 
@@ -120,6 +123,7 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit)
     androidTestImplementation(libs.core.testing)
     androidTestImplementation(libs.work.testing)
+    testImplementation(libs.health.connect.testing)
     kspAndroidTest(libs.hilt.compiler)
 }
 

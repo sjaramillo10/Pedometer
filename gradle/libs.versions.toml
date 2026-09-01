@@ -11,6 +11,8 @@ core-testing = "2.1.0"
 eaze-graph = "1.0.3"
 fragment = "1.4.1"
 hilt = "2.60.1"
+health-connect = "1.1.0"
+health-connect-testing = "1.0.0-alpha04"
 junit = "4.13.2"
 kotlin = "2.3.21"
 ktlint = "14.2.0"
@@ -45,6 +47,8 @@ hilt-compiler = { module ="com.google.dagger:hilt-compiler", version.ref = "hilt
 hilt-core = { module ="com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-gradle = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 hilt-testing = { module ="com.google.dagger:hilt-android-testing", version.ref = "hilt" }
+health-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "health-connect" }
+health-connect-testing = { module = "androidx.health.connect:connect-testing", version.ref = "health-connect-testing" }
 junit = { module = "junit:junit", version.ref = "junit" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
