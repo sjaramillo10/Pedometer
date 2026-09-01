@@ -1,7 +1,10 @@
 package dev.sjaramillo.pedometer.data
 
 import android.content.Context
+import android.health.connect.DeviceDataSource
+import android.health.connect.HealthConnectException
 import android.health.connect.HealthConnectManager
+import android.os.OutcomeReceiver
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.DataOrigin
@@ -12,6 +15,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class PhoneStepsDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -21,9 +26,7 @@ class PhoneStepsDataSource @Inject constructor(
         start: LocalDate,
         end: LocalDate,
     ): Map<LocalDate, Long> {
-        val dataOrigins = mutableSetOf(DataOrigin(LEGACY_ANDROID_DATA_ORIGIN))
-        val currentDeviceOrigin = getCurrentDeviceOrigin()
-        currentDeviceOrigin?.let { dataOrigins += DataOrigin(it) }
+        val dataOrigins = phoneStepDataOrigins(getCurrentDeviceOrigin())
 
         val response =
             healthConnectClient.aggregateGroupByPeriod(
@@ -44,19 +47,37 @@ class PhoneStepsDataSource @Inject constructor(
         }
     }
 
-    private companion object {
-        const val LEGACY_ANDROID_DATA_ORIGIN = "android"
+    private suspend fun getCurrentDeviceOrigin(): String? =
+        suspendCoroutine { continuation ->
+            val healthConnectManager = context.getSystemService(HealthConnectManager::class.java)
+            if (healthConnectManager == null) {
+                continuation.resume(null)
+                return@suspendCoroutine
+            }
+
+            runCatching {
+                healthConnectManager.getCurrentDeviceDataSource(
+                    context.mainExecutor,
+                    object : OutcomeReceiver<DeviceDataSource, HealthConnectException> {
+                        override fun onResult(result: DeviceDataSource) {
+                            continuation.resume(result.deviceDataOrigin.packageName)
+                        }
+
+                        override fun onError(error: HealthConnectException) {
+                            continuation.resume(null)
+                        }
+                    },
+                )
+            }.onFailure {
+                continuation.resume(null)
+            }
+        }
+}
+
+internal fun phoneStepDataOrigins(currentDeviceOrigin: String?): Set<DataOrigin> =
+    buildSet {
+        add(DataOrigin(LEGACY_ANDROID_DATA_ORIGIN))
+        currentDeviceOrigin?.let { add(DataOrigin(it)) }
     }
 
-    private fun getCurrentDeviceOrigin(): String? =
-        runCatching {
-            val healthConnectManager = context.getSystemService(HealthConnectManager::class.java)
-            val dataSource =
-                HealthConnectManager::class
-                    .java
-                    .getMethod("getCurrentDeviceDataSource")
-                    .invoke(healthConnectManager)
-            val dataOrigin = dataSource.javaClass.getMethod("getDeviceDataOrigin").invoke(dataSource)
-            dataOrigin.javaClass.getMethod("getPackageName").invoke(dataOrigin) as String
-        }.getOrNull()
-}
+private const val LEGACY_ANDROID_DATA_ORIGIN = "android"
