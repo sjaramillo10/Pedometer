@@ -26,7 +26,7 @@ abstract class PedometerDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_1_2)
                 .build()
 
-        private val MIGRATION_1_2 =
+        val MIGRATION_1_2 =
             object : Migration(1, 2) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("DELETE FROM daily_steps")
