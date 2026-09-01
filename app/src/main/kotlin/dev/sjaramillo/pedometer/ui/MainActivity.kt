@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.MenuItem
+import android.view.WindowInsets
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -41,11 +42,13 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         findViewById<BottomNavigationView>(R.id.bottom_nav).setupWithNavController(navController)
 
-        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
         setupActionBarWithNavController(
             navController,
             AppBarConfiguration(setOf(R.id.dest_home, R.id.dest_stats, R.id.dest_settings)),
         )
+        applyToolbarSystemBarInsets(toolbar)
     }
 
     override fun onResume() {
@@ -59,6 +62,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshHealthConnect() {
         lifecycleScope.launch { healthConnectSyncCoordinator.refresh() }
+    }
+
+    private fun applyToolbarSystemBarInsets(toolbar: Toolbar) {
+        val initialHeight = toolbar.layoutParams.height
+        val initialPaddingLeft = toolbar.paddingLeft
+        val initialPaddingTop = toolbar.paddingTop
+        val initialPaddingRight = toolbar.paddingRight
+        val initialPaddingBottom = toolbar.paddingBottom
+
+        toolbar.setOnApplyWindowInsetsListener { view, windowInsets ->
+            val topInset = windowInsets.getInsets(WindowInsets.Type.systemBars()).top
+            view.setPadding(
+                initialPaddingLeft,
+                initialPaddingTop + topInset,
+                initialPaddingRight,
+                initialPaddingBottom,
+            )
+            view.layoutParams.height = initialHeight + topInset
+            view.requestLayout()
+            windowInsets
+        }
+        toolbar.requestApplyInsets()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
