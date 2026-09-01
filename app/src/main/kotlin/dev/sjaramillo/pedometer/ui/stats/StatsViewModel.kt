@@ -35,6 +35,7 @@ class StatsViewModel @Inject constructor(
     private fun createStatsData(dailySteps: List<DailySteps>): StatsData {
         val today = LocalDate.now()
         val stepsByDay = dailySteps.associate { DateUtil.dayToLocalDate(it.day) to it.steps }
+
         fun totalSince(start: LocalDate): Long =
             generateSequence(start) { day -> day.plusDays(1).takeIf { it <= today } }
                 .sumOf { stepsByDay[it] ?: 0 }

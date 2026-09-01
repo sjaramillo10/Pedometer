@@ -9,12 +9,12 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.health.connect.client.PermissionController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
@@ -82,7 +82,8 @@ class MainActivity : AppCompatActivity() {
                 append(getString(R.string.about_app_version, packageManager.getPackageInfo(packageName, 0).versionName))
                 movementMethod = LinkMovementMethod.getInstance()
             }
-        AlertDialog.Builder(this)
+        AlertDialog
+            .Builder(this)
             .setTitle(R.string.about)
             .setView(text)
             .setPositiveButton(android.R.string.ok, null)

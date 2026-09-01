@@ -10,8 +10,7 @@ class StepsRepository @Inject constructor(db: PedometerDatabase) {
 
     fun getAllFlow(): Flow<List<DailySteps>> = dailyStepsDao.getAllFlow()
 
-    fun getStepsTodayFlow(): Flow<Long> =
-        dailyStepsDao.getStepsFlow(LocalDate.now().toEpochDay()).map { it ?: 0 }
+    fun getStepsTodayFlow(): Flow<Long> = dailyStepsDao.getStepsFlow(LocalDate.now().toEpochDay()).map { it ?: 0 }
 
     fun getLastEntriesFlow(num: Int): Flow<List<DailySteps>> = dailyStepsDao.getLastEntriesFlow(num)
 

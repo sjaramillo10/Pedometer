@@ -102,6 +102,7 @@ dependencies {
     // ViewModel
     implementation(libs.viewmodel.compose)
     implementation(libs.viewmodel.core)
+    implementation(libs.lifecycle.runtime)
 
     // Other
     implementation(libs.logcat)

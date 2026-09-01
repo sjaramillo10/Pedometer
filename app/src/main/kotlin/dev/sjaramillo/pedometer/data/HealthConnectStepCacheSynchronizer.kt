@@ -11,9 +11,10 @@ class HealthConnectStepCacheSynchronizer @Inject constructor(
 ) {
     suspend fun sync() {
         val today = LocalDate.now()
-        val start = syncPreferences.getStartDay() ?: today.minusDays(INITIAL_HISTORY_DAYS - 1).also {
-            syncPreferences.setStartDay(it)
-        }
+        val start =
+            syncPreferences.getStartDay() ?: today.minusDays(INITIAL_HISTORY_DAYS - 1).also {
+                syncPreferences.setStartDay(it)
+            }
         val phoneStepsByDay = phoneStepsDataSource.readDailySteps(start, today)
         val cacheEntries =
             generateSequence(start) { day -> day.plusDays(1).takeIf { it <= today } }

@@ -22,12 +22,7 @@ class PhoneStepsDataSource @Inject constructor(
         end: LocalDate,
     ): Map<LocalDate, Long> {
         val dataOrigins = mutableSetOf(DataOrigin(LEGACY_ANDROID_DATA_ORIGIN))
-        val currentDeviceOrigin =
-            context
-                .getSystemService(HealthConnectManager::class.java)
-                ?.currentDeviceDataSource
-                ?.deviceDataOrigin
-                ?.packageName
+        val currentDeviceOrigin = getCurrentDeviceOrigin()
         currentDeviceOrigin?.let { dataOrigins += DataOrigin(it) }
 
         val response =
@@ -52,4 +47,16 @@ class PhoneStepsDataSource @Inject constructor(
     private companion object {
         const val LEGACY_ANDROID_DATA_ORIGIN = "android"
     }
+
+    private fun getCurrentDeviceOrigin(): String? =
+        runCatching {
+            val healthConnectManager = context.getSystemService(HealthConnectManager::class.java)
+            val dataSource =
+                HealthConnectManager::class
+                    .java
+                    .getMethod("getCurrentDeviceDataSource")
+                    .invoke(healthConnectManager)
+            val dataOrigin = dataSource.javaClass.getMethod("getDeviceDataOrigin").invoke(dataSource)
+            dataOrigin.javaClass.getMethod("getPackageName").invoke(dataOrigin) as String
+        }.getOrNull()
 }

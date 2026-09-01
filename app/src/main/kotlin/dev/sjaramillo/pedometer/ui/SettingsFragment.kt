@@ -69,20 +69,21 @@ class SettingsFragment :
         preference: Preference,
         prefs: android.content.SharedPreferences,
     ) {
-        val picker = NumberPicker(context).apply {
-            minValue = 1
-            maxValue = 100000
-            value = prefs.getInt("goal", DEFAULT_GOAL)
-        }
-        AlertDialog.Builder(context)
+        val picker =
+            NumberPicker(context).apply {
+                minValue = 1
+                maxValue = 100000
+                value = prefs.getInt("goal", DEFAULT_GOAL)
+            }
+        AlertDialog
+            .Builder(context)
             .setView(picker)
             .setTitle(R.string.set_goal)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 picker.clearFocus()
                 prefs.edit().putInt("goal", picker.value).apply()
                 preference.summary = getString(R.string.goal_summary, picker.value)
-            }
-            .setNegativeButton(android.R.string.cancel, null)
+            }.setNegativeButton(android.R.string.cancel, null)
             .create()
             .also { dialog: Dialog ->
                 dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
@@ -101,7 +102,8 @@ class SettingsFragment :
         unit.check(if (stepSizeUnit == "cm") R.id.cm else R.id.ft)
         value.setText(prefs.getFloat("step_size_value", DEFAULT_STEP_SIZE).toString())
 
-        AlertDialog.Builder(context)
+        AlertDialog
+            .Builder(context)
             .setView(view)
             .setTitle(R.string.set_step_size)
             .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -114,8 +116,7 @@ class SettingsFragment :
                         .apply()
                     preference.summary = getString(R.string.step_size_summary, stepSize, stepSizeUnitValue)
                 }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
+            }.setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 

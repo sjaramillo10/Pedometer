@@ -23,8 +23,8 @@ import dev.sjaramillo.pedometer.data.HealthConnectSyncState
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
