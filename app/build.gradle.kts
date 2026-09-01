@@ -81,8 +81,6 @@ dependencies {
     implementation(libs.bundles.compose)
 
     // Hilt
-    implementation(libs.androidx.hilt.work)
-    ksp(libs.androidx.hilt.compiler)
     implementation(libs.hilt.core)
     ksp(libs.hilt.compiler)
 
@@ -105,9 +103,6 @@ dependencies {
     implementation(libs.viewmodel.compose)
     implementation(libs.viewmodel.core)
 
-    // WorkManager
-    implementation(libs.work.runtime)
-
     // Other
     implementation(libs.logcat)
     implementation(libs.eaze.graph)
@@ -122,7 +117,7 @@ dependencies {
     androidTestImplementation(libs.hilt.testing)
     androidTestImplementation(libs.compose.ui.test.junit)
     androidTestImplementation(libs.core.testing)
-    androidTestImplementation(libs.work.testing)
+    androidTestImplementation(libs.room.testing)
     testImplementation(libs.health.connect.testing)
     kspAndroidTest(libs.hilt.compiler)
 }

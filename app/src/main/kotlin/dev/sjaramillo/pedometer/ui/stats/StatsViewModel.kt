@@ -3,14 +3,15 @@ package dev.sjaramillo.pedometer.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.sjaramillo.pedometer.data.DailySteps
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,52 +25,44 @@ class StatsViewModel @Inject constructor(
     val uiState: StateFlow<StatsUiState> = _uiState
 
     init {
-        viewModelScope.launch { generateStatsUiState() }
+        viewModelScope.launch {
+            stepsRepository.getAllFlow().collect { dailySteps ->
+                _uiState.value = StatsUiState.Success(createStatsData(dailySteps))
+            }
+        }
     }
 
-    private suspend fun generateStatsUiState() {
-        delay(250) // Just a touch to show the loading animation 😁
+    private fun createStatsData(dailySteps: List<DailySteps>): StatsData {
+        val today = LocalDate.now()
+        val stepsByDay = dailySteps.associate { DateUtil.dayToLocalDate(it.day) to it.steps }
+        fun totalSince(start: LocalDate): Long =
+            generateSequence(start) { day -> day.plusDays(1).takeIf { it <= today } }
+                .sumOf { stepsByDay[it] ?: 0 }
 
-        val today = DateUtil.getToday()
-        val dayOfMonth = DateUtil.getDayOfMonth()
-        val dayOfYear = DateUtil.getDayOfYear()
-        val totalDays = stepsRepository.getTotalDays()
+        val record = dailySteps.maxByOrNull(DailySteps::steps)
+        val totalLast7Days = totalSince(today.minusDays(6))
+        val totalThisMonth = totalSince(today.withDayOfMonth(1))
+        val totalThisYear = totalSince(today.withDayOfYear(1))
+        val totalAllTime = dailySteps.sumOf(DailySteps::steps)
+        val totalDays = dailySteps.size.coerceAtLeast(1)
 
-        val record = stepsRepository.getRecord()
-        val totalStepsPrevious6Days = stepsRepository.getStepsFromDayRange(today - 6, today - 1)
-        val totalStepsThisMonthUntilToday =
-            stepsRepository.getStepsFromDayRange(today - dayOfMonth + 1, today - 1)
-        val totalStepsThisYearUntilToday =
-            stepsRepository.getStepsFromDayRange(today - dayOfYear + 1, today - 1)
-        val totalStepsUntilToday = stepsRepository.getStepsFromDayRange(0, today - 1)
-
-        stepsRepository.getStepsTodayFlow().collect { stepsToday ->
-            val totalStepsLast7Days = totalStepsPrevious6Days + stepsToday
-            val totalStepsThisMonth = totalStepsThisMonthUntilToday + stepsToday
-            val totalStepsThisYear = totalStepsThisYearUntilToday + stepsToday
-            val totalStepsAllTime = totalStepsUntilToday + stepsToday
-
-            val statsData =
-                StatsData(
-                    recordSteps = numberFormat.format(record.steps),
-                    recordDate = dateFormat.format(DateUtil.dayToLocalDate(record.day)),
-                    totalStepsLast7Days = numberFormat.format(totalStepsLast7Days),
-                    averageStepsLast7Days = numberFormat.format(totalStepsLast7Days / 7),
-                    totalStepsThisMonth = numberFormat.format(totalStepsThisMonth),
-                    averageStepsThisMonth = numberFormat.format(totalStepsThisMonth / dayOfMonth),
-                    totalStepsThisYear = numberFormat.format(totalStepsThisYear),
-                    averageStepsThisYear = numberFormat.format(totalStepsThisYear / dayOfYear),
-                    totalStepsAllTime = numberFormat.format(totalStepsAllTime),
-                    averageStepsAllTime = numberFormat.format(totalStepsAllTime / totalDays),
-                )
-
-            _uiState.value = StatsUiState.Success(statsData)
-        }
+        return StatsData(
+            recordSteps = numberFormat.format(record?.steps ?: 0),
+            recordDate = record?.let { dateFormat.format(DateUtil.dayToLocalDate(it.day)) } ?: "—",
+            totalStepsLast7Days = numberFormat.format(totalLast7Days),
+            averageStepsLast7Days = numberFormat.format(totalLast7Days / 7),
+            totalStepsThisMonth = numberFormat.format(totalThisMonth),
+            averageStepsThisMonth = numberFormat.format(totalThisMonth / today.dayOfMonth),
+            totalStepsThisYear = numberFormat.format(totalThisYear),
+            averageStepsThisYear = numberFormat.format(totalThisYear / today.dayOfYear),
+            totalStepsAllTime = numberFormat.format(totalAllTime),
+            averageStepsAllTime = numberFormat.format(totalAllTime / totalDays),
+        )
     }
 }
 
 sealed class StatsUiState {
-    object Loading : StatsUiState()
+    data object Loading : StatsUiState()
 
     data class Success(val statsData: StatsData) : StatsUiState()
 }
