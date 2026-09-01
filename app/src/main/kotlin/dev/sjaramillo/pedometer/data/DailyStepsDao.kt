@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE day>0")
-    fun getAll(): List<DailySteps> // TODO migrate to suspend fun
+    fun getAll(): List<DailySteps>
+
+    @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day")
+    fun getAllFlow(): Flow<List<DailySteps>>
 
     @Query("SELECT steps FROM daily_steps WHERE day=:day")
     fun getSteps(day: Long): Long?
@@ -21,8 +24,11 @@ interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day DESC LIMIT :num")
     fun getLastEntries(num: Int): List<DailySteps>
 
+    @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day DESC LIMIT :num")
+    fun getLastEntriesFlow(num: Int): Flow<List<DailySteps>>
+
     @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY steps DESC LIMIT 1")
-    suspend fun getRecord(): DailySteps
+    suspend fun getRecord(): DailySteps?
 
     @Query("SELECT SUM(steps) FROM daily_steps WHERE day>=:start AND day<=:end")
     suspend fun getStepsFromDayRange(
@@ -36,8 +42,14 @@ interface DailyStepsDao {
     @Query("UPDATE daily_steps SET steps=steps+:steps WHERE day=(SELECT MAX(day) FROM daily_steps)")
     fun addToLastEntry(steps: Long)
 
+    @Query("DELETE FROM daily_steps WHERE day >= :start")
+    suspend fun deleteFrom(start: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg dailySteps: DailySteps)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(dailySteps: List<DailySteps>)
 
     @Update
     fun update(vararg dailySteps: DailySteps): Int
