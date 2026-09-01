@@ -118,7 +118,6 @@ dependencies {
     androidTestImplementation(libs.hilt.testing)
     androidTestImplementation(libs.compose.ui.test.junit)
     androidTestImplementation(libs.core.testing)
-    androidTestImplementation(libs.room.testing)
     testImplementation(libs.health.connect.testing)
     kspAndroidTest(libs.hilt.compiler)
 }
