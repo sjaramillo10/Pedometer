@@ -37,11 +37,6 @@ android {
         compose = true
     }
 
-    compileOptions {
-        // Flag to enable support for the new language APIs
-        isCoreLibraryDesugaringEnabled = true
-    }
-
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
@@ -68,9 +63,6 @@ android {
 }
 
 dependencies {
-    // Enable Java 8+ API desugaring
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
-
     // AndroidX
     implementation(libs.appcompat)
     implementation(libs.activity.core)
