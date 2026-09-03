@@ -4,14 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.sjaramillo.pedometer.data.DailySteps
-import dev.sjaramillo.pedometer.data.HealthConnectSyncCoordinator
-import dev.sjaramillo.pedometer.data.HealthConnectSyncState
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -19,7 +16,6 @@ import javax.inject.Inject
 @HiltViewModel
 class StatsViewModel @Inject constructor(
     private val stepsRepository: StepsRepository,
-    private val healthConnectSyncCoordinator: HealthConnectSyncCoordinator,
 ) : ViewModel() {
     private val numberFormat = FormatUtil.numberFormat
     private val dateFormat = FormatUtil.dateFormat
@@ -30,11 +26,6 @@ class StatsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             loadStats()
-            healthConnectSyncCoordinator.state.collect { state ->
-                if (state == HealthConnectSyncState.Ready) {
-                    loadStats()
-                }
-            }
         }
     }
 
