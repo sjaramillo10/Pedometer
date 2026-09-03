@@ -1,21 +1,14 @@
 package dev.sjaramillo.pedometer.data
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
 
 class StepsRepository @Inject constructor(db: PedometerDatabase) {
     private val dailyStepsDao = db.dailyStepsDao()
 
-    fun getAllFlow(): Flow<List<DailySteps>> = dailyStepsDao.getAllFlow()
+    suspend fun getAll(): List<DailySteps> = dailyStepsDao.getAll()
 
-    fun getStepsTodayFlow(): Flow<Long> = dailyStepsDao.getStepsFlow(LocalDate.now().toEpochDay()).map { it ?: 0 }
+    suspend fun getStepsToday(): Long = dailyStepsDao.getSteps(LocalDate.now().toEpochDay()) ?: 0
 
-    fun getLastEntriesFlow(num: Int): Flow<List<DailySteps>> = dailyStepsDao.getLastEntriesFlow(num)
-
-    suspend fun getStepsFromDayRange(
-        start: Long,
-        end: Long,
-    ): Long = dailyStepsDao.getStepsFromDayRange(start, end) ?: 0L
+    suspend fun getLastEntries(num: Int): List<DailySteps> = dailyStepsDao.getLastEntries(num)
 }

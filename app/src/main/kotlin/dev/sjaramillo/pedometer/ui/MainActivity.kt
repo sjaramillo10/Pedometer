@@ -1,9 +1,8 @@
 package dev.sjaramillo.pedometer.ui
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
+import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowInsets
 import android.widget.TextView
@@ -86,12 +85,13 @@ class MainActivity : AppCompatActivity() {
         toolbar.requestApplyInsets()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
-            R.id.action_faq -> {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://j4velin.de/faq/index.php?app=pm")))
-                true
-            }
             R.id.action_about -> {
                 showAboutDialog()
                 true

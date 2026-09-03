@@ -4,9 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -24,7 +21,6 @@ import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
@@ -55,9 +51,8 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View {
-        setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_home, container, false).also { view ->
+    ): View =
+        inflater.inflate(R.layout.fragment_home, container, false).also { view ->
             stepsView = view.findViewById(R.id.steps)
             graph = view.findViewById(R.id.graph)
             statusView = view.findViewById(R.id.health_connect_status)
@@ -79,26 +74,21 @@ class HomeFragment : Fragment() {
             graph.isUsePieRotation = true
             graph.startAnimation()
         }
-    }
 
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        loadStepData()
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(
-                    stepsRepository.getStepsTodayFlow(),
-                    stepsRepository.getLastEntriesFlow(8),
-                    healthConnectSyncCoordinator.state,
-                ) { today, lastEntries, syncState -> Triple(today, lastEntries, syncState) }
-                    .collect { (today, lastEntries, syncState) ->
-                        renderUnit()
-                        updatePie(today)
-                        updateBars(lastEntries)
-                        updateHealthConnectState(syncState)
+                healthConnectSyncCoordinator.state.collect { state ->
+                    updateHealthConnectState(state)
+                    if (state == HealthConnectSyncState.Ready) {
+                        loadStepData()
                     }
+                }
             }
         }
     }
@@ -108,24 +98,6 @@ class HomeFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
         renderUnit()
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        inflater.inflate(R.menu.menu_main, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_split_count) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val totalSteps = stepsRepository.getStepsFromDayRange(0, DateUtil.getToday())
-                SplitDialog.getDialog(requireContext(), totalSteps).show()
-            }
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun renderUnit() {
@@ -170,6 +142,14 @@ class HomeFragment : Fragment() {
                     5280f
                 }
             stepsView.text = numberFormat.format(distanceToday.toDouble())
+        }
+    }
+
+    private fun loadStepData() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            renderUnit()
+            updatePie(stepsRepository.getStepsToday())
+            updateBars(stepsRepository.getLastEntries(8))
         }
     }
 

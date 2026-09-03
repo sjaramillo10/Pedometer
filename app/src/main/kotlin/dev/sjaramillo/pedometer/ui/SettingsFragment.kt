@@ -5,8 +5,6 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.NumberPicker
@@ -26,7 +24,6 @@ class SettingsFragment :
         rootKey: String?,
     ) {
         setPreferencesFromResource(R.xml.settings, rootKey)
-        setHasOptionsMenu(true)
 
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         findPreference<Preference>("goal")?.apply {
@@ -42,18 +39,6 @@ class SettingsFragment :
                     prefs.getString("step_size_unit", DEFAULT_STEP_UNIT),
                 )
         }
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        inflater.inflate(R.menu.menu_main, menu)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-        menu.findItem(R.id.action_split_count).isVisible = false
     }
 
     override fun onPreferenceClick(preference: Preference): Boolean {
