@@ -45,4 +45,23 @@
         eaze:egLegendHeight="35dp"
         eaze:egShowValues="true" />
 
+    <TextView
+        android:id="@+id/health_connect_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:padding="8dp"
+        android:visibility="gone"
+        tools:text="Connect Health Connect to see phone steps" />
+
+    <Button
+        android:id="@+id/connect_health_connect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/health_connect_status"
+        android:layout_centerHorizontal="true"
+        android:text="@string/connect_health_connect"
+        android:visibility="gone" />
+
 </RelativeLayout>

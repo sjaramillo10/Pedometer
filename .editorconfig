@@ -1,0 +1,11 @@
+root = true
+
+[*.{kt,kts}]
+# Allow annotations to remain on the compact constructor declaration.
+ktlint_standard_annotation = disabled
+
+# Keep annotated constructors in the project's compact constructor style.
+ktlint_standard_class-signature = disabled
+
+# Compose functions conventionally use PascalCase names.
+ktlint_standard_function-naming = disabled

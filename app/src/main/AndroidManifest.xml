@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="dev.sjaramillo.pedometer">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Normal permissions -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
-    <!-- Runtime permissions or sensitive permissions -->
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-
-    <!-- Hardware requirements -->
-    <uses-feature android:name="android.hardware.sensor.stepcounter" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
 
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/PedometerTheme"
         android:name=".PedometerApplication"
-        android:allowBackup="true"
-        android:fullBackupOnly="true"
-        tools:replace="label">
+        android:allowBackup="false"
+        tools:replace="label,android:allowBackup">
 
         <activity
             android:name=".ui.MainActivity"
@@ -35,29 +26,20 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".receiver.BootReceiver"
-            android:exported="true">
+        <activity
+            android:name=".ui.HealthConnectPrivacyActivity"
+            android:exported="false" />
+        <activity-alias
+            android:name="ViewHealthConnectPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".ui.HealthConnectPrivacyActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
             <intent-filter>
-                <!-- // TODO Might want to switch to android.intent.action.LOCKED_BOOT_COMPLETED -->
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".receiver.AppUpdatedReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
-            </intent-filter>
-        </receiver>
+        </activity-alias>
 
-        <!-- Remove androidx.startup to allow custom WorkManager initialization -->
-        <!-- More info: https://developer.android.com/training/dependency-injection/hilt-jetpack#workmanager -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove">
-        </provider>
     </application>
 
 </manifest>
