@@ -7,7 +7,7 @@ import androidx.room.Query
 
 @Dao
 interface DailyStepsDao {
-    @Query("SELECT * FROM daily_steps WHERE day>0")
+    @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day")
     suspend fun getAll(): List<DailySteps>
 
     @Query("SELECT steps FROM daily_steps WHERE day=:day")

@@ -7,6 +7,13 @@
     <string name="about">About</string>
     <string name="goal_summary">Current goal: %,d steps</string>
     <string name="step_size_summary">Current step size: %1$.2f %2$s</string>
+    <string name="export_title">Export data</string>
+    <string name="export_summary">Save daily steps as a CSV file</string>
+    <string name="import_title">Import data</string>
+    <string name="import_summary">Restore daily steps from a CSV file</string>
+    <string name="data_exported">Data exported.</string>
+    <string name="entries_imported">%1$d entries imported; %2$d invalid rows ignored.</string>
+    <string name="error_file">Error accessing the file: %s</string>
     <string name="set_goal">Set goal</string>
     <string name="set_step_size">Set step size</string>
     <string name="steps">steps</string>

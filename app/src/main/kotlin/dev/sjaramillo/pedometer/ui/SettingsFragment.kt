@@ -3,22 +3,50 @@ package dev.sjaramillo.pedometer.ui
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.RadioGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.data.HealthConnectSyncCoordinator
+import dev.sjaramillo.pedometer.data.StepsRepository
+import dev.sjaramillo.pedometer.data.decodeStepsCsv
+import dev.sjaramillo.pedometer.data.encodeStepsCsv
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsFragment :
     PreferenceFragmentCompat(),
     Preference.OnPreferenceClickListener {
+    @Inject
+    lateinit var healthConnectSyncCoordinator: HealthConnectSyncCoordinator
+
+    @Inject
+    lateinit var stepsRepository: StepsRepository
+
+    private val createCsvDocument =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+            uri?.let(::exportCsv)
+        }
+
+    private val openCsvDocument =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let(::importCsv)
+        }
+
     override fun onCreatePreferences(
         savedInstanceState: Bundle?,
         rootKey: String?,
@@ -39,6 +67,8 @@ class SettingsFragment :
                     prefs.getString("step_size_unit", DEFAULT_STEP_UNIT),
                 )
         }
+        findPreference<Preference>("export")?.onPreferenceClickListener = this
+        findPreference<Preference>("import")?.onPreferenceClickListener = this
     }
 
     override fun onPreferenceClick(preference: Preference): Boolean {
@@ -46,8 +76,62 @@ class SettingsFragment :
         when (preference.key) {
             "goal" -> showGoalDialog(preference, prefs)
             "step_size" -> showStepSizeDialog(preference, prefs)
+            "export" -> createCsvDocument.launch("Pedometer.csv")
+            "import" -> openCsvDocument.launch(arrayOf("text/*"))
         }
         return true
+    }
+
+    private fun exportCsv(uri: Uri) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            runCatching {
+                val csv = encodeStepsCsv(stepsRepository.getAll())
+                withContext(Dispatchers.IO) {
+                    requireContext().contentResolver.openOutputStream(uri)?.bufferedWriter()?.use {
+                        it.write(csv)
+                    } ?: throw IOException("Unable to open export destination")
+                }
+            }.onSuccess {
+                showMessage(R.string.data_exported)
+            }.onFailure { error ->
+                showMessage(R.string.error_file, error.message)
+            }
+        }
+    }
+
+    private fun importCsv(uri: Uri) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            runCatching {
+                val importedSteps =
+                    withContext(Dispatchers.IO) {
+                        requireContext().contentResolver.openInputStream(uri)?.bufferedReader()?.use {
+                            decodeStepsCsv(it.readText())
+                        } ?: throw IOException("Unable to open import source")
+                    }
+                stepsRepository.importDailySteps(importedSteps.dailySteps)
+                healthConnectSyncCoordinator.refresh()
+                importedSteps
+            }.onSuccess { importedSteps ->
+                showMessage(
+                    R.string.entries_imported,
+                    importedSteps.dailySteps.size,
+                    importedSteps.ignoredRows,
+                )
+            }.onFailure { error ->
+                showMessage(R.string.error_file, error.message)
+            }
+        }
+    }
+
+    private fun showMessage(
+        stringRes: Int,
+        vararg formatArgs: Any?,
+    ) {
+        AlertDialog
+            .Builder(requireContext())
+            .setMessage(getString(stringRes, *formatArgs))
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun showGoalDialog(
