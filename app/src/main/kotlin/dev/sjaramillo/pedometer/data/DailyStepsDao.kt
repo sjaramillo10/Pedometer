@@ -27,6 +27,12 @@ interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day DESC LIMIT :num")
     fun getLastEntriesFlow(num: Int): Flow<List<DailySteps>>
 
+    @Query("SELECT * FROM daily_steps WHERE day >= :start AND day <= :end")
+    suspend fun getEntriesInRange(
+        start: Long,
+        end: Long,
+    ): List<DailySteps>
+
     @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY steps DESC LIMIT 1")
     suspend fun getRecord(): DailySteps?
 
@@ -42,8 +48,11 @@ interface DailyStepsDao {
     @Query("UPDATE daily_steps SET steps=steps+:steps WHERE day=(SELECT MAX(day) FROM daily_steps)")
     fun addToLastEntry(steps: Long)
 
-    @Query("DELETE FROM daily_steps WHERE day >= :start")
-    suspend fun deleteFrom(start: Long)
+    @Query("DELETE FROM daily_steps WHERE day >= :start AND day <= :end")
+    suspend fun deleteFrom(
+        start: Long,
+        end: Long,
+    )
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg dailySteps: DailySteps)
