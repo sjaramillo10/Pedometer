@@ -19,22 +19,7 @@ import java.time.LocalDate
 
 object DateUtil {
     /**
-     * @return Today's Epoch Day, where day 0 is 1970-01-01
-     */
-    fun getToday(): Long = LocalDate.now().toEpochDay()
-
-    /**
      * @return The LocalDate corresponding to the given day
      */
     fun dayToLocalDate(day: Long): LocalDate = LocalDate.ofEpochDay(day)
-
-    /**
-     * @return Day of the month, from 1 to 31
-     */
-    fun getDayOfMonth(): Int = LocalDate.now().dayOfMonth
-
-    /**
-     * @return Day of the year, from 1 to 365, or 366 in a leap year
-     */
-    fun getDayOfYear(): Int = LocalDate.now().dayOfYear
 }

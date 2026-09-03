@@ -15,5 +15,4 @@
         android:key="import"
         android:summary="@string/import_summary"
         android:title="@string/import_title"/>
-
 </PreferenceScreen>

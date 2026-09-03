@@ -1,6 +1,8 @@
 package dev.sjaramillo.pedometer.di.module
 
 import android.content.Context
+import android.content.SharedPreferences
+import androidx.health.connect.client.HealthConnectClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,4 +19,16 @@ class PersistenceModule {
     fun provideDatabase(
         @ApplicationContext context: Context,
     ): PedometerDatabase = PedometerDatabase.getInstance(context)
+
+    @Provides
+    @Singleton
+    fun provideHealthConnectClient(
+        @ApplicationContext context: Context,
+    ): HealthConnectClient = HealthConnectClient.getOrCreate(context)
+
+    @Provides
+    @Singleton
+    fun provideStepsPreferences(
+        @ApplicationContext context: Context,
+    ): SharedPreferences = context.getSharedPreferences("pedometer", Context.MODE_PRIVATE)
 }

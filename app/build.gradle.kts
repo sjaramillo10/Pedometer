@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "dev.sjaramillo.pedometer"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "dev.sjaramillo.pedometer"
-        targetSdk = 34
-        minSdk = 21
+        targetSdk = 37
+        minSdk = 37
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -35,11 +35,6 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    compileOptions {
-        // Flag to enable support for the new language APIs
-        isCoreLibraryDesugaringEnabled = true
     }
 
     buildTypes {
@@ -68,9 +63,6 @@ android {
 }
 
 dependencies {
-    // Enable Java 8+ API desugaring
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
-
     // AndroidX
     implementation(libs.appcompat)
     implementation(libs.activity.core)
@@ -81,10 +73,11 @@ dependencies {
     implementation(libs.bundles.compose)
 
     // Hilt
-    implementation(libs.androidx.hilt.work)
-    ksp(libs.androidx.hilt.compiler)
     implementation(libs.hilt.core)
     ksp(libs.hilt.compiler)
+
+    // Health Connect
+    implementation(libs.health.connect.client)
 
     // Material Components
     implementation(libs.material)
@@ -101,9 +94,7 @@ dependencies {
     // ViewModel
     implementation(libs.viewmodel.compose)
     implementation(libs.viewmodel.core)
-
-    // WorkManager
-    implementation(libs.work.runtime)
+    implementation(libs.lifecycle.runtime)
 
     // Other
     implementation(libs.logcat)
@@ -111,16 +102,6 @@ dependencies {
 
     // Unit Tests
     testImplementation(libs.junit)
-
-    // Instrumentation tests
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.test.rules)
-    androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.hilt.testing)
-    androidTestImplementation(libs.compose.ui.test.junit)
-    androidTestImplementation(libs.core.testing)
-    androidTestImplementation(libs.work.testing)
-    kspAndroidTest(libs.hilt.compiler)
 }
 
 ksp {
