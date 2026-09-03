@@ -2,6 +2,7 @@ package dev.sjaramillo.pedometer.data
 
 import java.time.LocalDate
 
+/** Preserves imported history when Health Connect reports no steps for a recent day. */
 internal fun mergeRecentSteps(
     start: LocalDate,
     end: LocalDate,

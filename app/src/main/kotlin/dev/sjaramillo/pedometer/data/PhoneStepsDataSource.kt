@@ -18,6 +18,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+/** Reads phone-recorded steps, including the current device's synthetic Health Connect origin. */
 class PhoneStepsDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
     private val healthConnectClient: HealthConnectClient,
