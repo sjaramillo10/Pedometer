@@ -1,17 +1,13 @@
 [versions]
 activity = "1.4.0"
 android-gradle = "9.3.0"
-androidx-junit = "1.1.3"
-androidx-test = "1.4.0"
 appcompat = "1.4.2"
 compose-core = '1.1.1'
 compose-theme-adapter = '1.1.5'
-core-testing = "2.1.0"
 eaze-graph = "1.0.3"
 fragment = "1.4.1"
 hilt = "2.60.1"
 health-connect = "1.1.0"
-health-connect-testing = "1.0.0-alpha04"
 junit = "4.13.2"
 kotlin = "2.3.21"
 ktlint = "14.2.0"
@@ -27,24 +23,17 @@ room = "2.7.2"
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 activity-core = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
-androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-junit" }
-androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidx-test" }
-androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-core"}
 compose-material-core = { module = "androidx.compose.material:material", version.ref = "compose-core" }
 compose-material-theme-adapter = { module = "com.google.android.material:compose-theme-adapter", version.ref = "compose-theme-adapter" }
-compose-ui-test-junit = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose-core" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-core" }
-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "core-testing" }
 eaze-graph = { module = "com.github.j4velin.EazeGraph:EazeGraph", version.ref = "eaze-graph"}
 fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 hilt-compiler = { module ="com.google.dagger:hilt-compiler", version.ref = "hilt" }
 hilt-core = { module ="com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-gradle = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
-hilt-testing = { module ="com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 health-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "health-connect" }
-health-connect-testing = { module = "androidx.health.connect:connect-testing", version.ref = "health-connect-testing" }
 junit = { module = "junit:junit", version.ref = "junit" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 material = { module = "com.google.android.material:material", version.ref = "material" }

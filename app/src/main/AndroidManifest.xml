@@ -10,9 +10,8 @@
         android:label="@string/app_name"
         android:theme="@style/PedometerTheme"
         android:name=".PedometerApplication"
-        android:allowBackup="true"
-        android:fullBackupOnly="true"
-        tools:replace="label">
+        android:allowBackup="false"
+        tools:replace="label,android:allowBackup">
 
         <activity
             android:name=".ui.MainActivity"

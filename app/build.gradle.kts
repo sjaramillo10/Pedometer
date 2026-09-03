@@ -110,16 +110,6 @@ dependencies {
 
     // Unit Tests
     testImplementation(libs.junit)
-
-    // Instrumentation tests
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.test.rules)
-    androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.hilt.testing)
-    androidTestImplementation(libs.compose.ui.test.junit)
-    androidTestImplementation(libs.core.testing)
-    testImplementation(libs.health.connect.testing)
-    kspAndroidTest(libs.hilt.compiler)
 }
 
 ksp {
