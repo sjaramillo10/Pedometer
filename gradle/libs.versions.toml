@@ -8,6 +8,7 @@ eaze-graph = "1.0.3"
 fragment = "1.4.1"
 hilt = "2.60.1"
 health-connect = "1.1.0"
+coroutines-test = "1.10.2"
 junit = "4.13.2"
 kotlin = "2.3.21"
 ktlint = "14.2.0"
@@ -28,6 +29,7 @@ compose-foundation = { module = "androidx.compose.foundation:foundation", versio
 compose-material-core = { module = "androidx.compose.material:material", version.ref = "compose-core" }
 compose-material-theme-adapter = { module = "com.google.android.material:compose-theme-adapter", version.ref = "compose-theme-adapter" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-core" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-test" }
 eaze-graph = { module = "com.github.j4velin.EazeGraph:EazeGraph", version.ref = "eaze-graph"}
 fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 hilt-compiler = { module ="com.google.dagger:hilt-compiler", version.ref = "hilt" }
