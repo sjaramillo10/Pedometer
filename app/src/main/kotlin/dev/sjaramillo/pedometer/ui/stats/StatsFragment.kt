@@ -10,10 +10,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.composethemeadapter.MdcTheme
 import dagger.hilt.android.AndroidEntryPoint
+import dev.sjaramillo.pedometer.data.StepsRepository
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class StatsFragment : Fragment() {
-    private val statsViewModel: StatsViewModel by viewModels()
+    @Inject
+    lateinit var stepsRepository: StepsRepository
+
+    private val statsViewModel: StatsViewModel by viewModels {
+        StatsViewModelFactory(stepsRepository)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -22,10 +29,17 @@ class StatsFragment : Fragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                MdcTheme {
-                    StatsScreen(statsViewModel)
-                }
+        }
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
+        super.onViewCreated(view, savedInstanceState)
+        (view as ComposeView).setContent {
+            MdcTheme {
+                StatsScreen(statsViewModel)
             }
         }
+    }
 }

@@ -1,8 +1,8 @@
 package dev.sjaramillo.pedometer.ui.stats
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.sjaramillo.pedometer.data.DailySteps
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
@@ -11,10 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import javax.inject.Inject
 
-@HiltViewModel
-class StatsViewModel @Inject constructor(
+class StatsViewModel(
     private val stepsRepository: StepsRepository,
 ) : ViewModel() {
     private val numberFormat = FormatUtil.numberFormat
@@ -67,4 +65,14 @@ sealed class StatsUiState {
     data object Loading : StatsUiState()
 
     data class Success(val statsData: StatsData) : StatsUiState()
+}
+
+class StatsViewModelFactory(
+    private val stepsRepository: StepsRepository,
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        require(modelClass.isAssignableFrom(StatsViewModel::class.java))
+        return StatsViewModel(stepsRepository) as T
+    }
 }
