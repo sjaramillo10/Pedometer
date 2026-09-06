@@ -14,8 +14,10 @@
 
 ## Health Connect
 
-- Phone-only step queries must include both `DataOrigin("android")` and the
-  current device origin from `HealthConnectManager.getCurrentDeviceDataSource`.
+- Phone-only step queries must include `DataOrigin("android")` and, when
+  available, the current device origin from
+  `HealthConnectManager.getCurrentDeviceDataSource`; if unavailable, use only
+  the legacy origin.
 - On API 37, `getCurrentDeviceDataSource` is callback-based. Keep it suspendable
   via the callback; do not use reflection or assume a synchronous result.
 
@@ -26,7 +28,7 @@ Run from the repository root:
 ```sh
 ./gradlew build
 ./gradlew ktlintCheck
-./gradlew :app:testDebugUnitTest --tests 'fully.qualified.TestClass'
+./gradlew :app:testDebugUnitTest --tests 'dev.sjaramillo.pedometer.data.StepsCsvTest'
 ```
 
 Ktlint exceptions are defined in `.editorconfig` for annotated constructors,
@@ -34,6 +36,8 @@ class signatures, and Compose function naming. If the SDK or signing setup
 blocks a check, report the exact failed command. Do not expose signing
 passwords or keystores; release signing is unfinished.
 
-When updating Gradle, regenerate the complete wrapper with
+When updating Gradle, run the wrapper task twice to regenerate the complete
+wrapper and synchronize `gradlew`, `gradlew.bat`, and
+`gradle/wrapper/gradle-wrapper.properties`:
 `./gradlew wrapper --gradle-version <version> --distribution-type bin`; do not
-edit only `gradle/wrapper/gradle-wrapper.properties`.
+edit only the properties file.
