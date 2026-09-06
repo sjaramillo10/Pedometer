@@ -18,11 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.sjaramillo.pedometer.R
 
 @Composable
-fun StatsScreen(viewModel: StatsViewModel = viewModel()) {
+fun StatsScreen(viewModel: StatsViewModel) {
     val uiState = viewModel.uiState.collectAsState()
 
     val uiStateValue = uiState.value
