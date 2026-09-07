@@ -102,6 +102,7 @@ dependencies {
 
     // Unit Tests
     testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
 }
 
 ksp {
