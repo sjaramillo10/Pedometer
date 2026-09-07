@@ -1,6 +1,6 @@
 [versions]
 activity = "1.4.0"
-android-gradle = "9.3.0"
+android-gradle = "9.4.0"
 appcompat = "1.4.2"
 compose-core = '1.1.1'
 compose-theme-adapter = '1.1.5'
