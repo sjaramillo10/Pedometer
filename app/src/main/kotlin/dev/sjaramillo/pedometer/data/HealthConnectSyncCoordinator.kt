@@ -1,8 +1,6 @@
 package dev.sjaramillo.pedometer.data
 
-import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.StepsRecord
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,32 +9,40 @@ import javax.inject.Singleton
 
 @Singleton
 class HealthConnectSyncCoordinator @Inject constructor(
-    private val healthConnectClient: HealthConnectClient,
-    private val stepCacheSynchronizer: HealthConnectStepCacheSynchronizer,
+    private val stepsProvider: StepsProvider,
+    private val stepCacheSynchronizer: StepCacheSynchronizer,
 ) {
     private val _state = MutableStateFlow<HealthConnectSyncState>(HealthConnectSyncState.Loading)
     val state: StateFlow<HealthConnectSyncState> = _state.asStateFlow()
 
     suspend fun refresh() {
-        if (READ_STEPS_PERMISSION !in healthConnectClient.permissionController.getGrantedPermissions()) {
-            _state.value = HealthConnectSyncState.PermissionRequired
-            return
+        _state.value = HealthConnectSyncState.Loading
+        try {
+            when (stepsProvider.access()) {
+                StepsAccess.PermissionRequired -> _state.value = HealthConnectSyncState.PermissionRequired
+                StepsAccess.Unavailable -> _state.value = HealthConnectSyncState.Unavailable
+                StepsAccess.Available -> {
+                    _state.value = HealthConnectSyncState.Syncing
+                    stepCacheSynchronizer.sync()
+                    _state.value = HealthConnectSyncState.Ready
+                }
+            }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            _state.value = HealthConnectSyncState.Error
         }
-
-        _state.value = HealthConnectSyncState.Syncing
-        runCatching { stepCacheSynchronizer.sync() }
-            .onSuccess { _state.value = HealthConnectSyncState.Ready }
-            .onFailure { _state.value = HealthConnectSyncState.Error }
     }
 
     companion object {
-        val READ_STEPS_PERMISSION = HealthPermission.getReadPermission(StepsRecord::class)
+        val READ_STEPS_PERMISSION = dev.sjaramillo.pedometer.data.READ_STEPS_PERMISSION
     }
 }
 
 enum class HealthConnectSyncState {
     Loading,
     PermissionRequired,
+    Unavailable,
     Syncing,
     Ready,
     Error,
