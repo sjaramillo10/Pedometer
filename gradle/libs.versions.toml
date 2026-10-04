@@ -1,4 +1,5 @@
 [versions]
+coroutines = "1.10.2"
 activity = "1.4.0"
 android-gradle = "9.3.0"
 appcompat = "1.4.2"
@@ -20,6 +21,7 @@ preference = "1.2.0"
 room = "2.7.2"
 
 [libraries]
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 activity-core = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }

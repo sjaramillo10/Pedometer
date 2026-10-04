@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun requestHealthConnectAccess() {
+        if (healthConnectSyncCoordinator.isFake) return
         requestHealthConnectPermission.launch(setOf(HealthConnectSyncCoordinator.READ_STEPS_PERMISSION))
     }
 

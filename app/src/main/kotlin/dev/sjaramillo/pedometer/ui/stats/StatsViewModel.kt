@@ -7,13 +7,17 @@ import dev.sjaramillo.pedometer.data.DailySteps
 import dev.sjaramillo.pedometer.data.StepsRepository
 import dev.sjaramillo.pedometer.util.DateUtil
 import dev.sjaramillo.pedometer.util.FormatUtil
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.time.Clock
 import java.time.LocalDate
 
 class StatsViewModel(
-    private val stepsRepository: StepsRepository,
+    private val dailySteps: Flow<List<DailySteps>>,
+    private val clock: Clock = Clock.systemDefaultZone(),
 ) : ViewModel() {
     private val numberFormat = FormatUtil.numberFormat
     private val dateFormat = FormatUtil.dateFormat
@@ -23,16 +27,14 @@ class StatsViewModel(
 
     init {
         viewModelScope.launch {
-            loadStats()
+            dailySteps.collect { entries ->
+                _uiState.value = StatsUiState.Success(createStatsData(entries))
+            }
         }
     }
 
-    private suspend fun loadStats() {
-        _uiState.value = StatsUiState.Success(createStatsData(stepsRepository.getAll()))
-    }
-
     private fun createStatsData(dailySteps: List<DailySteps>): StatsData {
-        val today = LocalDate.now()
+        val today = LocalDate.now(clock)
         val stepsByDay = dailySteps.associate { DateUtil.dayToLocalDate(it.day) to it.steps }
 
         fun totalSince(start: LocalDate): Long =
@@ -73,6 +75,6 @@ class StatsViewModelFactory(
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         require(modelClass.isAssignableFrom(StatsViewModel::class.java))
-        return StatsViewModel(stepsRepository) as T
+        return StatsViewModel(stepsRepository.observeAll()) as T
     }
 }

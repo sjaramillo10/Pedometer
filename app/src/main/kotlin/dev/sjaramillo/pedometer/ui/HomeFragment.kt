@@ -26,6 +26,7 @@ import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.math.roundToLong
@@ -80,13 +81,14 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        loadStepData()
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                healthConnectSyncCoordinator.state.collect { state ->
-                    updateHealthConnectState(state)
-                    if (state == HealthConnectSyncState.Ready) {
-                        loadStepData()
+                launch {
+                    healthConnectSyncCoordinator.state.collect(::updateHealthConnectState)
+                }
+                launch {
+                    stepsRepository.observeAll().collect { entries ->
+                        renderStepData(entries)
                     }
                 }
             }
@@ -97,7 +99,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
-        renderUnit()
+        loadStepData()
     }
 
     private fun renderUnit() {
@@ -153,6 +155,12 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun renderStepData(entries: List<DailySteps>) {
+        renderUnit()
+        updatePie(entries.firstOrNull { it.day == LocalDate.now().toEpochDay() }?.steps ?: 0)
+        updateBars(entries.takeLast(8).asReversed())
+    }
+
     private fun updateBars(lastEntries: List<DailySteps>) {
         val barChart = requireView().findViewById<BarChart>(R.id.bargraph)
         if (barChart.data.isNotEmpty()) barChart.clearChart()
@@ -197,9 +205,11 @@ class HomeFragment : Fragment() {
                 connectButton.visibility = View.GONE
             }
             HealthConnectSyncState.Error -> {
-                statusView.setText(R.string.health_connect_error)
+                statusView.setText(
+                    if (healthConnectSyncCoordinator.isFake) R.string.fake_steps_error else R.string.health_connect_error,
+                )
                 statusView.visibility = View.VISIBLE
-                connectButton.visibility = View.VISIBLE
+                connectButton.visibility = if (healthConnectSyncCoordinator.isFake) View.GONE else View.VISIBLE
             }
             HealthConnectSyncState.Unavailable -> {
                 statusView.setText(R.string.health_connect_unavailable)
