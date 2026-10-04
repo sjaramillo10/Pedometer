@@ -27,6 +27,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var healthConnectSyncCoordinator: HealthConnectSyncCoordinator
 
+    @Inject
+    lateinit var debugStepsMenu: DebugStepsMenu
+
     private val requestHealthConnectPermission =
         registerForActivityResult(PermissionController.createRequestPermissionResultContract()) {
             refreshHealthConnect()
@@ -87,17 +90,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+        debugStepsMenu.addTo(menu)
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (debugStepsMenu.select(item, lifecycleScope, ::invalidateOptionsMenu)) return true
+        return when (item.itemId) {
             R.id.action_about -> {
                 showAboutDialog()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
 
     private fun showAboutDialog() {
         val text =

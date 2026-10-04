@@ -1,6 +1,9 @@
 package dev.sjaramillo.pedometer.data
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -78,6 +81,39 @@ class HealthConnectSyncCoordinatorTest {
             }
 
             assertTrue(cancelled)
+        }
+
+    @Test
+    fun `provider change waits for prior cache commit`() =
+        runBlocking {
+            val started = CompletableDeferred<Unit>()
+            val finish = CompletableDeferred<Unit>()
+            var fake = false
+            val commits = mutableListOf<Boolean>()
+            val cache =
+                object : StepCacheSynchronizer {
+                    override suspend fun sync() {
+                        if (!fake) {
+                            started.complete(Unit)
+                            finish.await()
+                        }
+                        commits.add(fake)
+                    }
+                }
+            val coordinator = HealthConnectSyncCoordinator(TestProvider(), cache)
+            val refresh = launch { coordinator.refresh() }
+            started.await()
+            val switch =
+                launch(start = CoroutineStart.UNDISPATCHED) {
+                    coordinator.refreshAfter { fake = true }
+                }
+            assertFalse(fake)
+            finish.complete(Unit)
+            refresh.join()
+            switch.join()
+
+            assertEquals(listOf(false, true), commits)
+            assertEquals(HealthConnectSyncState.Ready, coordinator.state.value)
         }
 
     private class TestProvider(

@@ -3,6 +3,8 @@ package dev.sjaramillo.pedometer.data
 import java.time.LocalDate
 
 interface StepsProvider {
+    val isFake: Boolean get() = false
+
     suspend fun access(): StepsAccess
 
     suspend fun readDailySteps(

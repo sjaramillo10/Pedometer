@@ -4,6 +4,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,7 +17,19 @@ class HealthConnectSyncCoordinator @Inject constructor(
     private val _state = MutableStateFlow<HealthConnectSyncState>(HealthConnectSyncState.Loading)
     val state: StateFlow<HealthConnectSyncState> = _state.asStateFlow()
 
-    suspend fun refresh() {
+    private val refreshMutex = Mutex()
+    val isFake: Boolean get() = stepsProvider.isFake
+
+    suspend fun refresh() = refreshAfter {}
+
+    suspend fun refreshAfter(changeProvider: () -> Unit) {
+        refreshMutex.withLock {
+            changeProvider()
+            refreshLocked()
+        }
+    }
+
+    private suspend fun refreshLocked() {
         _state.value = HealthConnectSyncState.Loading
         try {
             when (stepsProvider.access()) {

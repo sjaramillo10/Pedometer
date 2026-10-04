@@ -207,7 +207,8 @@ class HomeFragment : Fragment() {
                 connectButton.visibility = View.GONE
             }
             HealthConnectSyncState.Ready -> {
-                statusView.visibility = View.GONE
+                statusView.setText(R.string.fake_steps_enabled)
+                statusView.visibility = if (healthConnectSyncCoordinator.isFake) View.VISIBLE else View.GONE
                 connectButton.visibility = View.GONE
             }
         }
