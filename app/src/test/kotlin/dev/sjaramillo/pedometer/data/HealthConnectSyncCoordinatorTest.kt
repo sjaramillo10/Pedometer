@@ -116,6 +116,41 @@ class HealthConnectSyncCoordinatorTest {
             assertEquals(HealthConnectSyncState.Ready, coordinator.state.value)
         }
 
+    @Test
+    fun `queued toggles each use the mode left by the previous refresh`() =
+        runBlocking {
+            val started = CompletableDeferred<Unit>()
+            val finish = CompletableDeferred<Unit>()
+            var fake = false
+            val commits = mutableListOf<Boolean>()
+            val cache =
+                object : StepCacheSynchronizer {
+                    override suspend fun sync() {
+                        if (commits.isEmpty()) {
+                            started.complete(Unit)
+                            finish.await()
+                        }
+                        commits.add(fake)
+                    }
+                }
+            val coordinator = HealthConnectSyncCoordinator(TestProvider(), cache)
+            val refresh = launch { coordinator.refresh() }
+            started.await()
+            val toggles =
+                List(2) {
+                    launch(start = CoroutineStart.UNDISPATCHED) {
+                        coordinator.refreshAfter { fake = !fake }
+                    }
+                }
+            assertFalse(fake)
+            finish.complete(Unit)
+            refresh.join()
+            toggles.forEach { it.join() }
+
+            assertEquals(listOf(false, true, false), commits)
+            assertFalse(fake)
+        }
+
     private class TestProvider(
         private val access: StepsAccess = StepsAccess.Available,
         private val failure: Exception? = null,

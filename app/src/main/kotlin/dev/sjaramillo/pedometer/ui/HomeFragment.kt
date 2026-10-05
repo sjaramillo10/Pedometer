@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -38,6 +39,10 @@ class HomeFragment : Fragment() {
 
     @Inject
     lateinit var healthConnectSyncCoordinator: HealthConnectSyncCoordinator
+
+    private val homeViewModel: HomeViewModel by viewModels {
+        HomeViewModelFactory(stepsRepository)
+    }
 
     private lateinit var stepsView: TextView
     private lateinit var sliceGoal: PieModel
@@ -69,7 +74,7 @@ class HomeFragment : Fragment() {
             graph.addPieSlice(sliceGoal)
             graph.setOnClickListener {
                 showSteps = !showSteps
-                renderUnit()
+                renderStepData(homeViewModel.entries.value)
             }
             graph.isDrawValueInPie = false
             graph.isUsePieRotation = true
@@ -87,7 +92,7 @@ class HomeFragment : Fragment() {
                     healthConnectSyncCoordinator.state.collect(::updateHealthConnectState)
                 }
                 launch {
-                    stepsRepository.observeAll().collect { entries ->
+                    homeViewModel.entries.collect { entries ->
                         renderStepData(entries)
                     }
                 }
@@ -99,7 +104,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
-        loadStepData()
+        renderStepData(homeViewModel.entries.value)
     }
 
     private fun renderUnit() {
@@ -144,14 +149,6 @@ class HomeFragment : Fragment() {
                     5280f
                 }
             stepsView.text = numberFormat.format(distanceToday.toDouble())
-        }
-    }
-
-    private fun loadStepData() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            renderUnit()
-            updatePie(stepsRepository.getStepsToday())
-            updateBars(stepsRepository.getLastEntries(8))
         }
     }
 

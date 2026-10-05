@@ -26,9 +26,8 @@ class DebugStepsMenu @Inject constructor(
         invalidate: () -> Unit,
     ): Boolean {
         if (item.itemId != R.id.action_fake_steps) return false
-        val enabled = !provider.isFake
         scope.launch {
-            coordinator.refreshAfter { provider.setFakeSteps(enabled) }
+            coordinator.refreshAfter { provider.setFakeSteps(!provider.isFake) }
             invalidate()
         }
         return true
