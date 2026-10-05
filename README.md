@@ -6,8 +6,8 @@ Personal Android pedometer using phone-recorded steps from Health Connect.
 ## Debug builds
 
 Debug installs as `dev.sjaramillo.pedometer.debug`, alongside release
-(`dev.sjaramillo.pedometer`). Both use the launcher label **Pedometer** and the
-same icon for now. The existing debug signing configuration is unchanged.
+(`dev.sjaramillo.pedometer`). Both use the launcher label **Pedometer**; the debug icon adds a small **D**
+behind the right foot. The existing debug signing configuration is unchanged.
 
 Debug starts with real data. Open the toolbar overflow menu, then **Debug → Use
 fake steps**, to enable sample data without Health Connect permissions or a
