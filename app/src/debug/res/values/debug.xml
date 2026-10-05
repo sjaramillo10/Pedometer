@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_menu">Debug</string>
+    <string name="use_fake_steps">Use fake steps</string>
+    <item name="action_fake_steps" type="id" />
+</resources>

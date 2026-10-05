@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -26,6 +27,7 @@ import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.math.roundToLong
@@ -37,6 +39,10 @@ class HomeFragment : Fragment() {
 
     @Inject
     lateinit var healthConnectSyncCoordinator: HealthConnectSyncCoordinator
+
+    private val homeViewModel: HomeViewModel by viewModels {
+        HomeViewModelFactory(stepsRepository)
+    }
 
     private lateinit var stepsView: TextView
     private lateinit var sliceGoal: PieModel
@@ -68,7 +74,7 @@ class HomeFragment : Fragment() {
             graph.addPieSlice(sliceGoal)
             graph.setOnClickListener {
                 showSteps = !showSteps
-                renderUnit()
+                renderStepData(homeViewModel.entries.value)
             }
             graph.isDrawValueInPie = false
             graph.isUsePieRotation = true
@@ -80,13 +86,14 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        loadStepData()
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                healthConnectSyncCoordinator.state.collect { state ->
-                    updateHealthConnectState(state)
-                    if (state == HealthConnectSyncState.Ready) {
-                        loadStepData()
+                launch {
+                    healthConnectSyncCoordinator.state.collect(::updateHealthConnectState)
+                }
+                launch {
+                    homeViewModel.entries.collect { entries ->
+                        renderStepData(entries)
                     }
                 }
             }
@@ -97,7 +104,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         val prefs = requireContext().getSharedPreferences("pedometer", Context.MODE_PRIVATE)
         goal = prefs.getInt("goal", SettingsFragment.DEFAULT_GOAL)
-        renderUnit()
+        renderStepData(homeViewModel.entries.value)
     }
 
     private fun renderUnit() {
@@ -145,12 +152,10 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun loadStepData() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            renderUnit()
-            updatePie(stepsRepository.getStepsToday())
-            updateBars(stepsRepository.getLastEntries(8))
-        }
+    private fun renderStepData(entries: List<DailySteps>) {
+        renderUnit()
+        updatePie(entries.firstOrNull { it.day == LocalDate.now().toEpochDay() }?.steps ?: 0)
+        updateBars(entries.takeLast(8).asReversed())
     }
 
     private fun updateBars(lastEntries: List<DailySteps>) {
@@ -197,12 +202,20 @@ class HomeFragment : Fragment() {
                 connectButton.visibility = View.GONE
             }
             HealthConnectSyncState.Error -> {
-                statusView.setText(R.string.health_connect_error)
+                statusView.setText(
+                    if (healthConnectSyncCoordinator.isFake) R.string.fake_steps_error else R.string.health_connect_error,
+                )
                 statusView.visibility = View.VISIBLE
-                connectButton.visibility = View.VISIBLE
+                connectButton.visibility = if (healthConnectSyncCoordinator.isFake) View.GONE else View.VISIBLE
+            }
+            HealthConnectSyncState.Unavailable -> {
+                statusView.setText(R.string.health_connect_unavailable)
+                statusView.visibility = View.VISIBLE
+                connectButton.visibility = View.GONE
             }
             HealthConnectSyncState.Ready -> {
-                statusView.visibility = View.GONE
+                statusView.setText(R.string.fake_steps_enabled)
+                statusView.visibility = if (healthConnectSyncCoordinator.isFake) View.VISIBLE else View.GONE
                 connectButton.visibility = View.GONE
             }
         }

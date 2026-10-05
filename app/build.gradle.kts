@@ -39,6 +39,7 @@ android {
 
     buildTypes {
         getByName("debug") {
+            applicationIdSuffix = ".debug"
             isMinifyEnabled = false
         }
         getByName("release") {
@@ -102,6 +103,7 @@ dependencies {
 
     // Unit Tests
     testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
 }
 
 ksp {

@@ -6,12 +6,12 @@ import javax.inject.Inject
 
 class HealthConnectStepCacheSynchronizer @Inject constructor(
     private val database: PedometerDatabase,
-    private val phoneStepsDataSource: PhoneStepsDataSource,
-) {
-    suspend fun sync() {
+    private val stepsProvider: StepsProvider,
+) : StepCacheSynchronizer {
+    override suspend fun sync() {
         val today = LocalDate.now()
         val start = today.minusDays(RECENT_HISTORY_DAYS - 1)
-        val phoneStepsByDay = phoneStepsDataSource.readDailySteps(start, today)
+        val phoneStepsByDay = stepsProvider.readDailySteps(start, today)
 
         database.withTransaction {
             val dailyStepsDao = database.dailyStepsDao()

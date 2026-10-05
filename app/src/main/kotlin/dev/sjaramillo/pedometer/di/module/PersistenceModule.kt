@@ -8,7 +8,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.sjaramillo.pedometer.data.HealthConnectStepCacheSynchronizer
 import dev.sjaramillo.pedometer.data.PedometerDatabase
+import dev.sjaramillo.pedometer.data.StepCacheSynchronizer
 import javax.inject.Singleton
 
 @Module
@@ -25,6 +27,9 @@ class PersistenceModule {
     fun provideHealthConnectClient(
         @ApplicationContext context: Context,
     ): HealthConnectClient = HealthConnectClient.getOrCreate(context)
+
+    @Provides
+    fun provideStepCacheSynchronizer(synchronizer: HealthConnectStepCacheSynchronizer): StepCacheSynchronizer = synchronizer
 
     @Provides
     @Singleton
