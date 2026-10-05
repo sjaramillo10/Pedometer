@@ -13,7 +13,7 @@
         <!-- Small outlined D behind the heel of the right foot, matching the original linework. -->
         <path
             android:fillColor="#00000000"
-            android:pathData="M15,33.5L15,41L17,41C21.6,41 21.6,33.5 17,33.5Z"
+            android:pathData="M13,33.5L13,41L15,41C19.6,41 19.6,33.5 15,33.5Z"
             android:strokeColor="#FFFFFFFF"
             android:strokeLineCap="round"
             android:strokeLineJoin="round"
