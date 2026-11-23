@@ -6,6 +6,7 @@ import android.health.connect.HealthConnectException
 import android.health.connect.HealthConnectManager
 import android.os.OutcomeReceiver
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
@@ -15,14 +16,26 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 /** Reads phone-recorded steps, including the current device's synthetic Health Connect origin. */
 class PhoneStepsDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val healthConnectClient: HealthConnectClient,
+    private val healthConnectClient: Provider<HealthConnectClient>,
 ) {
+    internal suspend fun access(): HealthConnectAccess {
+        if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) {
+            return HealthConnectAccess.Unavailable
+        }
+        return if (READ_STEPS_PERMISSION in healthConnectClient.get().permissionController.getGrantedPermissions()) {
+            HealthConnectAccess.Available
+        } else {
+            HealthConnectAccess.PermissionRequired
+        }
+    }
+
     suspend fun readDailySteps(
         start: LocalDate,
         end: LocalDate,
@@ -30,7 +43,7 @@ class PhoneStepsDataSource @Inject constructor(
         val dataOrigins = phoneStepDataOrigins(getCurrentDeviceOrigin())
 
         val response =
-            healthConnectClient.aggregateGroupByPeriod(
+            healthConnectClient.get().aggregateGroupByPeriod(
                 AggregateGroupByPeriodRequest(
                     metrics = setOf(StepsRecord.COUNT_TOTAL),
                     timeRangeFilter =
@@ -82,3 +95,11 @@ internal fun phoneStepDataOrigins(currentDeviceOrigin: String?): Set<DataOrigin>
     }
 
 private const val LEGACY_ANDROID_DATA_ORIGIN = "android"
+
+internal val READ_STEPS_PERMISSION = HealthPermission.getReadPermission(StepsRecord::class)
+
+internal enum class HealthConnectAccess {
+    Available,
+    PermissionRequired,
+    Unavailable,
+}

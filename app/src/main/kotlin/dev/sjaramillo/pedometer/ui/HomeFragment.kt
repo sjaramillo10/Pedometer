@@ -201,6 +201,11 @@ class HomeFragment : Fragment() {
                 statusView.visibility = View.VISIBLE
                 connectButton.visibility = View.VISIBLE
             }
+            HealthConnectSyncState.Unavailable -> {
+                statusView.setText(R.string.health_connect_unavailable)
+                statusView.visibility = View.VISIBLE
+                connectButton.visibility = View.GONE
+            }
             HealthConnectSyncState.Ready -> {
                 statusView.visibility = View.GONE
                 connectButton.visibility = View.GONE

@@ -12,6 +12,14 @@
   the current reinstall-only policy; do not change the version or add migrations
   without an explicit policy change.
 
+## Naming and unit tests
+
+- Name types after the responsibility they own. Use a provider name when the
+  contract is provider-specific and a domain name when it works across providers.
+- Name new and updated unit tests using
+  `given <condition> when <action> then <expected outcome>`. Use
+  `// Given`, `// When`, and `// Then` blocks for setup, execution, and assertions.
+
 ## Health Connect
 
 - Phone-only step queries must include `DataOrigin("android")` and, when
@@ -20,6 +28,15 @@
   the legacy origin.
 - On API 37, `getCurrentDeviceDataSource` is callback-based. Keep it suspendable
   via the callback; do not use reflection or assume a synchronous result.
+
+## Android device deployment
+
+- Use the Android CLI to deploy to a connected device. Identify the main Owner
+  user and explicitly scope installation to that user, for example with
+  `--install-options='--user 0'` after confirming Owner is user 0.
+- Install into Private Space or another profile only when explicitly requested.
+  After deployment, verify the app is installed for the intended user and that
+  its installation status in other profiles did not change.
 
 ## Verification
 

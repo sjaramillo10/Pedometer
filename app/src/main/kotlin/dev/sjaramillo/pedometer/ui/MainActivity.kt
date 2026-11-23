@@ -19,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.HealthConnectSyncCoordinator
+import dev.sjaramillo.pedometer.data.READ_STEPS_PERMISSION
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -56,7 +57,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun requestHealthConnectAccess() {
-        requestHealthConnectPermission.launch(setOf(HealthConnectSyncCoordinator.READ_STEPS_PERMISSION))
+        requestHealthConnectPermission.launch(setOf(READ_STEPS_PERMISSION))
     }
 
     private fun refreshHealthConnect() {
