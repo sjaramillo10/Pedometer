@@ -29,6 +29,15 @@
 - On API 37, `getCurrentDeviceDataSource` is callback-based. Keep it suspendable
   via the callback; do not use reflection or assume a synchronous result.
 
+## Android device deployment
+
+- Use the Android CLI to deploy to a connected device. Identify the main Owner
+  user and explicitly scope installation to that user, for example with
+  `--install-options='--user 0'` after confirming Owner is user 0.
+- Install into Private Space or another profile only when explicitly requested.
+  After deployment, verify the app is installed for the intended user and that
+  its installation status in other profiles did not change.
+
 ## Verification
 
 Run from the repository root:
