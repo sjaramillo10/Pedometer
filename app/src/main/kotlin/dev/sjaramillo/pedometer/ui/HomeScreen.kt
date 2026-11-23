@@ -5,10 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,7 +33,13 @@ internal fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenHealthConnect: () -> Unit,
 ) {
-    Column(Modifier.fillMaxSize().background(LocalPalette.current.background).safeDrawingPadding()) {
+    val safeDrawing = WindowInsets.safeDrawing
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(LocalPalette.current.background)
+            .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -38,7 +48,11 @@ internal fun HomeScreen(
             ToolbarAction(R.drawable.ic_settings, stringResource(R.string.settings_title), onOpenSettings)
         }
         Column(
-            Modifier.fillMaxWidth().verticalScroll(scroll).padding(20.dp),
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(scroll)
+                .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Bottom))
+                .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             TodayChart(state)
