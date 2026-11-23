@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.sjaramillo.pedometer.R
+import dev.sjaramillo.pedometer.data.HealthConnectSyncState
 import kotlin.math.abs
 
 internal const val FIRST_GOAL_REPEAT_DELAY = 150L
@@ -53,6 +54,8 @@ internal fun nextGoalRepeatDelay(delayMillis: Long): Long = (delayMillis - 15L).
 internal fun SettingsScreen(
     state: SettingsUiState,
     onBack: () -> Unit,
+    onConnect: () -> Unit,
+    onRetry: () -> Unit,
     onSaveGoal: (String) -> Unit,
     onSetTheme: (AppTheme) -> Unit,
     onImport: () -> Unit,
@@ -75,6 +78,7 @@ internal fun SettingsScreen(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            HealthConnectCard(state.sync, onConnect, onRetry)
             SettingsCard(stringResource(R.string.daily_step_goal)) {
                 GoalControl(
                     goal = selectedGoal,
@@ -116,6 +120,35 @@ internal fun SettingsScreen(
                     uriHandler.openUri("https://github.com/sjaramillo10/Pedometer")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun HealthConnectCard(
+    status: HealthConnectSyncState,
+    onConnect: () -> Unit,
+    onRetry: () -> Unit,
+) {
+    SettingsCard(stringResource(R.string.health_connect)) {
+        AppText(stringResource(R.string.health_connect_description))
+        val message =
+            when (status) {
+                HealthConnectSyncState.Loading, HealthConnectSyncState.Syncing -> R.string.health_connect_syncing
+                HealthConnectSyncState.PermissionRequired -> R.string.health_connect_disconnected
+                HealthConnectSyncState.Unavailable -> R.string.health_connect_unavailable
+                HealthConnectSyncState.Error -> R.string.health_connect_error
+                HealthConnectSyncState.Ready -> R.string.health_connect_connected
+            }
+        AppText(stringResource(message), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+        when (status) {
+            HealthConnectSyncState.PermissionRequired -> TextAction(stringResource(R.string.connect_health_connect), onClick = onConnect)
+            HealthConnectSyncState.Error -> TextAction(stringResource(R.string.retry), onClick = onRetry)
+            else -> Unit
+        }
+        val uriHandler = LocalUriHandler.current
+        TextAction(stringResource(R.string.learn_health_connect)) {
+            uriHandler.openUri("https://developer.android.com/health-and-fitness/health-connect/get-started")
         }
     }
 }

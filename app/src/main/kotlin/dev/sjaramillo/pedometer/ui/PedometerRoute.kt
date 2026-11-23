@@ -48,7 +48,7 @@ internal fun PedometerRoute(
 
     val permission =
         rememberLauncherForActivityResult(PermissionController.createRequestPermissionResultContract()) {
-            home.refresh()
+            home.refresh(restart = true)
         }
     val importDocument =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -104,6 +104,8 @@ internal fun PedometerRoute(
             SettingsScreen(
                 state = settingsState,
                 onBack = closeSettings,
+                onConnect = connect,
+                onRetry = { home.refresh(restart = true) },
                 onSaveGoal = settings::saveGoal,
                 onSetTheme = settings::saveTheme,
                 onImport = { importDocument.launch(arrayOf("text/*")) },
@@ -111,7 +113,7 @@ internal fun PedometerRoute(
                 onDismissFileMessage = settings::dismissFileMessage,
             )
         } else {
-            HomeScreen(homeState, homeScroll, { showSettings = true }, connect, home::refresh)
+            HomeScreen(homeState, homeScroll) { showSettings = true }
         }
         when {
             showPrivacy ->

@@ -22,8 +22,14 @@
     <string name="settings_title">Settings</string>
 
 
+    <string name="health_connect">Health Connect</string>
+    <string name="health_connect_description">Pedometer reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. Previously saved totals can still appear in your history.</string>
+    <string name="health_connect_disconnected">Step access is off.</string>
+    <string name="health_connect_connected">Connected</string>
+    <string name="learn_health_connect">Learn about Health Connect</string>
+    <string name="open_settings">Open Settings</string>
     <string name="connect_health_connect">Connect Health Connect</string>
-    <string name="health_connect_permission_required">Connect Health Connect to read steps from this phone.</string>
+    <string name="health_connect_permission_required">Connect Health Connect in Settings to read steps from this phone.</string>
     <string name="health_connect_syncing">Refreshing phone steps…</string>
     <string name="health_connect_error">Unable to refresh phone steps. Check Health Connect and try again.</string>
     <string name="health_connect_privacy_policy">Pedometer reads step data recorded by this phone through Health Connect. It stores daily totals only on this device to show recent history and statistics. Pedometer does not write Health Connect data and does not transmit your health data.</string>

@@ -39,9 +39,9 @@ class HomeViewModel @Inject constructor(
                 HomeUiState(HomeTotals(date.value), goal = preferences.goal.value),
             )
 
-    fun refresh() {
+    fun refresh(restart: Boolean = false) {
         val today = LocalDate.now()
-        if (today == date.value && refreshJob?.isActive == true) return
+        if (!restart && today == date.value && refreshJob?.isActive == true) return
         date.value = today
         refreshJob?.cancel()
         refreshJob = viewModelScope.launch { coordinator.refresh() }

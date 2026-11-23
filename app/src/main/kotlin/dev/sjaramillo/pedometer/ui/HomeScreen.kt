@@ -27,8 +27,6 @@ internal fun HomeScreen(
     state: HomeUiState,
     scroll: ScrollState,
     onOpenSettings: () -> Unit,
-    onConnect: () -> Unit,
-    onRefresh: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize().background(LocalPalette.current.background).safeDrawingPadding()) {
         Row(
@@ -43,33 +41,15 @@ internal fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             TodayChart(state)
-            SyncStatus(state.sync, onConnect, onRefresh)
+            if (state.sync == HealthConnectSyncState.PermissionRequired) {
+                AppText(
+                    stringResource(R.string.health_connect_permission_required),
+                    Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+                TextAction(stringResource(R.string.open_settings), onClick = onOpenSettings)
+            }
             WeekChart(state)
             StatsSummary(state.bestDay, state.lifetimeSteps)
-        }
-    }
-}
-
-@Composable
-private fun SyncStatus(
-    status: HealthConnectSyncState,
-    onConnect: () -> Unit,
-    onRetry: () -> Unit,
-) {
-    val message =
-        when (status) {
-            HealthConnectSyncState.Loading, HealthConnectSyncState.Syncing -> R.string.health_connect_syncing
-            HealthConnectSyncState.PermissionRequired -> R.string.health_connect_permission_required
-            HealthConnectSyncState.Unavailable -> R.string.health_connect_unavailable
-            HealthConnectSyncState.Error -> R.string.health_connect_error
-            HealthConnectSyncState.Ready -> return
-        }
-    Column {
-        AppText(stringResource(message), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-        when (status) {
-            HealthConnectSyncState.PermissionRequired -> TextAction(stringResource(R.string.connect_health_connect), onClick = onConnect)
-            HealthConnectSyncState.Error -> TextAction(stringResource(R.string.retry), onClick = onRetry)
-            else -> Unit
         }
     }
 }
