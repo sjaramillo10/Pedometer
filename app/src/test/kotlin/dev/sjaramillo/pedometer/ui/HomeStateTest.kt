@@ -15,6 +15,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 class HomeStateTest {
@@ -42,7 +43,7 @@ class HomeStateTest {
             // When
             try {
                 withTimeout(5_000) {
-                    assertEquals(HomeTotals(), states.receive().totals)
+                    assertEquals(HomeTotals(today), states.receive().totals)
                     rows.value = listOf(previous)
                     val imported = states.receive()
                     coordinator.refresh()
@@ -58,9 +59,9 @@ class HomeStateTest {
                     }
 
                     // Then
-                    assertEquals(listOf(previous), imported.totals.history)
+                    assertEquals(listOf(previous), imported.totals.entries)
                     assertNull(imported.totals.today)
-                    assertEquals(HomeTotals(current, listOf(previous)), refreshed.totals)
+                    assertEquals(HomeTotals(today, listOf(previous, current)), refreshed.totals)
                     assertEquals(refreshed.totals, failed.totals)
                 }
             } finally {
@@ -93,7 +94,7 @@ class HomeStateTest {
 
                     // Then
                     assertEquals(current, before.totals.today)
-                    assertEquals(HomeTotals(history = listOf(current, previous)), after.totals)
+                    assertEquals(HomeTotals(today.plusDays(1), listOf(previous, current)), after.totals)
                 }
             } finally {
                 observer.cancel()
@@ -101,10 +102,30 @@ class HomeStateTest {
         }
 
     @Test
+    fun `given daily totals when building the locale week then bars distinguish recorded zero missing and upcoming days`() {
+        // Given
+        val monday = today.plusDays(1)
+        val wednesday = monday.plusDays(2)
+        val zero = DailySteps(monday.toEpochDay(), 0, fromBackup = true)
+        val recorded = DailySteps(wednesday.toEpochDay(), 12_000, fromBackup = false)
+        val future = DailySteps(wednesday.plusDays(1).toEpochDay(), 5000, fromBackup = true)
+        val totals = HomeTotals(wednesday, listOf(current, zero, recorded, future))
+
+        // When
+        val mondayWeek = totals.currentWeek(DayOfWeek.MONDAY)
+        val sundayWeek = totals.currentWeek(DayOfWeek.SUNDAY)
+
+        // Then
+        assertEquals((0L..6L).map(monday::plusDays), mondayWeek.map(WeekDay::date))
+        assertEquals(listOf(zero, null, recorded, null, null, null, null), mondayWeek.map(WeekDay::total))
+        assertEquals(WeekDay(today, current), sundayWeek.first())
+    }
+
+    @Test
     fun `given an editable goal when parsing and comparing totals then only valid targets count and equality reaches the goal`() {
         // Given
         val inputs = listOf("", "0", "100001", "1.5", " 10000 ", "1", "100000")
-        val state = HomeState(totals = HomeTotals(current), goal = 10_000)
+        val state = HomeState(totals = HomeTotals(today, listOf(current)), goal = 10_000)
 
         // When
         val parsed = inputs.map(::parseGoal)

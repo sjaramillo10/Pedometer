@@ -29,7 +29,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,7 +47,7 @@ class HomeViewModel @Inject constructor(
 
     val state =
         observeHomeState(date, stepsRepository::observeRecentDays, goal, coordinator.state)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState(goal = goal.value))
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState(HomeTotals(date.value), goal = goal.value))
     private val _fileState = MutableStateFlow(FileState())
     val fileState = _fileState.asStateFlow()
 
@@ -110,7 +112,7 @@ class HomeViewModel @Inject constructor(
 data class FileState(val busy: Boolean = false, val message: String? = null)
 
 data class HomeState(
-    val totals: HomeTotals = HomeTotals(),
+    val totals: HomeTotals,
     val goal: Int = DEFAULT_GOAL,
     val sync: HealthConnectSyncState = HealthConnectSyncState.Loading,
 ) {
@@ -120,7 +122,21 @@ data class HomeState(
     fun reachedGoal(steps: Long): Boolean = steps >= goal
 }
 
-data class HomeTotals(val today: DailySteps? = null, val history: List<DailySteps> = emptyList())
+data class HomeTotals(val date: LocalDate, val entries: List<DailySteps> = emptyList()) {
+    val today: DailySteps?
+        get() = entries.firstOrNull { it.day == date.toEpochDay() }
+
+    internal fun currentWeek(firstDay: DayOfWeek): List<WeekDay> {
+        val start = date.with(TemporalAdjusters.previousOrSame(firstDay))
+        val byDay = entries.associateBy(DailySteps::day)
+        return List(7) { index ->
+            val day = start.plusDays(index.toLong())
+            WeekDay(day, byDay[day.toEpochDay()]?.takeUnless { day.isAfter(date) })
+        }
+    }
+}
+
+internal data class WeekDay(val date: LocalDate, val total: DailySteps?)
 
 private const val DEFAULT_GOAL = 10_000
 
@@ -139,8 +155,5 @@ private fun observeHomeTotals(
     observeRecentDays: (LocalDate) -> Flow<List<DailySteps>>,
 ): Flow<HomeTotals> =
     dates.flatMapLatest { date ->
-        val today = date.toEpochDay()
-        observeRecentDays(date).map { entries ->
-            HomeTotals(entries.firstOrNull { it.day == today }, entries.filter { it.day < today }.asReversed())
-        }
+        observeRecentDays(date).map { entries -> HomeTotals(date, entries) }
     }

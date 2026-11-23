@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -35,13 +34,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
@@ -55,20 +52,21 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.HealthConnectSyncState
 import dev.sjaramillo.pedometer.ui.stats.StatsViewModel
-import dev.sjaramillo.pedometer.util.FormatUtil
-import java.time.LocalDate
 
-private data class Palette(
+internal data class Palette(
     val background: Color,
     val surface: Color,
     val text: Color,
     val accent: Color,
     val track: Color,
+    val bar: Color,
 )
 
-private val LightPalette = Palette(Color(0xFFF5F7F3), Color.White, Color(0xFF1B261E), Color(0xFF23633C), Color(0xFFD6E4D9))
-private val DarkPalette = Palette(Color(0xFF111914), Color(0xFF1C2920), Color(0xFFE6F0E7), Color(0xFF9BDAAA), Color(0xFF35483A))
-private val LocalPalette = staticCompositionLocalOf { LightPalette }
+private val LightPalette =
+    Palette(Color(0xFFF5F7F3), Color.White, Color(0xFF1B261E), Color(0xFF23633C), Color(0xFFD6E4D9), Color(0xFF49728C))
+private val DarkPalette =
+    Palette(Color(0xFF111914), Color(0xFF1C2920), Color(0xFFE6F0E7), Color(0xFF9BDAAA), Color(0xFF35483A), Color(0xFF8EB4CD))
+internal val LocalPalette = staticCompositionLocalOf { LightPalette }
 
 @Composable
 fun PedometerScreen(
@@ -99,9 +97,9 @@ fun PedometerScreen(
                 Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Today(state)
+                TodayChart(state)
                 SyncStatus(state.sync, onConnect, home::refresh)
-                History(state)
+                WeekChart(state)
                 TextAction(
                     label = stringResource(if (statsExpanded) R.string.hide_stats else R.string.show_stats),
                     onClick = { statsExpanded = !statsExpanded },
@@ -145,44 +143,6 @@ fun PedometerScreen(
 }
 
 @Composable
-private fun Today(state: HomeState) {
-    val palette = LocalPalette.current
-    val today = state.totals.today
-    val numberFormat = FormatUtil.numberFormat
-    Column(
-        Modifier.fillMaxWidth().background(palette.surface, RoundedCornerShape(20.dp)).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        AppText(stringResource(R.string.today), Modifier.semantics { heading() }, bold = true)
-        AppText(
-            today?.let { stringResource(R.string.step_count, numberFormat.format(it.steps)) }
-                ?: stringResource(R.string.no_steps_today),
-            size = 30,
-            bold = true,
-        )
-        AppText(stringResource(R.string.goal_summary, state.goal))
-        if (today?.fromBackup == true) AppText(stringResource(R.string.from_backup))
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(10.dp)
-                .background(palette.track, RoundedCornerShape(5.dp))
-                .semantics { progressBarRangeInfo = ProgressBarRangeInfo(state.progress, 0f..1f) },
-        ) {
-            Box(
-                Modifier
-                    .fillMaxWidth(state.progress)
-                    .height(10.dp)
-                    .background(palette.accent, RoundedCornerShape(5.dp)),
-            )
-        }
-        if (today != null && state.reachedGoal(today.steps)) {
-            AppText(stringResource(R.string.goal_reached), accent = true, bold = true)
-        }
-    }
-}
-
-@Composable
 private fun SyncStatus(
     status: HealthConnectSyncState,
     onConnect: () -> Unit,
@@ -202,33 +162,6 @@ private fun SyncStatus(
             HealthConnectSyncState.PermissionRequired -> TextAction(stringResource(R.string.connect_health_connect), onClick = onConnect)
             HealthConnectSyncState.Error -> TextAction(stringResource(R.string.retry), onClick = onRetry)
             else -> Unit
-        }
-    }
-}
-
-@Composable
-private fun History(state: HomeState) {
-    val palette = LocalPalette.current
-    val numberFormat = FormatUtil.numberFormat
-    val dateFormat = FormatUtil.dateFormat
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        AppText(stringResource(R.string.recent_history), Modifier.semantics { heading() }, size = 22, bold = true)
-        if (state.totals.history.isEmpty()) AppText(stringResource(R.string.no_recent_steps))
-        state.totals.history.forEach { day ->
-            val reached = state.reachedGoal(day.steps)
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .background(palette.surface, RoundedCornerShape(12.dp))
-                    .padding(12.dp)
-                    .semantics(mergeDescendants = true) {},
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                AppText(dateFormat.format(LocalDate.ofEpochDay(day.day)), bold = true)
-                AppText(stringResource(R.string.step_count, numberFormat.format(day.steps)))
-                if (reached) AppText(stringResource(R.string.goal_reached), accent = true, bold = true)
-                if (day.fromBackup) AppText(stringResource(R.string.from_backup))
-            }
         }
     }
 }

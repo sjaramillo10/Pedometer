@@ -41,8 +41,11 @@
     <string name="no_steps_today">No steps recorded today</string>
     <string name="from_backup">From backup</string>
     <string name="goal_reached">Goal reached</string>
-    <string name="recent_history">Recent history</string>
-    <string name="no_recent_steps">No steps recorded in the previous seven days.</string>
+    <string name="current_week">This week</string>
+    <string name="steps_unit">steps</string>
+    <string name="no_steps_for_day">No steps recorded</string>
+    <string name="future_day">Upcoming</string>
+    <string name="daily_goal_progress">Progress toward today’s step goal</string>
     <string name="show_stats">Show stats</string>
     <string name="hide_stats">Hide stats</string>
     <string name="stats_loading">Loading statistics…</string>
