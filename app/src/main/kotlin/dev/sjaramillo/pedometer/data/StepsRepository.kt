@@ -15,11 +15,6 @@ class StepsRepository @Inject constructor(
 
     fun observeAll(): Flow<List<DailySteps>> = dailyStepsDao.observeAll().resolveDailySteps()
 
-    fun observeRecentDays(today: LocalDate): Flow<List<DailySteps>> =
-        dailyStepsDao
-            .observeEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay())
-            .resolveDailySteps()
-
     suspend fun importDailySteps(dailySteps: List<DailySteps>) {
         dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.BACKUP) })
     }

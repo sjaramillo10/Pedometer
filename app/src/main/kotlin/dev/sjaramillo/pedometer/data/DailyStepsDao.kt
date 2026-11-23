@@ -14,12 +14,6 @@ interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY day")
     fun observeAll(): Flow<List<StoredDailySteps>>
 
-    @Query("SELECT * FROM daily_steps WHERE day BETWEEN :start AND :end ORDER BY day")
-    fun observeEntriesInRange(
-        start: Long,
-        end: Long,
-    ): Flow<List<StoredDailySteps>>
-
     @Query("DELETE FROM daily_steps WHERE source = :source AND day BETWEEN :start AND :end")
     suspend fun deleteFrom(
         source: StepSource,

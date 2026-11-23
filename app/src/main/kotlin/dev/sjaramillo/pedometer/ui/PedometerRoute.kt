@@ -120,6 +120,8 @@ internal fun PedometerRoute(
             HomeScreen(
                 homeState,
                 homeScroll,
+                onPreviousWeek = home::previousWeek,
+                onNextWeek = home::nextWeek,
                 onOpenSettings = { showSettings = true },
                 onOpenHealthConnect = {
                     revealHealthConnect = true

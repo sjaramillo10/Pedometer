@@ -32,7 +32,7 @@ class HomeUiStateTest {
             val states =
                 observeHomeUiState(
                     flowOf(today),
-                    { flowOf(listOf(current)) },
+                    flowOf(WeekSelection()),
                     goals,
                     flowOf(HealthConnectSyncState.Ready),
                     flowOf(listOf(current)),
@@ -72,17 +72,17 @@ class HomeUiStateTest {
             val states = Channel<HomeUiState>(Channel.UNLIMITED)
             val observer =
                 launch {
-                    observeHomeUiState(flowOf(today), { rows }, flowOf(10_000), coordinator.state, history)
+                    observeHomeUiState(flowOf(today), flowOf(WeekSelection()), flowOf(10_000), coordinator.state, history)
                         .collect { states.send(it) }
                 }
 
             // When
             try {
                 withTimeout(5_000) {
-                    assertEquals(HomeTotals(today), states.receive().totals)
+                    assertEquals(HomeTotals(today, listOf(older)), states.receive().totals)
                     rows.value = listOf(previous)
                     var imported = states.receive()
-                    while (imported.bestDay != previous || imported.totals.entries != listOf(previous)) {
+                    while (imported.bestDay != previous || imported.totals.entries != listOf(older, previous)) {
                         imported = states.receive()
                     }
                     coordinator.refresh()
@@ -101,13 +101,13 @@ class HomeUiStateTest {
                     }
 
                     // Then
-                    assertEquals(listOf(previous), imported.totals.entries)
+                    assertEquals(listOf(older, previous), imported.totals.entries)
                     assertNull(imported.totals.today)
                     assertEquals(6_000L, imported.lifetimeSteps)
                     assertEquals(current, refreshed.bestDay)
                     assertEquals(refreshed.bestDay, failed.bestDay)
                     assertEquals(refreshed.lifetimeSteps, failed.lifetimeSteps)
-                    assertEquals(HomeTotals(today, listOf(previous, current)), refreshed.totals)
+                    assertEquals(HomeTotals(today, listOf(older, previous, current)), refreshed.totals)
                     assertEquals(refreshed.totals, failed.totals)
                 }
             } finally {
@@ -125,10 +125,10 @@ class HomeUiStateTest {
                 launch {
                     observeHomeUiState(
                         dates,
-                        { flowOf(listOf(previous, current)) },
+                        flowOf(WeekSelection()),
                         flowOf(10_000),
                         flowOf(HealthConnectSyncState.Ready),
-                        flowOf(emptyList()),
+                        flowOf(listOf(previous, current)),
                     ).collect { states.send(it) }
                 }
 
@@ -162,8 +162,8 @@ class HomeUiStateTest {
         val totals = HomeTotals(wednesday, listOf(current, zero, recorded, future))
 
         // When
-        val mondayWeek = totals.currentWeek(DayOfWeek.MONDAY)
-        val sundayWeek = totals.currentWeek(DayOfWeek.SUNDAY)
+        val mondayWeek = totals.week(WeekSelection(), DayOfWeek.MONDAY).days
+        val sundayWeek = totals.week(WeekSelection(), DayOfWeek.SUNDAY).days
 
         // Then
         assertEquals((0L..6L).map(monday::plusDays), mondayWeek.map(WeekDay::date))
@@ -172,26 +172,77 @@ class HomeUiStateTest {
     }
 
     @Test
-    fun `given a partial calendar week when summarizing then the average counts elapsed days through today`() {
+    fun `given sparse history when summarizing current and past weeks then averages use the calendar days`() {
         // Given
         val monday = today.plusDays(1)
         val wednesday = monday.plusDays(2)
-        val week =
-            listOf(
-                WeekDay(monday, DailySteps(monday.toEpochDay(), 10_001, fromBackup = true)),
-                WeekDay(monday.plusDays(1), null),
-                WeekDay(wednesday, DailySteps(wednesday.toEpochDay(), 0, fromBackup = false)),
-                WeekDay(wednesday.plusDays(1), DailySteps(wednesday.plusDays(1).toEpochDay(), 20_000, fromBackup = false)),
-            )
+        val backup = DailySteps(monday.toEpochDay(), 10_001, fromBackup = true)
+        val zero = DailySteps(wednesday.toEpochDay(), 0, fromBackup = false)
+        val future = DailySteps(wednesday.plusDays(1).toEpochDay(), 20_000, fromBackup = false)
+        val entries = listOf(backup, zero, future)
+        val selection = WeekSelection()
 
         // When
-        val firstDay = summarizeWeek(week, monday)
-        val midweek = summarizeWeek(week, wednesday)
+        val firstDay = HomeTotals(monday, entries).week(selection, DayOfWeek.MONDAY)
+        val midweek = HomeTotals(wednesday, entries).week(selection, DayOfWeek.MONDAY)
+        val nextMonday = monday.plusWeeks(1)
+        val past = HomeTotals(nextMonday, entries).week(selection.previous(nextMonday, DayOfWeek.MONDAY), DayOfWeek.MONDAY)
 
         // Then
-        assertEquals(WeekSummary(10_001, 10_001), firstDay)
-        assertEquals(WeekSummary(10_001, 3_333), midweek)
-        assertEquals(WeekSummary(0, 0), summarizeWeek(week.map { it.copy(total = null) }, wednesday))
+        assertEquals(10_001L, firstDay.average)
+        assertEquals(10_001L, midweek.total)
+        assertEquals(3_333L, midweek.average)
+        assertEquals(backup, midweek.days.first().total)
+        assertEquals(30_001L, past.total)
+        assertEquals(4_285L, past.average)
+        assertEquals(12_000L, midweek.scaleMaximum(12_000))
+        assertEquals(20_000L, past.scaleMaximum(12_000))
+    }
+
+    @Test
+    fun `given the current week when browsing across New Year then navigation stops on return to current`() {
+        // Given
+        val january = LocalDate.of(2026, 1, 4)
+        val monday = DayOfWeek.MONDAY
+        val sunday = DayOfWeek.SUNDAY
+        val current = WeekSelection()
+
+        // When
+        val past = current.previous(january, monday)
+        val earlier = past.previous(january, monday)
+        val returned = earlier.next(january, monday).next(january, monday)
+        val rollover = january.plusDays(1)
+
+        // Then
+        assertEquals(LocalDate.of(2025, 12, 29), current.start(january, monday))
+        assertEquals(january, current.start(january, sunday))
+        assertEquals(LocalDate.of(2025, 12, 15), earlier.start(january, monday))
+        assertTrue(earlier.canGoNext(january, monday))
+        assertEquals(current, returned)
+        assertFalse(returned.canGoNext(january, monday))
+        assertEquals(current, returned.next(january, monday))
+        assertEquals(rollover, returned.start(rollover, monday))
+        assertEquals(past.start(january, monday), past.start(rollover, monday))
+    }
+
+    @Test
+    fun `given missing history and a recorded zero when selecting their weeks then only missing history is empty`() {
+        // Given
+        val zero = DailySteps(today.toEpochDay(), 0, fromBackup = false)
+        val totals = HomeTotals(today, listOf(zero))
+        val current = WeekSelection()
+
+        // When
+        val recordedWeek = totals.week(current, DayOfWeek.SUNDAY)
+        val emptyWeek = totals.week(current.previous(today, DayOfWeek.SUNDAY), DayOfWeek.SUNDAY)
+
+        // Then
+        assertFalse(recordedWeek.isEmpty)
+        assertEquals(zero, recordedWeek.days.first().total)
+        assertNull(recordedWeek.days[1].total)
+        assertTrue(emptyWeek.isEmpty)
+        assertEquals(0L, emptyWeek.total)
+        assertEquals(0L, emptyWeek.average)
     }
 
     @Test
