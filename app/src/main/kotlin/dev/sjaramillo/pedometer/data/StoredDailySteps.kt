@@ -11,5 +11,5 @@ data class StoredDailySteps(
 
 enum class StepSource {
     HEALTH_CONNECT,
-    CSV,
+    BACKUP,
 }

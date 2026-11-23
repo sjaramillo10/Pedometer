@@ -14,7 +14,7 @@ class StepsRepository @Inject constructor(
         resolveDailySteps(dailyStepsDao.getEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay()))
 
     suspend fun importDailySteps(dailySteps: List<DailySteps>) {
-        dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.CSV) })
+        dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.BACKUP) })
     }
 }
 
@@ -23,5 +23,5 @@ internal fun resolveDailySteps(entries: List<StoredDailySteps>): List<DailySteps
         .groupBy(StoredDailySteps::day)
         .map { (day, totals) ->
             val preferred = totals.firstOrNull { it.source == StepSource.HEALTH_CONNECT } ?: totals.first()
-            DailySteps(day, preferred.steps)
+            DailySteps(day, preferred.steps, fromBackup = preferred.source == StepSource.BACKUP)
         }

@@ -31,7 +31,7 @@ internal fun decodeStepsCsv(csv: String): StepsCsvImport {
         if (values.size != 2 || day == null || day <= 0 || steps == null || steps < 0) {
             ignoredRows++
         } else {
-            stepsByDay[day] = DailySteps(day, steps)
+            stepsByDay[day] = DailySteps(day, steps, fromBackup = true)
         }
     }
 
