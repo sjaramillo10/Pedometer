@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DailyStepsDao {
@@ -15,6 +16,12 @@ interface DailyStepsDao {
         start: Long,
         end: Long,
     ): List<StoredDailySteps>
+
+    @Query("SELECT * FROM daily_steps WHERE day BETWEEN :start AND :end ORDER BY day")
+    fun observeEntriesInRange(
+        start: Long,
+        end: Long,
+    ): Flow<List<StoredDailySteps>>
 
     @Query("DELETE FROM daily_steps WHERE source = :source AND day BETWEEN :start AND :end")
     suspend fun deleteFrom(

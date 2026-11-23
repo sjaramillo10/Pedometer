@@ -1,6 +1,8 @@
 package dev.sjaramillo.pedometer.data
 
 import androidx.room.withTransaction
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -13,6 +15,11 @@ class StepsRepository @Inject constructor(
 
     suspend fun getRecentDays(today: LocalDate): List<DailySteps> =
         resolveDailySteps(dailyStepsDao.getEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay()))
+
+    fun observeRecentDays(today: LocalDate): Flow<List<DailySteps>> =
+        dailyStepsDao
+            .observeEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay())
+            .resolveDailySteps()
 
     suspend fun importDailySteps(dailySteps: List<DailySteps>) {
         dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.BACKUP) })
@@ -38,3 +45,5 @@ internal fun resolveDailySteps(entries: List<StoredDailySteps>): List<DailySteps
             val preferred = totals.firstOrNull { it.source == StepSource.HEALTH_CONNECT } ?: totals.first()
             DailySteps(day, preferred.steps, fromBackup = preferred.source == StepSource.BACKUP)
         }
+
+internal fun Flow<List<StoredDailySteps>>.resolveDailySteps(): Flow<List<DailySteps>> = map(::resolveDailySteps)
