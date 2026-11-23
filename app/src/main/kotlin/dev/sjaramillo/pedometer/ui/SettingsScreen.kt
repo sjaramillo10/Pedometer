@@ -10,12 +10,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -77,7 +81,13 @@ internal fun SettingsScreen(
             onHealthConnectRevealed()
         }
     }
-    Column(Modifier.fillMaxSize().background(LocalPalette.current.background).safeDrawingPadding()) {
+    val safeDrawing = WindowInsets.safeDrawing
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(LocalPalette.current.background)
+            .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -87,7 +97,11 @@ internal fun SettingsScreen(
             AppText(stringResource(R.string.settings_title), Modifier.semantics { heading() }, size = 22, bold = true)
         }
         Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Bottom))
+                .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             SettingsCard(stringResource(R.string.daily_step_goal)) {
