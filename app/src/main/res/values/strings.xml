@@ -38,7 +38,9 @@
     <string name="close">Close</string>
     <string name="backup_result">CSV backup</string>
     <string name="retry">Retry</string>
-    <string name="goal_range">Enter a goal from 1 to 100,000 steps.</string>
+    <string name="selected_goal">%,d steps</string>
+    <string name="decrease_goal">Decrease goal by %,d steps</string>
+    <string name="increase_goal">Increase goal by %,d steps</string>
     <string name="save">Save</string>
     <string name="back">Back</string>
     <string name="backup_working">Working with CSV file…</string>

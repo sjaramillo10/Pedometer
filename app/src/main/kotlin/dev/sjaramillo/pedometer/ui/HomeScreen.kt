@@ -6,10 +6,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,26 +28,24 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.HealthConnectSyncState
+import kotlin.math.abs
 
 internal data class Palette(
     val background: Color,
@@ -168,7 +164,7 @@ private fun SettingsSheet(
     onDismissFileMessage: () -> Unit,
     version: String,
 ) {
-    var draft by rememberSaveable { mutableStateOf<String?>(null) }
+    var draft by rememberSaveable { mutableStateOf<Int?>(null) }
     var about by rememberSaveable { mutableStateOf(false) }
     val dismiss = {
         when {
@@ -181,30 +177,20 @@ private fun SettingsSheet(
         val input = draft
         when {
             input != null -> {
-                val valid = parseGoal(input) != null
-                val hint = stringResource(R.string.goal_range)
                 AppText(stringResource(R.string.set_goal), Modifier.semantics { heading() }, size = 20, bold = true)
-                AppText(hint)
-                BasicTextField(
-                    value = input,
-                    onValueChange = { draft = it },
-                    textStyle = TextStyle(color = LocalPalette.current.text, fontSize = 24.sp),
-                    cursorBrush = SolidColor(LocalPalette.current.accent),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp)
-                            .background(LocalPalette.current.track, RoundedCornerShape(8.dp))
-                            .padding(12.dp)
-                            .semantics {
-                                if (!valid) error(hint)
-                                stateDescription = hint
-                            },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
+                AppText(
+                    stringResource(R.string.selected_goal, input),
+                    Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    size = 24,
                 )
-                TextAction(stringResource(R.string.save), enabled = valid) {
-                    onSaveGoal(input)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GoalAdjustment(input, -1_000) { draft = it }
+                    GoalAdjustment(input, -100) { draft = it }
+                    GoalAdjustment(input, 100) { draft = it }
+                    GoalAdjustment(input, 1_000) { draft = it }
+                }
+                TextAction(stringResource(R.string.save), icon = "✓") {
+                    onSaveGoal(input.toString())
                     draft = null
                 }
                 TextAction(stringResource(android.R.string.cancel), onClick = dismiss)
@@ -225,10 +211,10 @@ private fun SettingsSheet(
 
             else -> {
                 AppText(stringResource(R.string.goal_summary, goal))
-                TextAction(stringResource(R.string.set_goal), onClick = { draft = goal.toString() })
-                TextAction(stringResource(R.string.import_title), !file.busy, onImport)
+                TextAction(stringResource(R.string.set_goal), onClick = { draft = goal })
+                TextAction(stringResource(R.string.import_title), !file.busy, onClick = onImport)
                 AppText(stringResource(R.string.import_summary))
-                TextAction(stringResource(R.string.export_title), !file.busy, onExport)
+                TextAction(stringResource(R.string.export_title), !file.busy, onClick = onExport)
                 AppText(stringResource(R.string.export_summary))
                 if (file.busy) {
                     AppText(stringResource(R.string.backup_working), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
@@ -239,6 +225,39 @@ private fun SettingsSheet(
                 }
                 TextAction(stringResource(R.string.about), onClick = { about = true })
                 TextAction(stringResource(R.string.close), onClick = onDismiss)
+            }
+        }
+    }
+}
+
+@Composable
+private fun GoalAdjustment(
+    goal: Int,
+    amount: Int,
+    onAdjust: (Int) -> Unit,
+) {
+    val nextGoal = adjustGoal(goal, amount)
+    val enabled = nextGoal != goal
+    val increasing = amount > 0
+    val label = stringResource(if (increasing) R.string.increase_goal else R.string.decrease_goal, abs(amount))
+    val glyph = if (increasing) "⌃" else "⌄"
+    Box(
+        modifier =
+            Modifier
+                .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                .background(LocalPalette.current.track, RoundedCornerShape(8.dp))
+                .semantics { contentDescription = label }
+                .clickable(enabled = enabled, role = Role.Button) { onAdjust(nextGoal) },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier.clearAndSetSemantics {},
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy((-8).dp),
+        ) {
+            AppText(glyph, size = 20, bold = true, accent = enabled)
+            if (abs(amount) == 1_000) {
+                AppText(glyph, size = 20, bold = true, accent = enabled)
             }
         }
     }
@@ -309,6 +328,7 @@ internal fun AppText(
 private fun TextAction(
     label: String,
     enabled: Boolean = true,
+    icon: String? = null,
     onClick: () -> Unit,
 ) {
     Box(
@@ -319,6 +339,13 @@ private fun TextAction(
                 .padding(horizontal = 8.dp, vertical = 4.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        AppText(label, bold = true, accent = enabled)
+        if (icon == null) {
+            AppText(label, bold = true, accent = enabled)
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                AppText(icon, Modifier.clearAndSetSemantics {}, bold = true, accent = enabled)
+                AppText(label, bold = true, accent = enabled)
+            }
+        }
     }
 }

@@ -184,4 +184,32 @@ class HomeUiStateTest {
         assertEquals(1f, state.progress, 0f)
         assertEquals(1f, state.copy(goal = 1).progress, 0f)
     }
+
+    @Test
+    fun `given a goal off the hundred grid when adjusted then both button sizes preserve its offset`() {
+        // Given
+        val goal = 7_550
+
+        // When
+        val adjusted = listOf(-1_000, -100, 100, 1_000).map { adjustGoal(goal, it) }
+
+        // Then
+        assertEquals(listOf(6_550, 7_450, 7_650, 8_550), adjusted)
+    }
+
+    @Test
+    fun `given goals near or at the limits when adjusted outward then both button sizes clamp to the limits`() {
+        // Given
+        val lowerGoals = listOf(1, 50)
+        val upperGoals = listOf(99_950, 100_000)
+        val amounts = listOf(100, 1_000)
+
+        // When
+        val lowerResults = lowerGoals.flatMap { goal -> amounts.map { adjustGoal(goal, -it) } }
+        val upperResults = upperGoals.flatMap { goal -> amounts.map { adjustGoal(goal, it) } }
+
+        // Then
+        assertEquals(List(4) { 1 }, lowerResults)
+        assertEquals(List(4) { 100_000 }, upperResults)
+    }
 }
