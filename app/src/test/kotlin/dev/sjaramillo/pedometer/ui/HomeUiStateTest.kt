@@ -25,6 +25,40 @@ class HomeUiStateTest {
     private val current = DailySteps(today.toEpochDay(), 10_000, fromBackup = false)
 
     @Test
+    fun `given active Home state when the theme changes then the selected theme is emitted with the current goal`() =
+        runBlocking {
+            // Given
+            val themes = MutableStateFlow(AppTheme.SYSTEM)
+            val states =
+                observeHomeUiState(
+                    flowOf(today),
+                    { flowOf(listOf(current)) },
+                    flowOf(12_000),
+                    flowOf(HealthConnectSyncState.Ready),
+                    flowOf(FileState()),
+                    flowOf(listOf(current)),
+                    themes = themes,
+                )
+            val updates = Channel<HomeUiState>(Channel.UNLIMITED)
+            val observer = launch { states.collect { updates.send(it) } }
+
+            // When
+            try {
+                withTimeout(5_000) {
+                    val initial = updates.receive()
+                    themes.value = AppTheme.DARK
+                    val updated = updates.receive()
+
+                    // Then
+                    assertEquals(AppTheme.SYSTEM, initial.theme)
+                    assertEquals(initial.copy(theme = AppTheme.DARK), updated)
+                }
+            } finally {
+                observer.cancel()
+            }
+        }
+
+    @Test
     fun `given an open screen when backup and refresh commit then totals update and survive a failed refresh`() =
         runBlocking {
             // Given

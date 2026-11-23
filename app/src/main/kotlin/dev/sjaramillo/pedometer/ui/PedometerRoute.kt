@@ -33,13 +33,6 @@ internal fun PedometerRoute(
     val models = remember(activity) { ViewModelProvider(activity) }
     val home = remember(models) { models[HomeViewModel::class.java] }
     val state by home.uiState.collectAsStateWithLifecycle()
-    val version =
-        remember(activity) {
-            activity.packageManager
-                .getPackageInfo(activity.packageName, 0)
-                .versionName
-                .orEmpty()
-        }
     val packageName = activity.packageName
     var showPrivacy by rememberSaveable { mutableStateOf(initialIntent.opensPrivacyPolicy(packageName)) }
     LaunchedEffect(incomingIntent) {
@@ -83,7 +76,7 @@ internal fun PedometerRoute(
         onStopOrDispose { activity.unregisterReceiver(receiver) }
     }
 
-    val dark = isSystemInDarkTheme()
+    val dark = state.theme.isDark(isSystemInDarkTheme())
     val lightBars =
         WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
             WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
@@ -93,6 +86,7 @@ internal fun PedometerRoute(
 
     HomeScreen(
         state = state,
+        dark = dark,
         showPrivacy = showPrivacy,
         onDismissPrivacy = { showPrivacy = false },
         onConnect = { permission.launch(setOf(READ_STEPS_PERMISSION)) },
@@ -100,6 +94,7 @@ internal fun PedometerRoute(
         onExport = { exportDocument.launch("Pedometer.csv") },
         onRefresh = home::refresh,
         onSaveGoal = home::saveGoal,
+        onSetTheme = home::saveTheme,
         onDismissFileMessage = home::dismissFileMessage,
     )
 }

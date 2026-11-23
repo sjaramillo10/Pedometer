@@ -2,6 +2,10 @@
 <resources>
 
     <string name="app_name" translatable="false">Pedometer</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
     <string name="backup">Backup</string>
     <string name="about">About</string>
     <string name="goal_summary">Current goal: %,d steps</string>

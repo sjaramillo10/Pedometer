@@ -3,11 +3,11 @@ package dev.sjaramillo.pedometer.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -79,6 +81,7 @@ internal fun nextGoalRepeatDelay(delayMillis: Long): Long = (delayMillis - 15L).
 @Composable
 internal fun HomeScreen(
     state: HomeUiState,
+    dark: Boolean,
     showPrivacy: Boolean,
     onDismissPrivacy: () -> Unit,
     onConnect: () -> Unit,
@@ -86,10 +89,11 @@ internal fun HomeScreen(
     onExport: () -> Unit,
     onRefresh: () -> Unit,
     onSaveGoal: (String) -> Unit,
+    onSetTheme: (AppTheme) -> Unit,
     onDismissFileMessage: () -> Unit,
 ) {
     val file = state.file
-    val palette = if (isSystemInDarkTheme()) DarkPalette else LightPalette
+    val palette = if (dark) DarkPalette else LightPalette
     var settings by rememberSaveable { mutableStateOf(false) }
     val homeScroll = rememberScrollState()
     val onBack = {
@@ -99,7 +103,7 @@ internal fun HomeScreen(
     BackHandler(enabled = settings && !showPrivacy, onBack = onBack)
     CompositionLocalProvider(LocalPalette provides palette) {
         if (settings) {
-            SettingsScreen(state, onBack, onSaveGoal, onImport, onExport, onDismissFileMessage)
+            SettingsScreen(state, onBack, onSaveGoal, onSetTheme, onImport, onExport, onDismissFileMessage)
         } else {
             Column(Modifier.fillMaxSize().background(palette.background).safeDrawingPadding()) {
                 Row(
@@ -166,6 +170,7 @@ private fun SettingsScreen(
     state: HomeUiState,
     onBack: () -> Unit,
     onSaveGoal: (String) -> Unit,
+    onSetTheme: (AppTheme) -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
     onDismissFileMessage: () -> Unit,
@@ -196,6 +201,9 @@ private fun SettingsScreen(
                     draft = null
                 }
             }
+            SettingsCard(stringResource(R.string.appearance)) {
+                ThemeOptions(state.theme, onSetTheme)
+            }
             SettingsCard(stringResource(R.string.backup)) {
                 Column {
                     TextAction(stringResource(R.string.import_title), !file.busy, onClick = onImport)
@@ -223,6 +231,33 @@ private fun SettingsScreen(
                 TextAction(stringResource(R.string.source_code)) {
                     uriHandler.openUri("https://github.com/sjaramillo10/Pedometer")
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeOptions(
+    theme: AppTheme,
+    onSetTheme: (AppTheme) -> Unit,
+) {
+    val palette = LocalPalette.current
+    Column(Modifier.selectableGroup()) {
+        for (option in AppTheme.entries) {
+            val selected = option == theme
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .sizeIn(minHeight = 48.dp)
+                    .selectable(selected = selected, role = Role.RadioButton) { onSetTheme(option) }
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.size(20.dp).border(2.dp, palette.accent, CircleShape), contentAlignment = Alignment.Center) {
+                    if (selected) Box(Modifier.size(10.dp).background(palette.accent, CircleShape))
+                }
+                AppText(stringResource(option.label), bold = selected)
             }
         }
     }

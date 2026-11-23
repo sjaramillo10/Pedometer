@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -41,6 +42,7 @@ class HomeViewModel @Inject constructor(
     private val coordinator: HealthConnectSyncCoordinator,
 ) : ViewModel() {
     private val goal = MutableStateFlow(preferences.getInt("goal", DEFAULT_GOAL))
+    private val theme = MutableStateFlow(AppTheme.fromPreference(preferences.getString(THEME_KEY, null)))
     private val date = MutableStateFlow(LocalDate.now())
     private var refreshJob: Job? = null
 
@@ -59,10 +61,11 @@ class HomeViewModel @Inject constructor(
             fileState,
             stepsRepository.observeAll(),
             version,
+            theme,
         ).stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
-            HomeUiState(HomeTotals(date.value), goal = goal.value, version = version),
+            HomeUiState(HomeTotals(date.value), goal = goal.value, version = version, theme = theme.value),
         )
 
     fun refresh() {
@@ -77,6 +80,11 @@ class HomeViewModel @Inject constructor(
         val value = parseGoal(input) ?: return
         preferences.edit().putInt("goal", value).apply()
         goal.value = value
+    }
+
+    fun saveTheme(value: AppTheme) {
+        preferences.edit().putString(THEME_KEY, value.preferenceValue).apply()
+        theme.value = value
     }
 
     fun importCsv(uri: Uri) =
@@ -133,6 +141,7 @@ data class HomeUiState(
     val bestDay: DailySteps? = null,
     val lifetimeSteps: Long? = null,
     val version: String = "",
+    val theme: AppTheme = AppTheme.SYSTEM,
 ) {
     val progress: Float
         get() = ((totals.today?.steps ?: 0L).toDouble() / goal).coerceIn(0.0, 1.0).toFloat()
@@ -167,6 +176,7 @@ internal fun summarizeWeek(
     return WeekSummary(total, total / elapsed.size.coerceAtLeast(1))
 }
 
+private const val THEME_KEY = "theme"
 private const val DEFAULT_GOAL = 10_000
 private val goalRange = 1..100_000
 
@@ -185,6 +195,7 @@ internal fun observeHomeUiState(
     files: Flow<FileState>,
     history: Flow<List<DailySteps>>,
     version: String = "",
+    themes: Flow<AppTheme> = flowOf(AppTheme.SYSTEM),
 ): Flow<HomeUiState> =
     combine(observeHomeTotals(dates, observeRecentDays), goals, sync, files, history) {
         totals,
@@ -202,7 +213,7 @@ internal fun observeHomeUiState(
             lifetimeSteps = entries.sumOf(DailySteps::steps),
             version = version,
         )
-    }
+    }.combine(themes) { state, theme -> state.copy(theme = theme) }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 private fun observeHomeTotals(
