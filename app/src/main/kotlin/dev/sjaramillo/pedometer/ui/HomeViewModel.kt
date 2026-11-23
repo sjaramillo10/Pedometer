@@ -168,8 +168,14 @@ internal fun summarizeWeek(
 }
 
 private const val DEFAULT_GOAL = 10_000
+private val goalRange = 1..100_000
 
-internal fun parseGoal(input: String): Int? = input.trim().toIntOrNull()?.takeIf { it in 1..100_000 }
+internal fun parseGoal(input: String): Int? = input.trim().toIntOrNull()?.takeIf { it in goalRange }
+
+internal fun adjustGoal(
+    goal: Int,
+    amount: Int,
+): Int = (goal + amount).coerceIn(goalRange)
 
 internal fun observeHomeUiState(
     dates: Flow<LocalDate>,
