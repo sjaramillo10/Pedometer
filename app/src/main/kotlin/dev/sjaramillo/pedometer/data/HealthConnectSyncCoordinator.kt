@@ -39,10 +39,6 @@ class HealthConnectSyncCoordinator internal constructor(
             _state.value = HealthConnectSyncState.Error
         }
     }
-
-    companion object {
-        val READ_STEPS_PERMISSION = dev.sjaramillo.pedometer.data.READ_STEPS_PERMISSION
-    }
 }
 
 enum class HealthConnectSyncState {
