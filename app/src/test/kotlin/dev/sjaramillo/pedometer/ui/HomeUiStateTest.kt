@@ -7,6 +7,7 @@ import dev.sjaramillo.pedometer.data.HealthConnectSyncState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -18,7 +19,7 @@ import org.junit.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
 
-class HomeStateTest {
+class HomeUiStateTest {
     private val today = LocalDate.of(2026, 11, 22)
     private val previous = DailySteps(today.minusDays(1).toEpochDay(), 5_000, fromBackup = true)
     private val current = DailySteps(today.toEpochDay(), 10_000, fromBackup = false)
@@ -28,16 +29,20 @@ class HomeStateTest {
         runBlocking {
             // Given
             val rows = MutableStateFlow<List<DailySteps>>(emptyList())
+            val older = DailySteps(today.minusDays(40).toEpochDay(), 1_000, fromBackup = true)
+            val history = rows.map { listOf(older) + it }
+            val files = MutableStateFlow(FileState())
             var refreshFails = false
             val coordinator =
                 HealthConnectSyncCoordinator({ HealthConnectAccess.Available }) {
                     check(!refreshFails)
                     rows.value = listOf(previous, current)
                 }
-            val states = Channel<HomeState>(Channel.UNLIMITED)
+            val states = Channel<HomeUiState>(Channel.UNLIMITED)
             val observer =
                 launch {
-                    observeHomeState(flowOf(today), { rows }, flowOf(10_000), coordinator.state).collect { states.send(it) }
+                    observeHomeUiState(flowOf(today), { rows }, flowOf(10_000), coordinator.state, files, history)
+                        .collect { states.send(it) }
                 }
 
             // When
@@ -45,10 +50,17 @@ class HomeStateTest {
                 withTimeout(5_000) {
                     assertEquals(HomeTotals(today), states.receive().totals)
                     rows.value = listOf(previous)
-                    val imported = states.receive()
+                    files.value = FileState(message = "CSV imported")
+                    var imported = states.receive()
+                    while (imported.bestDay != previous || imported.totals.entries != listOf(previous) || imported.file.message == null) {
+                        imported = states.receive()
+                    }
                     coordinator.refresh()
                     var refreshed = states.receive()
-                    while (refreshed.sync != HealthConnectSyncState.Ready || refreshed.totals.today != current) {
+                    while (refreshed.sync != HealthConnectSyncState.Ready ||
+                        refreshed.totals.today != current ||
+                        refreshed.lifetimeSteps != 16_000L
+                    ) {
                         refreshed = states.receive()
                     }
                     refreshFails = true
@@ -61,6 +73,11 @@ class HomeStateTest {
                     // Then
                     assertEquals(listOf(previous), imported.totals.entries)
                     assertNull(imported.totals.today)
+                    assertEquals(6_000L, imported.lifetimeSteps)
+                    assertEquals("CSV imported", imported.file.message)
+                    assertEquals(current, refreshed.bestDay)
+                    assertEquals(refreshed.bestDay, failed.bestDay)
+                    assertEquals(refreshed.lifetimeSteps, failed.lifetimeSteps)
                     assertEquals(HomeTotals(today, listOf(previous, current)), refreshed.totals)
                     assertEquals(refreshed.totals, failed.totals)
                 }
@@ -74,14 +91,16 @@ class HomeStateTest {
         runBlocking {
             // Given
             val dates = MutableStateFlow(today)
-            val states = Channel<HomeState>(Channel.UNLIMITED)
+            val states = Channel<HomeUiState>(Channel.UNLIMITED)
             val observer =
                 launch {
-                    observeHomeState(
+                    observeHomeUiState(
                         dates,
                         { flowOf(listOf(previous, current)) },
                         flowOf(10_000),
                         flowOf(HealthConnectSyncState.Ready),
+                        flowOf(FileState()),
+                        flowOf(emptyList()),
                     ).collect { states.send(it) }
                 }
 
@@ -90,7 +109,10 @@ class HomeStateTest {
                 withTimeout(5_000) {
                     val before = states.receive()
                     dates.value = today.plusDays(1)
-                    val after = states.receive()
+                    var after = states.receive()
+                    while (after.totals.date == today) {
+                        after = states.receive()
+                    }
 
                     // Then
                     assertEquals(current, before.totals.today)
@@ -148,7 +170,7 @@ class HomeStateTest {
     fun `given an editable goal when parsing and comparing totals then only valid targets count and equality reaches the goal`() {
         // Given
         val inputs = listOf("", "0", "100001", "1.5", " 10000 ", "1", "100000")
-        val state = HomeState(totals = HomeTotals(today, listOf(current)), goal = 10_000)
+        val state = HomeUiState(totals = HomeTotals(today, listOf(current)), goal = 10_000)
 
         // When
         val parsed = inputs.map(::parseGoal)

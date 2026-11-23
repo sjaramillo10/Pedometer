@@ -21,8 +21,8 @@ import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.sjaramillo.pedometer.data.READ_STEPS_PERMISSION
-import dev.sjaramillo.pedometer.ui.stats.StatsViewModel
 
 @Composable
 internal fun PedometerRoute(
@@ -32,7 +32,7 @@ internal fun PedometerRoute(
 ) {
     val models = remember(activity) { ViewModelProvider(activity) }
     val home = remember(models) { models[HomeViewModel::class.java] }
-    val stats = remember(models) { models[StatsViewModel::class.java] }
+    val state by home.uiState.collectAsStateWithLifecycle()
     val version =
         remember(activity) {
             activity.packageManager
@@ -91,15 +91,16 @@ internal fun PedometerRoute(
         activity.window.insetsController?.setSystemBarsAppearance(if (dark) 0 else lightBars, lightBars)
     }
 
-    PedometerScreen(
-        home = home,
-        stats = stats,
+    HomeScreen(
+        state = state,
         showPrivacy = showPrivacy,
         onDismissPrivacy = { showPrivacy = false },
         onConnect = { permission.launch(setOf(READ_STEPS_PERMISSION)) },
         onImport = { importDocument.launch(arrayOf("text/*")) },
         onExport = { exportDocument.launch("Pedometer.csv") },
-        version = version,
+        onRefresh = home::refresh,
+        onSaveGoal = home::saveGoal,
+        onDismissFileMessage = home::dismissFileMessage,
     )
 }
 

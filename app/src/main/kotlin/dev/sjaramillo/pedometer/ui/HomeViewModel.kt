@@ -21,7 +21,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -45,11 +44,26 @@ class HomeViewModel @Inject constructor(
     private val date = MutableStateFlow(LocalDate.now())
     private var refreshJob: Job? = null
 
-    val state =
-        observeHomeState(date, stepsRepository::observeRecentDays, goal, coordinator.state)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState(HomeTotals(date.value), goal = goal.value))
-    private val _fileState = MutableStateFlow(FileState())
-    val fileState = _fileState.asStateFlow()
+    private val fileState = MutableStateFlow(FileState())
+    private val version =
+        context.packageManager
+            .getPackageInfo(context.packageName, 0)
+            .versionName
+            .orEmpty()
+    val uiState =
+        observeHomeUiState(
+            date,
+            stepsRepository::observeRecentDays,
+            goal,
+            coordinator.state,
+            fileState,
+            stepsRepository.observeAll(),
+            version,
+        ).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            HomeUiState(HomeTotals(date.value), goal = goal.value, version = version),
+        )
 
     fun refresh() {
         val today = LocalDate.now()
@@ -89,12 +103,12 @@ class HomeViewModel @Inject constructor(
         }
 
     fun dismissFileMessage() {
-        _fileState.value = _fileState.value.copy(message = null)
+        fileState.value = fileState.value.copy(message = null)
     }
 
     private fun runFileOperation(operation: suspend () -> String) {
-        if (_fileState.value.busy) return
-        _fileState.value = FileState(busy = true)
+        if (fileState.value.busy) return
+        fileState.value = FileState(busy = true)
         viewModelScope.launch {
             val message =
                 try {
@@ -104,17 +118,21 @@ class HomeViewModel @Inject constructor(
                 } catch (error: Exception) {
                     context.getString(R.string.error_file, error.localizedMessage.orEmpty())
                 }
-            _fileState.value = FileState(message = message)
+            fileState.value = FileState(message = message)
         }
     }
 }
 
 data class FileState(val busy: Boolean = false, val message: String? = null)
 
-data class HomeState(
+data class HomeUiState(
     val totals: HomeTotals,
     val goal: Int = DEFAULT_GOAL,
     val sync: HealthConnectSyncState = HealthConnectSyncState.Loading,
+    val file: FileState = FileState(),
+    val bestDay: DailySteps? = null,
+    val lifetimeSteps: Long? = null,
+    val version: String = "",
 ) {
     val progress: Float
         get() = ((totals.today?.steps ?: 0L).toDouble() / goal).coerceIn(0.0, 1.0).toFloat()
@@ -153,12 +171,32 @@ private const val DEFAULT_GOAL = 10_000
 
 internal fun parseGoal(input: String): Int? = input.trim().toIntOrNull()?.takeIf { it in 1..100_000 }
 
-internal fun observeHomeState(
+internal fun observeHomeUiState(
     dates: Flow<LocalDate>,
     observeRecentDays: (LocalDate) -> Flow<List<DailySteps>>,
     goals: Flow<Int>,
     sync: Flow<HealthConnectSyncState>,
-): Flow<HomeState> = combine(observeHomeTotals(dates, observeRecentDays), goals, sync, ::HomeState)
+    files: Flow<FileState>,
+    history: Flow<List<DailySteps>>,
+    version: String = "",
+): Flow<HomeUiState> =
+    combine(observeHomeTotals(dates, observeRecentDays), goals, sync, files, history) {
+        totals,
+        goal,
+        syncState,
+        file,
+        entries,
+        ->
+        HomeUiState(
+            totals = totals,
+            goal = goal,
+            sync = syncState,
+            file = file,
+            bestDay = entries.maxByOrNull(DailySteps::steps),
+            lifetimeSteps = entries.sumOf(DailySteps::steps),
+            version = version,
+        )
+    }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 private fun observeHomeTotals(

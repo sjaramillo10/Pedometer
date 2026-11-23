@@ -53,7 +53,7 @@ import java.util.Locale
 import java.time.format.TextStyle as DayTextStyle
 
 @Composable
-internal fun TodayChart(state: HomeState) {
+internal fun TodayChart(state: HomeUiState) {
     val palette = LocalPalette.current
     val today = state.totals.today
     val locale = LocalConfiguration.current.locales[0]
@@ -114,7 +114,7 @@ internal fun TodayChart(state: HomeState) {
 }
 
 @Composable
-internal fun WeekChart(state: HomeState) {
+internal fun WeekChart(state: HomeUiState) {
     val palette = LocalPalette.current
     val locale = LocalConfiguration.current.locales[0]
     val today = state.totals.date

@@ -48,10 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.HealthConnectSyncState
-import dev.sjaramillo.pedometer.ui.stats.StatsViewModel
 
 internal data class Palette(
     val background: Color,
@@ -69,18 +67,18 @@ private val DarkPalette =
 internal val LocalPalette = staticCompositionLocalOf { LightPalette }
 
 @Composable
-fun PedometerScreen(
-    home: HomeViewModel,
-    stats: StatsViewModel,
+internal fun HomeScreen(
+    state: HomeUiState,
     showPrivacy: Boolean,
     onDismissPrivacy: () -> Unit,
     onConnect: () -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
-    version: String,
+    onRefresh: () -> Unit,
+    onSaveGoal: (String) -> Unit,
+    onDismissFileMessage: () -> Unit,
 ) {
-    val state by home.state.collectAsStateWithLifecycle()
-    val file by home.fileState.collectAsStateWithLifecycle()
+    val file = state.file
     val palette = if (isSystemInDarkTheme()) DarkPalette else LightPalette
     var settings by rememberSaveable { mutableStateOf(false) }
     CompositionLocalProvider(LocalPalette provides palette) {
@@ -97,9 +95,9 @@ fun PedometerScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 TodayChart(state)
-                SyncStatus(state.sync, onConnect, home::refresh)
+                SyncStatus(state.sync, onConnect, onRefresh)
                 WeekChart(state)
-                StatsSummary(stats)
+                StatsSummary(state.bestDay, state.lifetimeSteps)
             }
         }
         when {
@@ -115,20 +113,20 @@ fun PedometerScreen(
                     file = file,
                     onDismiss = {
                         settings = false
-                        if (file.message != null) home.dismissFileMessage()
+                        if (file.message != null) onDismissFileMessage()
                     },
-                    onSaveGoal = home::saveGoal,
+                    onSaveGoal = onSaveGoal,
                     onImport = onImport,
                     onExport = onExport,
-                    onDismissFileMessage = home::dismissFileMessage,
-                    version = version,
+                    onDismissFileMessage = onDismissFileMessage,
+                    version = state.version,
                 )
         }
         if (!settings && !showPrivacy) {
             file.message?.let { message ->
-                AppDialog(stringResource(R.string.backup_result), home::dismissFileMessage) {
+                AppDialog(stringResource(R.string.backup_result), onDismissFileMessage) {
                     AppText(message)
-                    TextAction(stringResource(R.string.close), onClick = home::dismissFileMessage)
+                    TextAction(stringResource(R.string.close), onClick = onDismissFileMessage)
                 }
             }
         }
