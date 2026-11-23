@@ -1,5 +1,7 @@
 package dev.sjaramillo.pedometer.ui
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -32,9 +35,11 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -48,7 +53,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.HealthConnectSyncState
 import kotlin.math.abs
@@ -87,46 +91,40 @@ internal fun HomeScreen(
     val file = state.file
     val palette = if (isSystemInDarkTheme()) DarkPalette else LightPalette
     var settings by rememberSaveable { mutableStateOf(false) }
+    val homeScroll = rememberScrollState()
+    val onBack = {
+        settings = false
+        if (file.message != null) onDismissFileMessage()
+    }
+    BackHandler(enabled = settings && !showPrivacy, onBack = onBack)
     CompositionLocalProvider(LocalPalette provides palette) {
-        Column(Modifier.fillMaxSize().background(palette.background).safeDrawingPadding()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AppText(stringResource(R.string.app_name), Modifier.weight(1f).semantics { heading() }, size = 22, bold = true)
-                TextAction(stringResource(R.string.settings_title), onClick = { settings = true })
-            }
-            Column(
-                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                TodayChart(state)
-                SyncStatus(state.sync, onConnect, onRefresh)
-                WeekChart(state)
-                StatsSummary(state.bestDay, state.lifetimeSteps)
+        if (settings) {
+            SettingsScreen(state, onBack, onSaveGoal, onImport, onExport, onDismissFileMessage)
+        } else {
+            Column(Modifier.fillMaxSize().background(palette.background).safeDrawingPadding()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    AppText(stringResource(R.string.app_name), Modifier.weight(1f).semantics { heading() }, size = 22, bold = true)
+                    ToolbarAction(R.drawable.ic_settings, stringResource(R.string.settings_title)) { settings = true }
+                }
+                Column(
+                    Modifier.fillMaxWidth().verticalScroll(homeScroll).padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    TodayChart(state)
+                    SyncStatus(state.sync, onConnect, onRefresh)
+                    WeekChart(state)
+                    StatsSummary(state.bestDay, state.lifetimeSteps)
+                }
             }
         }
-        when {
-            showPrivacy ->
-                AppDialog(stringResource(R.string.privacy_title), onDismissPrivacy) {
-                    AppText(stringResource(R.string.health_connect_privacy_policy))
-                    TextAction(stringResource(R.string.close), onClick = onDismissPrivacy)
-                }
-
-            settings ->
-                SettingsSheet(
-                    goal = state.goal,
-                    file = file,
-                    onDismiss = {
-                        settings = false
-                        if (file.message != null) onDismissFileMessage()
-                    },
-                    onSaveGoal = onSaveGoal,
-                    onImport = onImport,
-                    onExport = onExport,
-                    onDismissFileMessage = onDismissFileMessage,
-                    version = state.version,
-                )
+        if (showPrivacy) {
+            AppDialog(stringResource(R.string.privacy_title), onDismissPrivacy) {
+                AppText(stringResource(R.string.health_connect_privacy_policy))
+                TextAction(stringResource(R.string.close), onClick = onDismissPrivacy)
+            }
         }
         if (!settings && !showPrivacy) {
             file.message?.let { message ->
@@ -164,48 +162,49 @@ private fun SyncStatus(
 }
 
 @Composable
-private fun SettingsSheet(
-    goal: Int,
-    file: FileState,
-    onDismiss: () -> Unit,
+private fun SettingsScreen(
+    state: HomeUiState,
+    onBack: () -> Unit,
     onSaveGoal: (String) -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
     onDismissFileMessage: () -> Unit,
-    version: String,
 ) {
     var draft by rememberSaveable { mutableStateOf<Int?>(null) }
-    var about by rememberSaveable { mutableStateOf(false) }
-    val dismiss = { if (about) about = false else onDismiss() }
-    AppDialog(stringResource(R.string.settings_title), dismiss, bottomAligned = true) {
-        when {
-            about -> {
-                AppText(stringResource(R.string.about_text))
-                AppText(stringResource(R.string.about_app_version, version))
-                val uriHandler = LocalUriHandler.current
-                TextAction(stringResource(R.string.original_author_site)) {
-                    uriHandler.openUri("https://www.j4velin.de")
-                }
-                TextAction(stringResource(R.string.source_code)) {
-                    uriHandler.openUri("https://github.com/sjaramillo10/Pedometer")
-                }
-                TextAction(stringResource(R.string.back), onClick = dismiss)
-            }
-
-            else -> {
-                val selectedGoal = draft ?: goal
+    val selectedGoal = draft ?: state.goal
+    val file = state.file
+    Column(Modifier.fillMaxSize().background(LocalPalette.current.background).safeDrawingPadding()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ToolbarAction(R.drawable.ic_back, stringResource(R.string.back), onBack)
+            AppText(stringResource(R.string.settings_title), Modifier.semantics { heading() }, size = 22, bold = true)
+        }
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            SettingsCard(stringResource(R.string.daily_step_goal)) {
                 GoalControl(
                     goal = selectedGoal,
-                    onAdjust = { amount -> draft = adjustGoal(draft ?: goal, amount) },
+                    onAdjust = { amount -> draft = adjustGoal(draft ?: state.goal, amount) },
                 )
-                TextAction(stringResource(R.string.save_goal), enabled = selectedGoal != goal) {
+                TextAction(stringResource(R.string.save_goal), enabled = selectedGoal != state.goal) {
                     onSaveGoal(selectedGoal.toString())
                     draft = null
                 }
-                TextAction(stringResource(R.string.import_title), !file.busy, onClick = onImport)
-                AppText(stringResource(R.string.import_summary))
-                TextAction(stringResource(R.string.export_title), !file.busy, onClick = onExport)
-                AppText(stringResource(R.string.export_summary))
+            }
+            SettingsCard(stringResource(R.string.backup)) {
+                Column {
+                    TextAction(stringResource(R.string.import_title), !file.busy, onClick = onImport)
+                    AppText(stringResource(R.string.import_summary))
+                }
+                Column {
+                    TextAction(stringResource(R.string.export_title), !file.busy, onClick = onExport)
+                    AppText(stringResource(R.string.export_summary))
+                }
                 if (file.busy) {
                     AppText(stringResource(R.string.backup_working), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                 }
@@ -213,10 +212,55 @@ private fun SettingsSheet(
                     AppText(message, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                     TextAction(stringResource(R.string.dismiss_result), onClick = onDismissFileMessage)
                 }
-                TextAction(stringResource(R.string.about), onClick = { about = true })
-                TextAction(stringResource(R.string.close), onClick = onDismiss)
+            }
+            SettingsCard(stringResource(R.string.about)) {
+                AppText(stringResource(R.string.about_text))
+                AppText(stringResource(R.string.about_app_version, state.version))
+                val uriHandler = LocalUriHandler.current
+                TextAction(stringResource(R.string.original_author_site)) {
+                    uriHandler.openUri("https://www.j4velin.de")
+                }
+                TextAction(stringResource(R.string.source_code)) {
+                    uriHandler.openUri("https://github.com/sjaramillo10/Pedometer")
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsCard(
+    title: String,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        Modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        AppText(title, Modifier.semantics { heading() }, size = 20, bold = true)
+        content()
+    }
+}
+
+@Composable
+private fun ToolbarAction(
+    icon: Int,
+    label: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        Modifier
+            .size(48.dp)
+            .semantics { contentDescription = label }
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            colorFilter = ColorFilter.tint(LocalPalette.current.accent),
+        )
     }
 }
 
@@ -225,7 +269,6 @@ private fun GoalControl(
     goal: Int,
     onAdjust: (Int) -> Unit,
 ) {
-    AppText(stringResource(R.string.daily_step_goal), Modifier.semantics { heading() }, size = 20, bold = true)
     Row(
         Modifier
             .fillMaxWidth()
@@ -295,38 +338,21 @@ private fun GoalAdjustment(
 private fun AppDialog(
     title: String,
     onDismiss: () -> Unit,
-    bottomAligned: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties =
-            DialogProperties(
-                usePlatformDefaultWidth = !bottomAligned,
-                decorFitsSystemWindows = !bottomAligned,
-            ),
-    ) {
-        val palette = LocalPalette.current
-        Box(
-            modifier = if (bottomAligned) Modifier.fillMaxSize() else Modifier,
-            contentAlignment = if (bottomAligned) Alignment.BottomCenter else Alignment.Center,
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            Modifier
+                .safeDrawingPadding()
+                .imePadding()
+                .fillMaxWidth()
+                .background(LocalPalette.current.surface, RoundedCornerShape(20.dp))
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (bottomAligned) {
-                Box(Modifier.fillMaxSize().clickable(onClick = onDismiss).clearAndSetSemantics {})
-            }
-            Column(
-                Modifier
-                    .safeDrawingPadding()
-                    .imePadding()
-                    .fillMaxWidth()
-                    .background(palette.surface, RoundedCornerShape(20.dp))
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                AppText(title, Modifier.semantics { heading() }, size = 24, bold = true)
-                content()
-            }
+            AppText(title, Modifier.semantics { heading() }, size = 24, bold = true)
+            content()
         }
     }
 }

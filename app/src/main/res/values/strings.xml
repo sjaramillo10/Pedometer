@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name" translatable="false">Pedometer</string>
+    <string name="backup">Backup</string>
     <string name="about">About</string>
     <string name="goal_summary">Current goal: %,d steps</string>
     <string name="export_title">Export CSV</string>
