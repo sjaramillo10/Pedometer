@@ -195,18 +195,15 @@ class HomeUiStateTest {
     }
 
     @Test
-    fun `given an editable goal when parsing and comparing totals then only valid targets count and equality reaches the goal`() {
+    fun `given a saved goal when comparing totals then equality reaches the goal`() {
         // Given
-        val inputs = listOf("", "0", "100001", "1.5", " 10000 ", "1", "100000")
         val state = HomeUiState(totals = HomeTotals(today, listOf(current)), goal = 10_000)
 
         // When
-        val parsed = inputs.map(::parseGoal)
         val atGoal = state.reachedGoal(current.steps)
         val belowGoal = state.copy(goal = 10_001).reachedGoal(current.steps)
 
         // Then
-        assertEquals(listOf(null, null, null, null, 10_000, 1, 100_000), parsed)
         assertTrue(atGoal)
         assertFalse(belowGoal)
         assertEquals(1f, state.progress, 0f)

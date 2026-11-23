@@ -52,7 +52,6 @@
     <string name="selected_goal">%,d</string>
     <string name="decrease_goal">Decrease goal by %,d steps</string>
     <string name="increase_goal">Increase goal by %,d steps</string>
-    <string name="save_goal">Save goal</string>
     <string name="back">Back</string>
     <string name="backup_working">Working with CSV file…</string>
     <string name="dismiss_result">Dismiss result</string>

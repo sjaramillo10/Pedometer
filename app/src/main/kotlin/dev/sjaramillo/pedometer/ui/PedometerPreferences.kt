@@ -14,7 +14,9 @@ class PedometerPreferences @Inject constructor(private val preferences: SharedPr
     val goal = currentGoal.asStateFlow()
     val theme = currentTheme.asStateFlow()
 
-    internal fun setGoal(value: Int) {
+    internal fun adjustGoal(amount: Int) {
+        val value = adjustGoal(currentGoal.value, amount)
+        if (value == currentGoal.value) return
         preferences.edit().putInt(GOAL_KEY, value).apply()
         currentGoal.value = value
     }
@@ -29,8 +31,6 @@ private const val GOAL_KEY = "goal"
 private const val THEME_KEY = "theme"
 internal const val DEFAULT_GOAL = 10_000
 private val goalRange = 1..100_000
-
-internal fun parseGoal(input: String): Int? = input.trim().toIntOrNull()?.takeIf { it in goalRange }
 
 internal fun adjustGoal(
     goal: Int,

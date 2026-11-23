@@ -24,10 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -56,14 +53,12 @@ internal fun SettingsScreen(
     onBack: () -> Unit,
     onConnect: () -> Unit,
     onRetry: () -> Unit,
-    onSaveGoal: (String) -> Unit,
+    onAdjustGoal: (Int) -> Unit,
     onSetTheme: (AppTheme) -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
     onDismissFileMessage: () -> Unit,
 ) {
-    var draft by rememberSaveable { mutableStateOf<Int?>(null) }
-    val selectedGoal = draft ?: state.goal
     val file = state.file
     Column(Modifier.fillMaxSize().background(LocalPalette.current.background).safeDrawingPadding()) {
         Row(
@@ -80,14 +75,7 @@ internal fun SettingsScreen(
         ) {
             HealthConnectCard(state.sync, onConnect, onRetry)
             SettingsCard(stringResource(R.string.daily_step_goal)) {
-                GoalControl(
-                    goal = selectedGoal,
-                    onAdjust = { amount -> draft = adjustGoal(draft ?: state.goal, amount) },
-                )
-                TextAction(stringResource(R.string.save_goal), enabled = selectedGoal != state.goal) {
-                    onSaveGoal(selectedGoal.toString())
-                    draft = null
-                }
+                GoalControl(state.goal, onAdjustGoal)
             }
             SettingsCard(stringResource(R.string.appearance)) {
                 ThemeOptions(state.theme, onSetTheme)

@@ -45,9 +45,7 @@ class SettingsViewModel @Inject constructor(
             SettingsUiState(preferences.goal.value, preferences.theme.value, fileState.value, version, coordinator.state.value),
         )
 
-    fun saveGoal(input: String) {
-        parseGoal(input)?.let(preferences::setGoal)
-    }
+    fun adjustGoal(amount: Int) = preferences.adjustGoal(amount)
 
     fun saveTheme(theme: AppTheme) = preferences.setTheme(theme)
 

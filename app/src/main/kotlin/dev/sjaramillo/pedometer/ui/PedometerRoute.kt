@@ -106,7 +106,7 @@ internal fun PedometerRoute(
                 onBack = closeSettings,
                 onConnect = connect,
                 onRetry = { home.refresh(restart = true) },
-                onSaveGoal = settings::saveGoal,
+                onAdjustGoal = settings::adjustGoal,
                 onSetTheme = settings::saveTheme,
                 onImport = { importDocument.launch(arrayOf("text/*")) },
                 onExport = { exportDocument.launch("Pedometer.csv") },
