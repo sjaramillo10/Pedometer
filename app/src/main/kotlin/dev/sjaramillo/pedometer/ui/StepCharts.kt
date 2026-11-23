@@ -200,7 +200,7 @@ internal fun WeekChart(
             second = {
                 WeekMetric(stringResource(R.string.week_average), numberFormat.format(week.average))
             },
-            divider = { Box(Modifier.width(16.dp).height(1.dp).background(palette.track)) },
+            rowDivider = { Box(Modifier.width(1.dp).height(16.dp).background(palette.track)) },
         )
     }
 }

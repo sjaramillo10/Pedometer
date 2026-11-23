@@ -84,7 +84,7 @@ internal fun MetricPair(
     modifier: Modifier,
     first: @Composable () -> Unit,
     second: @Composable () -> Unit,
-    divider: (@Composable () -> Unit)? = null,
+    rowDivider: (@Composable () -> Unit)? = null,
 ) {
     BoxWithConstraints(modifier) {
         if (maxWidth < 300.dp || LocalDensity.current.fontScale >= 1.5f) {
@@ -93,7 +93,6 @@ internal fun MetricPair(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 first()
-                divider?.invoke()
                 second()
             }
         } else {
@@ -102,7 +101,7 @@ internal fun MetricPair(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.weight(1f)) { first() }
-                divider?.invoke()
+                rowDivider?.invoke()
                 Box(Modifier.weight(1f)) { second() }
             }
         }
