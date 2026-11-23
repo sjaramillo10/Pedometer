@@ -16,7 +16,7 @@ class HealthConnectStepCacheSynchronizerTest {
             val firstDay = today
             val nextDay = firstDay.plusDays(1)
             val requestedDays = mutableListOf<Pair<LocalDate, LocalDate>>()
-            val replacements = mutableListOf<Triple<Long, Long, List<StoredDailySteps>>>()
+            val replacements = mutableListOf<Triple<LocalDate, LocalDate, Map<LocalDate, Long>>>()
             var totals: Map<LocalDate, Long> = mapOf(firstDay to 500, firstDay.minusDays(1) to 300)
             val synchronizer =
                 HealthConnectStepCacheSynchronizer(
@@ -39,12 +39,8 @@ class HealthConnectStepCacheSynchronizerTest {
             val firstWindow = firstDay.minusDays(29) to firstDay
             val nextWindow = nextDay.minusDays(29) to nextDay
             assertEquals(listOf(firstWindow, nextWindow, nextWindow), requestedDays)
-            val correctedEntries =
-                listOf(
-                    StoredDailySteps(firstDay.toEpochDay(), 400, StepSource.HEALTH_CONNECT),
-                    StoredDailySteps(nextDay.toEpochDay(), 0, StepSource.HEALTH_CONNECT),
-                )
-            assertEquals(Triple(nextWindow.first.toEpochDay(), nextDay.toEpochDay(), correctedEntries), replacements[1])
+            assertEquals(Triple(firstWindow.first, firstDay, mapOf(firstDay to 500L, firstDay.minusDays(1) to 300L)), replacements[0])
+            assertEquals(Triple(nextWindow.first, nextDay, mapOf(firstDay to 400L, nextDay to 0L)), replacements[1])
             assertEquals(replacements[1], replacements[2])
         }
 
@@ -53,7 +49,7 @@ class HealthConnectStepCacheSynchronizerTest {
         runBlocking {
             // Given
             val today = LocalDate.of(2026, 9, 30)
-            val replacements = mutableListOf<List<StoredDailySteps>>()
+            val replacements = mutableListOf<Map<LocalDate, Long>>()
             val synchronizer =
                 HealthConnectStepCacheSynchronizer(
                     { today },
@@ -65,7 +61,7 @@ class HealthConnectStepCacheSynchronizerTest {
             synchronizer.sync()
 
             // Then
-            assertEquals(listOf(emptyList<StoredDailySteps>()), replacements)
+            assertEquals(listOf(emptyMap<LocalDate, Long>()), replacements)
         }
 
     @Test

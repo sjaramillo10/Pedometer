@@ -1,10 +1,11 @@
 package dev.sjaramillo.pedometer.data
 
+import androidx.room.withTransaction
 import java.time.LocalDate
 import javax.inject.Inject
 
 class StepsRepository @Inject constructor(
-    database: PedometerDatabase,
+    private val database: PedometerDatabase,
 ) {
     private val dailyStepsDao = database.dailyStepsDao()
 
@@ -15,6 +16,18 @@ class StepsRepository @Inject constructor(
 
     suspend fun importDailySteps(dailySteps: List<DailySteps>) {
         dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.BACKUP) })
+    }
+
+    internal suspend fun replaceHealthConnectWindow(
+        start: LocalDate,
+        end: LocalDate,
+        totals: Map<LocalDate, Long>,
+    ) {
+        val entries = totals.map { (day, steps) -> StoredDailySteps(day.toEpochDay(), steps, StepSource.HEALTH_CONNECT) }
+        database.withTransaction {
+            dailyStepsDao.deleteFrom(StepSource.HEALTH_CONNECT, start.toEpochDay(), end.toEpochDay())
+            dailyStepsDao.insertAll(entries)
+        }
     }
 }
 
