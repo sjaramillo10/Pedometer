@@ -4,27 +4,31 @@ import androidx.room.withTransaction
 import java.time.LocalDate
 import javax.inject.Inject
 
-class HealthConnectStepCacheSynchronizer @Inject constructor(
-    private val database: PedometerDatabase,
-    private val phoneStepsDataSource: PhoneStepsDataSource,
+class HealthConnectStepCacheSynchronizer internal constructor(
+    private val currentDate: () -> LocalDate,
+    private val readDailySteps: suspend (LocalDate, LocalDate) -> Map<LocalDate, Long>,
+    private val replaceWindow: suspend (Long, Long, List<StoredDailySteps>) -> Unit,
 ) {
-    suspend fun sync() {
-        val today = LocalDate.now()
-        val start = today.minusDays(RECENT_HISTORY_DAYS - 1)
-        val phoneStepsByDay = phoneStepsDataSource.readDailySteps(start, today)
-
+    @Inject
+    constructor(
+        database: PedometerDatabase,
+        phoneStepsDataSource: PhoneStepsDataSource,
+    ) : this(LocalDate::now, phoneStepsDataSource::readDailySteps, { start, end, entries ->
         database.withTransaction {
-            val dailyStepsDao = database.dailyStepsDao()
-            val cacheEntries =
-                mergeRecentSteps(
-                    start = start,
-                    end = today,
-                    healthConnectStepsByDay = phoneStepsByDay,
-                    cachedSteps = dailyStepsDao.getEntriesInRange(start.toEpochDay(), today.toEpochDay()),
-                )
-            dailyStepsDao.deleteFrom(start.toEpochDay(), today.toEpochDay())
-            dailyStepsDao.insertAll(cacheEntries)
+            val dao = database.dailyStepsDao()
+            dao.deleteFrom(StepSource.HEALTH_CONNECT, start, end)
+            dao.insertAll(entries)
         }
+    })
+
+    suspend fun sync() {
+        val today = currentDate()
+        val start = today.minusDays(RECENT_HISTORY_DAYS - 1)
+        val entries =
+            readDailySteps(start, today).map { (day, steps) ->
+                StoredDailySteps(day.toEpochDay(), steps, StepSource.HEALTH_CONNECT)
+            }
+        replaceWindow(start.toEpochDay(), today.toEpochDay(), entries)
     }
 
     private companion object {

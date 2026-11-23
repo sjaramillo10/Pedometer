@@ -56,9 +56,10 @@ class PhoneStepsDataSource @Inject constructor(
                 ),
             )
 
-        return response.associate { result ->
-            result.startTime.toLocalDate() to (result.result[StepsRecord.COUNT_TOTAL] ?: 0)
-        }
+        return response
+            .mapNotNull { bucket ->
+                bucket.result[StepsRecord.COUNT_TOTAL]?.let { bucket.startTime.toLocalDate() to it }
+            }.toMap()
     }
 
     private suspend fun getCurrentDeviceOrigin(): String? =

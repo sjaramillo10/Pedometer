@@ -26,6 +26,7 @@ import org.eazegraph.lib.charts.BarChart
 import org.eazegraph.lib.charts.PieChart
 import org.eazegraph.lib.models.BarModel
 import org.eazegraph.lib.models.PieModel
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.math.roundToLong
@@ -148,8 +149,11 @@ class HomeFragment : Fragment() {
     private fun loadStepData() {
         viewLifecycleOwner.lifecycleScope.launch {
             renderUnit()
-            updatePie(stepsRepository.getStepsToday())
-            updateBars(stepsRepository.getLastEntries(8))
+            val today = LocalDate.now()
+            val recentDays = stepsRepository.getRecentDays(today)
+            val (todayEntries, previousDays) = recentDays.partition { it.day == today.toEpochDay() }
+            updatePie(todayEntries.firstOrNull()?.steps ?: 0)
+            updateBars(previousDays)
         }
     }
 
@@ -161,7 +165,7 @@ class HomeFragment : Fragment() {
         val stepSizeCm = prefs.getString("step_size_unit", SettingsFragment.DEFAULT_STEP_UNIT) == "cm"
         barChart.isShowDecimal = !showSteps
 
-        lastEntries.asReversed().dropLast(1).forEach { current ->
+        lastEntries.forEach { current ->
             if (current.steps > 0) {
                 val value =
                     if (showSteps) {

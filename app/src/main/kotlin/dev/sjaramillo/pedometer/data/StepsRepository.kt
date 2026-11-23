@@ -1,23 +1,27 @@
 package dev.sjaramillo.pedometer.data
 
-import androidx.room.withTransaction
 import java.time.LocalDate
 import javax.inject.Inject
 
 class StepsRepository @Inject constructor(
-    private val database: PedometerDatabase,
+    database: PedometerDatabase,
 ) {
     private val dailyStepsDao = database.dailyStepsDao()
 
-    suspend fun getAll(): List<DailySteps> = dailyStepsDao.getAll()
+    suspend fun getAll(): List<DailySteps> = resolveDailySteps(dailyStepsDao.getAll())
 
-    suspend fun getStepsToday(): Long = dailyStepsDao.getSteps(LocalDate.now().toEpochDay()) ?: 0
-
-    suspend fun getLastEntries(num: Int): List<DailySteps> = dailyStepsDao.getLastEntries(num)
+    suspend fun getRecentDays(today: LocalDate): List<DailySteps> =
+        resolveDailySteps(dailyStepsDao.getEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay()))
 
     suspend fun importDailySteps(dailySteps: List<DailySteps>) {
-        database.withTransaction {
-            dailyStepsDao.insertAll(dailySteps)
-        }
+        dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.CSV) })
     }
 }
+
+internal fun resolveDailySteps(entries: List<StoredDailySteps>): List<DailySteps> =
+    entries
+        .groupBy(StoredDailySteps::day)
+        .map { (day, totals) ->
+            val preferred = totals.firstOrNull { it.source == StepSource.HEALTH_CONNECT } ?: totals.first()
+            DailySteps(day, preferred.steps)
+        }
