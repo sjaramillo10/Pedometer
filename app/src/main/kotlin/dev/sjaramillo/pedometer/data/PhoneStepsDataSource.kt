@@ -24,19 +24,19 @@ import kotlin.coroutines.suspendCoroutine
 class PhoneStepsDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
     private val healthConnectClient: Provider<HealthConnectClient>,
-) : StepsProvider {
-    override suspend fun access(): StepsAccess {
+) {
+    internal suspend fun access(): HealthConnectAccess {
         if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) {
-            return StepsAccess.Unavailable
+            return HealthConnectAccess.Unavailable
         }
         return if (READ_STEPS_PERMISSION in healthConnectClient.get().permissionController.getGrantedPermissions()) {
-            StepsAccess.Available
+            HealthConnectAccess.Available
         } else {
-            StepsAccess.PermissionRequired
+            HealthConnectAccess.PermissionRequired
         }
     }
 
-    override suspend fun readDailySteps(
+    suspend fun readDailySteps(
         start: LocalDate,
         end: LocalDate,
     ): Map<LocalDate, Long> {
@@ -97,3 +97,9 @@ internal fun phoneStepDataOrigins(currentDeviceOrigin: String?): Set<DataOrigin>
 private const val LEGACY_ANDROID_DATA_ORIGIN = "android"
 
 internal val READ_STEPS_PERMISSION = HealthPermission.getReadPermission(StepsRecord::class)
+
+internal enum class HealthConnectAccess {
+    Available,
+    PermissionRequired,
+    Unavailable,
+}

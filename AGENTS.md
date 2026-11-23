@@ -12,6 +12,14 @@
   the current reinstall-only policy; do not change the version or add migrations
   without an explicit policy change.
 
+## Naming and unit tests
+
+- Name types after the responsibility they own. Use a provider name when the
+  contract is provider-specific and a domain name when it works across providers.
+- Name new and updated unit tests using
+  `given <condition> when <action> then <expected outcome>`. Use
+  `// Given`, `// When`, and `// Then` blocks for setup, execution, and assertions.
+
 ## Health Connect
 
 - Phone-only step queries must include `DataOrigin("android")` and, when

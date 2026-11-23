@@ -4,103 +4,93 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.LocalDate
 
 class HealthConnectSyncCoordinatorTest {
     @Test
-    fun `missing permission does not synchronize`() =
+    fun `given missing permission when refreshing then skips cache synchronization`() =
         runBlocking {
-            val cache = RecordingCache()
-            val coordinator = HealthConnectSyncCoordinator(TestProvider(StepsAccess.PermissionRequired), cache)
+            // Given
+            var synced = false
+            val coordinator = HealthConnectSyncCoordinator({ HealthConnectAccess.PermissionRequired }, { synced = true })
 
+            // When
             coordinator.refresh()
 
+            // Then
             assertEquals(HealthConnectSyncState.PermissionRequired, coordinator.state.value)
-            assertFalse(cache.synced)
+            assertFalse(synced)
         }
 
     @Test
-    fun `unavailable provider does not synchronize`() =
+    fun `given unavailable Health Connect when refreshing then skips cache synchronization`() =
         runBlocking {
-            val cache = RecordingCache()
-            val coordinator = HealthConnectSyncCoordinator(TestProvider(StepsAccess.Unavailable), cache)
+            // Given
+            var synced = false
+            val coordinator = HealthConnectSyncCoordinator({ HealthConnectAccess.Unavailable }, { synced = true })
 
+            // When
             coordinator.refresh()
 
+            // Then
             assertEquals(HealthConnectSyncState.Unavailable, coordinator.state.value)
-            assertFalse(cache.synced)
+            assertFalse(synced)
         }
 
     @Test
-    fun `available provider synchronizes before becoming ready`() =
+    fun `given available Health Connect when refreshing then syncs cache and becomes ready`() =
         runBlocking {
-            val cache = RecordingCache()
-            val coordinator = HealthConnectSyncCoordinator(TestProvider(StepsAccess.Available), cache)
+            // Given
+            var synced = false
+            val coordinator = HealthConnectSyncCoordinator({ HealthConnectAccess.Available }, { synced = true })
 
+            // When
             coordinator.refresh()
 
-            assertTrue(cache.synced)
+            // Then
+            assertTrue(synced)
             assertEquals(HealthConnectSyncState.Ready, coordinator.state.value)
         }
 
     @Test
-    fun `access failures become errors`() =
+    fun `given an access failure when refreshing then reports an error`() =
         runBlocking {
-            val coordinator = HealthConnectSyncCoordinator(TestProvider(failure = IllegalStateException()), RecordingCache())
+            // Given
+            val coordinator = HealthConnectSyncCoordinator({ error("Access failed") }, {})
 
+            // When
             coordinator.refresh()
 
+            // Then
             assertEquals(HealthConnectSyncState.Error, coordinator.state.value)
         }
 
     @Test
-    fun `sync failures become errors`() =
+    fun `given a sync failure when refreshing then reports an error`() =
         runBlocking {
-            val coordinator = HealthConnectSyncCoordinator(TestProvider(), RecordingCache(IllegalStateException()))
+            // Given
+            val coordinator = HealthConnectSyncCoordinator({ HealthConnectAccess.Available }, { error("Sync failed") })
 
+            // When
             coordinator.refresh()
 
+            // Then
             assertEquals(HealthConnectSyncState.Error, coordinator.state.value)
         }
 
     @Test
-    fun `cancellation propagates`() =
+    fun `given a cancelled sync when refreshing then propagates cancellation`() =
         runBlocking {
-            val coordinator = HealthConnectSyncCoordinator(TestProvider(), RecordingCache(CancellationException()))
-            var cancelled = false
+            // Given
+            val cancellation = CancellationException()
+            val coordinator = HealthConnectSyncCoordinator({ HealthConnectAccess.Available }, { throw cancellation })
 
-            try {
-                coordinator.refresh()
-            } catch (error: CancellationException) {
-                cancelled = true
-            }
+            // When
+            val failure = runCatching { coordinator.refresh() }.exceptionOrNull()
 
-            assertTrue(cancelled)
+            // Then
+            assertSame(cancellation, failure)
         }
-
-    private class TestProvider(
-        private val access: StepsAccess = StepsAccess.Available,
-        private val failure: Exception? = null,
-    ) : StepsProvider {
-        override suspend fun access(): StepsAccess {
-            failure?.let { throw it }
-            return access
-        }
-
-        override suspend fun readDailySteps(
-            start: LocalDate,
-            end: LocalDate,
-        ): Map<LocalDate, Long> = emptyMap()
-    }
-
-    private class RecordingCache(private val failure: Exception? = null) : StepCacheSynchronizer {
-        var synced = false
-
-        override suspend fun sync() {
-            failure?.let { throw it }
-            synced = true
-        }
-    }
 }

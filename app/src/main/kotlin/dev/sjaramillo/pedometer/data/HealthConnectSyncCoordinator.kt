@@ -8,22 +8,28 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class HealthConnectSyncCoordinator @Inject constructor(
-    private val stepsProvider: StepsProvider,
-    private val stepCacheSynchronizer: StepCacheSynchronizer,
+class HealthConnectSyncCoordinator internal constructor(
+    private val checkAccess: suspend () -> HealthConnectAccess,
+    private val syncCache: suspend () -> Unit,
 ) {
+    @Inject
+    constructor(
+        phoneStepsDataSource: PhoneStepsDataSource,
+        cacheSynchronizer: HealthConnectStepCacheSynchronizer,
+    ) : this(phoneStepsDataSource::access, cacheSynchronizer::sync)
+
     private val _state = MutableStateFlow<HealthConnectSyncState>(HealthConnectSyncState.Loading)
     val state: StateFlow<HealthConnectSyncState> = _state.asStateFlow()
 
     suspend fun refresh() {
         _state.value = HealthConnectSyncState.Loading
         try {
-            when (stepsProvider.access()) {
-                StepsAccess.PermissionRequired -> _state.value = HealthConnectSyncState.PermissionRequired
-                StepsAccess.Unavailable -> _state.value = HealthConnectSyncState.Unavailable
-                StepsAccess.Available -> {
+            when (checkAccess()) {
+                HealthConnectAccess.PermissionRequired -> _state.value = HealthConnectSyncState.PermissionRequired
+                HealthConnectAccess.Unavailable -> _state.value = HealthConnectSyncState.Unavailable
+                HealthConnectAccess.Available -> {
                     _state.value = HealthConnectSyncState.Syncing
-                    stepCacheSynchronizer.sync()
+                    syncCache()
                     _state.value = HealthConnectSyncState.Ready
                 }
             }
