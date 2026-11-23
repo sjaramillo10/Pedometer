@@ -47,9 +47,12 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -192,19 +195,40 @@ internal fun WeekChart(
         MetricPair(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             first = {
-                StepMetric(
-                    stringResource(R.string.week_total),
-                    numberFormat.format(week.total),
-                    stringResource(R.string.steps_unit),
-                )
+                WeekMetric(stringResource(R.string.week_total), numberFormat.format(week.total))
             },
             second = {
-                StepMetric(
-                    stringResource(R.string.week_average),
-                    numberFormat.format(week.average),
-                    stringResource(R.string.steps_per_day),
-                )
+                WeekMetric(stringResource(R.string.week_average), numberFormat.format(week.average))
             },
+            divider = { Box(Modifier.width(16.dp).height(1.dp).background(palette.track)) },
+        )
+    }
+}
+
+@Composable
+private fun WeekMetric(
+    label: String,
+    value: String,
+) {
+    val palette = LocalPalette.current
+    val secondary = palette.text.copy(alpha = 0.72f)
+    val unit = stringResource(R.string.steps_unit)
+    Column(
+        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        BasicText(label, style = TextStyle(color = secondary, fontSize = 14.sp, textAlign = TextAlign.Center))
+        BasicText(
+            text =
+                buildAnnotatedString {
+                    append(value)
+                    append(' ')
+                    withStyle(SpanStyle(color = secondary, fontSize = 13.sp, fontWeight = FontWeight.Normal)) {
+                        append(unit)
+                    }
+                },
+            style = TextStyle(color = palette.text, fontSize = 22.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center),
         )
     }
 }
