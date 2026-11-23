@@ -32,6 +32,7 @@ internal fun PedometerRoute(
 ) {
     val models = remember(activity) { ViewModelProvider(activity) }
     val home = remember(models) { models[HomeViewModel::class.java] }
+    val stats = remember(models) { models[StatsViewModel::class.java] }
     val version =
         remember(activity) {
             activity.packageManager
@@ -92,7 +93,7 @@ internal fun PedometerRoute(
 
     PedometerScreen(
         home = home,
-        stats = { models[StatsViewModel::class.java] },
+        stats = stats,
         showPrivacy = showPrivacy,
         onDismissPrivacy = { showPrivacy = false },
         onConnect = { permission.launch(setOf(READ_STEPS_PERMISSION)) },

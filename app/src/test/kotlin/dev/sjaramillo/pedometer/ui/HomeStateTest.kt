@@ -122,6 +122,29 @@ class HomeStateTest {
     }
 
     @Test
+    fun `given a partial calendar week when summarizing then the average counts elapsed days through today`() {
+        // Given
+        val monday = today.plusDays(1)
+        val wednesday = monday.plusDays(2)
+        val week =
+            listOf(
+                WeekDay(monday, DailySteps(monday.toEpochDay(), 10_001, fromBackup = true)),
+                WeekDay(monday.plusDays(1), null),
+                WeekDay(wednesday, DailySteps(wednesday.toEpochDay(), 0, fromBackup = false)),
+                WeekDay(wednesday.plusDays(1), DailySteps(wednesday.plusDays(1).toEpochDay(), 20_000, fromBackup = false)),
+            )
+
+        // When
+        val firstDay = summarizeWeek(week, monday)
+        val midweek = summarizeWeek(week, wednesday)
+
+        // Then
+        assertEquals(WeekSummary(10_001, 10_001), firstDay)
+        assertEquals(WeekSummary(10_001, 3_333), midweek)
+        assertEquals(WeekSummary(0, 0), summarizeWeek(week.map { it.copy(total = null) }, wednesday))
+    }
+
+    @Test
     fun `given an editable goal when parsing and comparing totals then only valid targets count and equality reaches the goal`() {
         // Given
         val inputs = listOf("", "0", "100001", "1.5", " 10000 ", "1", "100000")

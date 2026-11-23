@@ -138,6 +138,17 @@ data class HomeTotals(val date: LocalDate, val entries: List<DailySteps> = empty
 
 internal data class WeekDay(val date: LocalDate, val total: DailySteps?)
 
+internal data class WeekSummary(val total: Long, val average: Long)
+
+internal fun summarizeWeek(
+    days: List<WeekDay>,
+    today: LocalDate,
+): WeekSummary {
+    val elapsed = days.filter { it.date <= today }
+    val total = elapsed.sumOf { it.total?.steps ?: 0L }
+    return WeekSummary(total, total / elapsed.size.coerceAtLeast(1))
+}
+
 private const val DEFAULT_GOAL = 10_000
 
 internal fun parseGoal(input: String): Int? = input.trim().toIntOrNull()?.takeIf { it in 1..100_000 }

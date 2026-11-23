@@ -1,5 +1,7 @@
 package dev.sjaramillo.pedometer.ui
-
+import android.icu.number.Notation
+import android.icu.number.NumberFormatter
+import android.icu.number.Precision
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -15,22 +17,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -38,7 +33,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -125,10 +119,8 @@ internal fun WeekChart(state: HomeState) {
     val locale = LocalConfiguration.current.locales[0]
     val today = state.totals.date
     val week = state.totals.currentWeek(WeekFields.of(locale).firstDayOfWeek)
-    var selectedDay by rememberSaveable { mutableStateOf<Long?>(null) }
-    val selected =
-        week.firstOrNull { it.date.toEpochDay() == selectedDay && it.date <= today }
-            ?: week.first { it.date == today }
+    val summary = summarizeWeek(week, today)
+    val numberFormat = NumberFormat.getIntegerInstance(locale)
     val maximum = maxOf(state.goal.toLong(), week.maxOf { it.total?.steps ?: 0L })
 
     Column(
@@ -143,35 +135,37 @@ internal fun WeekChart(state: HomeState) {
         )
         BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
             Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()).width(maxOf(maxWidth, 336.dp)).selectableGroup(),
+                modifier = Modifier.horizontalScroll(rememberScrollState()).width(maxOf(maxWidth, 336.dp)),
             ) {
                 week.forEach { day ->
-                    val isSelected = day == selected
-                    val chooseDay = { selectedDay = day.date.toEpochDay() }
                     WeekBar(
                         day,
                         today,
                         locale,
                         maximum,
                         state.goal,
-                        isSelected,
-                        chooseDay,
                         Modifier.weight(1f),
                     )
                 }
             }
         }
-        Column(Modifier.padding(horizontal = 16.dp).semantics(mergeDescendants = true) {}) {
-            AppText(
-                if (selected.date == today) stringResource(R.string.today) else displayDate(selected.date, locale),
-                bold = true,
-            )
-            AppText(dayTotalLabel(selected, today, locale))
-            if (selected.total?.steps?.let(state::reachedGoal) == true) {
-                AppText(stringResource(R.string.goal_reached), accent = true, bold = true)
-            }
-            if (selected.total?.fromBackup == true) AppText(stringResource(R.string.from_backup))
-        }
+        MetricPair(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            first = {
+                StepMetric(
+                    stringResource(R.string.week_total),
+                    numberFormat.format(summary.total),
+                    stringResource(R.string.steps_unit),
+                )
+            },
+            second = {
+                StepMetric(
+                    stringResource(R.string.week_average),
+                    numberFormat.format(summary.average),
+                    stringResource(R.string.steps_per_day),
+                )
+            },
+        )
     }
 }
 
@@ -182,8 +176,6 @@ private fun WeekBar(
     locale: Locale,
     maximum: Long,
     goal: Int,
-    isSelected: Boolean,
-    chooseDay: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalPalette.current
@@ -197,15 +189,11 @@ private fun WeekBar(
             if (reached) stringResource(R.string.goal_reached) else null,
             if (day.total?.fromBackup == true) stringResource(R.string.from_backup) else null,
         ).joinToString(", ")
-    val available = day.date <= today
-    val shape = RoundedCornerShape(10.dp)
     Column(
         modifier =
             modifier
-                .selectable(isSelected, enabled = available, role = Role.Tab, onClick = chooseDay)
                 .semantics { contentDescription = label }
                 .padding(horizontal = 2.dp)
-                .background(if (isSelected) palette.track else Color.Transparent, shape)
                 .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -240,12 +228,28 @@ private fun WeekBar(
             }
         }
         BasicText(
+            text =
+                steps?.let {
+                    NumberFormatter
+                        .withLocale(
+                            locale,
+                        ).notation(Notation.compactShort())
+                        .precision(Precision.maxFraction(1))
+                        .format(it)
+                        .toString()
+                } ?: "—",
+            modifier = Modifier.clearAndSetSemantics {},
+            style = TextStyle(color = palette.text, textAlign = TextAlign.Center),
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 13.sp),
+        )
+        BasicText(
             text = day.date.dayOfWeek.getDisplayName(DayTextStyle.SHORT_STANDALONE, locale),
             modifier = Modifier.clearAndSetSemantics {},
             style =
                 TextStyle(
-                    color = if (isSelected) palette.accent else palette.text,
-                    fontWeight = if (day.date == today || isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (day.date == today) palette.accent else palette.text,
+                    fontWeight = if (day.date == today) FontWeight.SemiBold else FontWeight.Normal,
                     textAlign = TextAlign.Center,
                 ),
             maxLines = 1,

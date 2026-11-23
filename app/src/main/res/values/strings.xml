@@ -14,18 +14,6 @@
     <string name="set_goal">Set goal</string>
     <string name="about_app_version">App version: %s</string>
 
-    <!-- Stats screen -->
-    <string name="stats_record">Record</string>
-    <string name="stats_record_format">%1$s at %2$s</string>
-    <string name="stats_total_last_7_days">Total last 7 days</string>
-    <string name="stats_average_last_7_days">Average last 7 days</string>
-    <string name="stats_total_this_month">Total this month</string>
-    <string name="stats_average_this_month">Average this month</string>
-    <string name="stats_total_this_year">Total this year</string>
-    <string name="stats_average_this_year">Average this year</string>
-    <string name="stats_total_all_time">All time total</string>
-    <string name="stats_average_all_time">All time average</string>
-
     <string name="settings_title">Settings</string>
 
 
@@ -46,10 +34,6 @@
     <string name="no_steps_for_day">No steps recorded</string>
     <string name="future_day">Upcoming</string>
     <string name="daily_goal_progress">Progress toward today’s step goal</string>
-    <string name="show_stats">Show stats</string>
-    <string name="hide_stats">Hide stats</string>
-    <string name="stats_loading">Loading statistics…</string>
-    <string name="statistic">%1$s: %2$s</string>
     <string name="privacy_title">Health Connect privacy policy</string>
     <string name="close">Close</string>
     <string name="backup_result">CSV backup</string>
@@ -62,4 +46,11 @@
     <string name="about_text">Pedometer was originally created by Thomas Hoffmann. Pedometer is open source.</string>
     <string name="original_author_site">Original author’s website</string>
     <string name="source_code">Source code on GitHub</string>
+    <string name="your_journey">Your journey</string>
+    <string name="best_day">Best day</string>
+    <string name="lifetime_steps">Lifetime steps</string>
+    <string name="week_total">Total this week</string>
+    <string name="week_average">Daily average</string>
+    <string name="steps_per_day">steps per day</string>
+    <string name="no_recorded_steps">No recorded steps</string>
 </resources>

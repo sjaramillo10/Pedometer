@@ -13,6 +13,8 @@ class StepsRepository @Inject constructor(
 
     suspend fun getAll(): List<DailySteps> = resolveDailySteps(dailyStepsDao.getAll())
 
+    fun observeAll(): Flow<List<DailySteps>> = dailyStepsDao.observeAll().resolveDailySteps()
+
     fun observeRecentDays(today: LocalDate): Flow<List<DailySteps>> =
         dailyStepsDao
             .observeEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay())

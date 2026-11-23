@@ -71,7 +71,7 @@ internal val LocalPalette = staticCompositionLocalOf { LightPalette }
 @Composable
 fun PedometerScreen(
     home: HomeViewModel,
-    stats: () -> StatsViewModel,
+    stats: StatsViewModel,
     showPrivacy: Boolean,
     onDismissPrivacy: () -> Unit,
     onConnect: () -> Unit,
@@ -83,7 +83,6 @@ fun PedometerScreen(
     val file by home.fileState.collectAsStateWithLifecycle()
     val palette = if (isSystemInDarkTheme()) DarkPalette else LightPalette
     var settings by rememberSaveable { mutableStateOf(false) }
-    var statsExpanded by rememberSaveable { mutableStateOf(false) }
     CompositionLocalProvider(LocalPalette provides palette) {
         Column(Modifier.fillMaxSize().background(palette.background).safeDrawingPadding()) {
             Row(
@@ -100,13 +99,7 @@ fun PedometerScreen(
                 TodayChart(state)
                 SyncStatus(state.sync, onConnect, home::refresh)
                 WeekChart(state)
-                TextAction(
-                    label = stringResource(if (statsExpanded) R.string.hide_stats else R.string.show_stats),
-                    onClick = { statsExpanded = !statsExpanded },
-                )
-                if (statsExpanded) {
-                    StatsSummary(stats())
-                }
+                StatsSummary(stats)
             }
         }
         when {

@@ -1,42 +1,101 @@
 package dev.sjaramillo.pedometer.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.sjaramillo.pedometer.R
-import dev.sjaramillo.pedometer.ui.stats.StatsUiState
 import dev.sjaramillo.pedometer.ui.stats.StatsViewModel
+import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 internal fun StatsSummary(stats: StatsViewModel) {
-    val state by stats.uiState.collectAsStateWithLifecycle()
-    val data = (state as? StatsUiState.Success)?.statsData
-    if (data == null) {
-        AppText(stringResource(R.string.stats_loading))
-        return
-    }
-
+    val data by stats.uiState.collectAsStateWithLifecycle()
+    val locale = LocalConfiguration.current.locales[0]
+    val numbers = NumberFormat.getIntegerInstance(locale)
+    val record = data?.bestDay
+    val recordDate =
+        record?.let {
+            DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale).format(LocalDate.ofEpochDay(it.day))
+        }
+    val empty = stringResource(R.string.no_recorded_steps)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Statistic(R.string.stats_record, stringResource(R.string.stats_record_format, data.recordSteps, data.recordDate))
-        Statistic(R.string.stats_total_last_7_days, data.totalStepsLast7Days)
-        Statistic(R.string.stats_average_last_7_days, data.averageStepsLast7Days)
-        Statistic(R.string.stats_total_this_month, data.totalStepsThisMonth)
-        Statistic(R.string.stats_average_this_month, data.averageStepsThisMonth)
-        Statistic(R.string.stats_total_this_year, data.totalStepsThisYear)
-        Statistic(R.string.stats_average_this_year, data.averageStepsThisYear)
-        Statistic(R.string.stats_total_all_time, data.totalStepsAllTime)
-        Statistic(R.string.stats_average_all_time, data.averageStepsAllTime)
+        AppText(stringResource(R.string.your_journey), Modifier.semantics { heading() }, size = 20, bold = true)
+        MetricPair(
+            Modifier.fillMaxWidth(),
+            first = {
+                JourneyCard {
+                    StepMetric(stringResource(R.string.best_day), record?.let { numbers.format(it.steps) } ?: "—", recordDate ?: empty)
+                }
+            },
+            second = {
+                JourneyCard {
+                    StepMetric(
+                        stringResource(R.string.lifetime_steps),
+                        data?.let { numbers.format(it.lifetimeSteps) } ?: "—",
+                        stringResource(R.string.steps_unit),
+                    )
+                }
+            },
+        )
     }
 }
 
 @Composable
-private fun Statistic(
-    label: Int,
+private fun JourneyCard(content: @Composable () -> Unit) {
+    Box(Modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(16.dp)) {
+        content()
+    }
+}
+
+@Composable
+internal fun StepMetric(
+    label: String,
     value: String,
+    detail: String,
 ) {
-    AppText(stringResource(R.string.statistic, stringResource(label), value))
+    Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        AppText(label)
+        AppText(value, size = 24, bold = true)
+        AppText(detail)
+    }
+}
+
+@Composable
+internal fun MetricPair(
+    modifier: Modifier,
+    first: @Composable () -> Unit,
+    second: @Composable () -> Unit,
+) {
+    BoxWithConstraints(modifier) {
+        if (maxWidth < 300.dp || LocalDensity.current.fontScale >= 1.5f) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                first()
+                second()
+            }
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.weight(1f)) { first() }
+                Box(Modifier.weight(1f)) { second() }
+            }
+        }
+    }
 }
