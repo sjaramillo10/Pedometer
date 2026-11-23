@@ -7,27 +7,22 @@ import androidx.room.Query
 
 @Dao
 interface DailyStepsDao {
-    @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day")
-    suspend fun getAll(): List<DailySteps>
+    @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY day")
+    suspend fun getAll(): List<StoredDailySteps>
 
-    @Query("SELECT steps FROM daily_steps WHERE day=:day")
-    suspend fun getSteps(day: Long): Long?
-
-    @Query("SELECT * FROM daily_steps WHERE day>0 ORDER BY day DESC LIMIT :num")
-    suspend fun getLastEntries(num: Int): List<DailySteps>
-
-    @Query("SELECT * FROM daily_steps WHERE day >= :start AND day <= :end")
+    @Query("SELECT * FROM daily_steps WHERE day BETWEEN :start AND :end ORDER BY day")
     suspend fun getEntriesInRange(
         start: Long,
         end: Long,
-    ): List<DailySteps>
+    ): List<StoredDailySteps>
 
-    @Query("DELETE FROM daily_steps WHERE day >= :start AND day <= :end")
+    @Query("DELETE FROM daily_steps WHERE source = :source AND day BETWEEN :start AND :end")
     suspend fun deleteFrom(
+        source: StepSource,
         start: Long,
         end: Long,
     )
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(dailySteps: List<DailySteps>)
+    suspend fun insertAll(dailySteps: List<StoredDailySteps>)
 }

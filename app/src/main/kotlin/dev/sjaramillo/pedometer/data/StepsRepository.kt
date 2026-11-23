@@ -9,15 +9,32 @@ class StepsRepository @Inject constructor(
 ) {
     private val dailyStepsDao = database.dailyStepsDao()
 
-    suspend fun getAll(): List<DailySteps> = dailyStepsDao.getAll()
+    suspend fun getAll(): List<DailySteps> = resolveDailySteps(dailyStepsDao.getAll())
 
-    suspend fun getStepsToday(): Long = dailyStepsDao.getSteps(LocalDate.now().toEpochDay()) ?: 0
-
-    suspend fun getLastEntries(num: Int): List<DailySteps> = dailyStepsDao.getLastEntries(num)
+    suspend fun getRecentDays(today: LocalDate): List<DailySteps> =
+        resolveDailySteps(dailyStepsDao.getEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay()))
 
     suspend fun importDailySteps(dailySteps: List<DailySteps>) {
+        dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.BACKUP) })
+    }
+
+    internal suspend fun replaceHealthConnectWindow(
+        start: LocalDate,
+        end: LocalDate,
+        totals: Map<LocalDate, Long>,
+    ) {
+        val entries = totals.map { (day, steps) -> StoredDailySteps(day.toEpochDay(), steps, StepSource.HEALTH_CONNECT) }
         database.withTransaction {
-            dailyStepsDao.insertAll(dailySteps)
+            dailyStepsDao.deleteFrom(StepSource.HEALTH_CONNECT, start.toEpochDay(), end.toEpochDay())
+            dailyStepsDao.insertAll(entries)
         }
     }
 }
+
+internal fun resolveDailySteps(entries: List<StoredDailySteps>): List<DailySteps> =
+    entries
+        .groupBy(StoredDailySteps::day)
+        .map { (day, totals) ->
+            val preferred = totals.firstOrNull { it.source == StepSource.HEALTH_CONNECT } ?: totals.first()
+            DailySteps(day, preferred.steps, fromBackup = preferred.source == StepSource.BACKUP)
+        }
