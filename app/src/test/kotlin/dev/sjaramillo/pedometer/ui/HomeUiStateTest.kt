@@ -25,19 +25,17 @@ class HomeUiStateTest {
     private val current = DailySteps(today.toEpochDay(), 10_000, fromBackup = false)
 
     @Test
-    fun `given active Home state when the theme changes then the selected theme is emitted with the current goal`() =
+    fun `given active Home state when the shared goal changes then Home emits the new goal`() =
         runBlocking {
             // Given
-            val themes = MutableStateFlow(AppTheme.SYSTEM)
+            val goals = MutableStateFlow(12_000)
             val states =
                 observeHomeUiState(
                     flowOf(today),
                     { flowOf(listOf(current)) },
-                    flowOf(12_000),
+                    goals,
                     flowOf(HealthConnectSyncState.Ready),
-                    flowOf(FileState()),
                     flowOf(listOf(current)),
-                    themes = themes,
                 )
             val updates = Channel<HomeUiState>(Channel.UNLIMITED)
             val observer = launch { states.collect { updates.send(it) } }
@@ -46,12 +44,12 @@ class HomeUiStateTest {
             try {
                 withTimeout(5_000) {
                     val initial = updates.receive()
-                    themes.value = AppTheme.DARK
+                    goals.value = 12_100
                     val updated = updates.receive()
 
                     // Then
-                    assertEquals(AppTheme.SYSTEM, initial.theme)
-                    assertEquals(initial.copy(theme = AppTheme.DARK), updated)
+                    assertEquals(12_000, initial.goal)
+                    assertEquals(initial.copy(goal = 12_100), updated)
                 }
             } finally {
                 observer.cancel()
@@ -65,7 +63,6 @@ class HomeUiStateTest {
             val rows = MutableStateFlow<List<DailySteps>>(emptyList())
             val older = DailySteps(today.minusDays(40).toEpochDay(), 1_000, fromBackup = true)
             val history = rows.map { listOf(older) + it }
-            val files = MutableStateFlow(FileState())
             var refreshFails = false
             val coordinator =
                 HealthConnectSyncCoordinator({ HealthConnectAccess.Available }) {
@@ -75,7 +72,7 @@ class HomeUiStateTest {
             val states = Channel<HomeUiState>(Channel.UNLIMITED)
             val observer =
                 launch {
-                    observeHomeUiState(flowOf(today), { rows }, flowOf(10_000), coordinator.state, files, history)
+                    observeHomeUiState(flowOf(today), { rows }, flowOf(10_000), coordinator.state, history)
                         .collect { states.send(it) }
                 }
 
@@ -84,9 +81,8 @@ class HomeUiStateTest {
                 withTimeout(5_000) {
                     assertEquals(HomeTotals(today), states.receive().totals)
                     rows.value = listOf(previous)
-                    files.value = FileState(message = "CSV imported")
                     var imported = states.receive()
-                    while (imported.bestDay != previous || imported.totals.entries != listOf(previous) || imported.file.message == null) {
+                    while (imported.bestDay != previous || imported.totals.entries != listOf(previous)) {
                         imported = states.receive()
                     }
                     coordinator.refresh()
@@ -108,7 +104,6 @@ class HomeUiStateTest {
                     assertEquals(listOf(previous), imported.totals.entries)
                     assertNull(imported.totals.today)
                     assertEquals(6_000L, imported.lifetimeSteps)
-                    assertEquals("CSV imported", imported.file.message)
                     assertEquals(current, refreshed.bestDay)
                     assertEquals(refreshed.bestDay, failed.bestDay)
                     assertEquals(refreshed.lifetimeSteps, failed.lifetimeSteps)
@@ -133,7 +128,6 @@ class HomeUiStateTest {
                         { flowOf(listOf(previous, current)) },
                         flowOf(10_000),
                         flowOf(HealthConnectSyncState.Ready),
-                        flowOf(FileState()),
                         flowOf(emptyList()),
                     ).collect { states.send(it) }
                 }

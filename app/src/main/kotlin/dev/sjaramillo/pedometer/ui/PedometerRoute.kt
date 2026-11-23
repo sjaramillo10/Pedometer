@@ -6,10 +6,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -17,11 +20,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.READ_STEPS_PERMISSION
 
 @Composable
@@ -32,7 +37,9 @@ internal fun PedometerRoute(
 ) {
     val models = remember(activity) { ViewModelProvider(activity) }
     val home = remember(models) { models[HomeViewModel::class.java] }
-    val state by home.uiState.collectAsStateWithLifecycle()
+    val settings = remember(models) { models[SettingsViewModel::class.java] }
+    val homeState by home.uiState.collectAsStateWithLifecycle()
+    val settingsState by settings.uiState.collectAsStateWithLifecycle()
     val packageName = activity.packageName
     var showPrivacy by rememberSaveable { mutableStateOf(initialIntent.opensPrivacyPolicy(packageName)) }
     LaunchedEffect(incomingIntent) {
@@ -45,11 +52,11 @@ internal fun PedometerRoute(
         }
     val importDocument =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-            uri?.let(home::importCsv)
+            uri?.let(settings::importCsv)
         }
     val exportDocument =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
-            uri?.let(home::exportCsv)
+            uri?.let(settings::exportCsv)
         }
 
     LifecycleResumeEffect(home) {
@@ -76,7 +83,7 @@ internal fun PedometerRoute(
         onStopOrDispose { activity.unregisterReceiver(receiver) }
     }
 
-    val dark = state.theme.isDark(isSystemInDarkTheme())
+    val dark = settingsState.theme.isDark(isSystemInDarkTheme())
     val lightBars =
         WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
             WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
@@ -84,19 +91,44 @@ internal fun PedometerRoute(
         activity.window.insetsController?.setSystemBarsAppearance(if (dark) 0 else lightBars, lightBars)
     }
 
-    HomeScreen(
-        state = state,
-        dark = dark,
-        showPrivacy = showPrivacy,
-        onDismissPrivacy = { showPrivacy = false },
-        onConnect = { permission.launch(setOf(READ_STEPS_PERMISSION)) },
-        onImport = { importDocument.launch(arrayOf("text/*")) },
-        onExport = { exportDocument.launch("Pedometer.csv") },
-        onRefresh = home::refresh,
-        onSaveGoal = home::saveGoal,
-        onSetTheme = home::saveTheme,
-        onDismissFileMessage = home::dismissFileMessage,
-    )
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+    val homeScroll = rememberScrollState()
+    val connect = { permission.launch(setOf(READ_STEPS_PERMISSION)) }
+    val closeSettings = {
+        showSettings = false
+        if (settingsState.file.message != null) settings.dismissFileMessage()
+    }
+    BackHandler(enabled = showSettings && !showPrivacy, onBack = closeSettings)
+    CompositionLocalProvider(LocalPalette provides if (dark) DarkPalette else LightPalette) {
+        if (showSettings) {
+            SettingsScreen(
+                state = settingsState,
+                onBack = closeSettings,
+                onSaveGoal = settings::saveGoal,
+                onSetTheme = settings::saveTheme,
+                onImport = { importDocument.launch(arrayOf("text/*")) },
+                onExport = { exportDocument.launch("Pedometer.csv") },
+                onDismissFileMessage = settings::dismissFileMessage,
+            )
+        } else {
+            HomeScreen(homeState, homeScroll, { showSettings = true }, connect, home::refresh)
+        }
+        when {
+            showPrivacy ->
+                AppDialog(stringResource(R.string.privacy_title), { showPrivacy = false }) {
+                    AppText(stringResource(R.string.health_connect_privacy_policy))
+                    TextAction(stringResource(R.string.close)) { showPrivacy = false }
+                }
+
+            !showSettings ->
+                settingsState.file.message?.let { message ->
+                    AppDialog(stringResource(R.string.backup_result), settings::dismissFileMessage) {
+                        AppText(message)
+                        TextAction(stringResource(R.string.close), onClick = settings::dismissFileMessage)
+                    }
+                }
+        }
+    }
 }
 
 private fun Intent.opensPrivacyPolicy(packageName: String): Boolean =
