@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="PedometerTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#111914</item>
+    </style>
+</resources>

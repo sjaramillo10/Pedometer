@@ -2,8 +2,26 @@ package dev.sjaramillo.pedometer.data
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.LocalDate
 
 class StepsCsvTest {
+    @Test
+    fun `given unsupported epoch days when importing then ignores them and keeps valid boundary dates`() {
+        // Given
+        val lastDay = LocalDate.MAX.toEpochDay()
+        val csv = "1,100\n0,200\n$lastDay,300\n${lastDay + 1},400\n1795392000000,1234\n"
+
+        // When
+        val imported = decodeStepsCsv(csv)
+
+        // Then
+        assertEquals(
+            listOf(DailySteps(1, 100, fromBackup = true), DailySteps(lastDay, 300, fromBackup = true)),
+            imported.dailySteps,
+        )
+        assertEquals(3, imported.ignoredRows)
+    }
+
     @Test
     fun `given unsorted totals from both sources when exporting then writes two columns in ascending day order`() {
         // Given

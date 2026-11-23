@@ -8,7 +8,7 @@ internal data class StepsCsvImport(
 internal fun encodeStepsCsv(dailySteps: List<DailySteps>): String =
     buildString {
         dailySteps
-            .filter { it.day > 0 }
+            .filter { isSupportedStepDay(it.day) }
             .sortedBy(DailySteps::day)
             .forEach { dailySteps ->
                 append(dailySteps.day)
@@ -28,7 +28,7 @@ internal fun decodeStepsCsv(csv: String): StepsCsvImport {
         val values = line.split(',', limit = 3)
         val day = values.getOrNull(0)?.trim()?.toLongOrNull()
         val steps = values.getOrNull(1)?.trim()?.toLongOrNull()
-        if (values.size != 2 || day == null || day <= 0 || steps == null || steps < 0) {
+        if (values.size != 2 || day == null || !isSupportedStepDay(day) || steps == null || steps < 0) {
             ignoredRows++
         } else {
             stepsByDay[day] = DailySteps(day, steps, fromBackup = true)

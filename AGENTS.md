@@ -5,9 +5,12 @@
   uses JDK 25.
 - Use the Kotlin DSL and dependency/plugin versions in
   `gradle/libs.versions.toml`. The app uses AndroidX, Hilt/KSP, Room, Health
-  Connect, and a hybrid XML Fragment plus Compose UI.
-- Keep lifecycle-sensitive UI state in the existing ViewModels and repository
-  layer. Add deterministic unit tests under `app/src/test` for behavior changes.
+  Connect, and a single Compose Foundation screen.
+- Keep `MainActivity` as the Compose host. Wire Android lifecycle events,
+  activity results, and privacy intents in `PedometerRoute`. Have
+  `HomeViewModel` expose one `HomeUiState`, and pass state and callbacks to
+  `HomeScreen`.
+- Add deterministic unit tests under `app/src/test` for behavior changes.
 - Room schemas under `app/schemas` are tracked artifacts. Database version 1 is
   the current reinstall-only policy; do not change the version or add migrations
   without an explicit policy change.
@@ -28,6 +31,10 @@
   the legacy origin.
 - On API 37, `getCurrentDeviceDataSource` is callback-based. Keep it suspendable
   via the callback; do not use reflection or assume a synchronous result.
+- Refresh Health Connect on lifecycle and user events. Observe committed data
+  through Room. Resolve one total per day, preferring Health Connect even
+  when its total is zero. Use CSV backup totals when Health Connect has no
+  total for that date and preserve `fromBackup`.
 
 ## Android device deployment
 
@@ -37,6 +44,8 @@
 - Install into Private Space or another profile only when explicitly requested.
   After deployment, verify the app is installed for the intended user and that
   its installation status in other profiles did not change.
+- Leave the debug app installed after testing. Use synthetic step data for
+  screenshots shared outside the device.
 
 ## Verification
 

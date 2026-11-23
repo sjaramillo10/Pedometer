@@ -4,17 +4,21 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DailyStepsDao {
     @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY day")
     suspend fun getAll(): List<StoredDailySteps>
 
+    @Query("SELECT * FROM daily_steps WHERE day > 0 ORDER BY day")
+    fun observeAll(): Flow<List<StoredDailySteps>>
+
     @Query("SELECT * FROM daily_steps WHERE day BETWEEN :start AND :end ORDER BY day")
-    suspend fun getEntriesInRange(
+    fun observeEntriesInRange(
         start: Long,
         end: Long,
-    ): List<StoredDailySteps>
+    ): Flow<List<StoredDailySteps>>
 
     @Query("DELETE FROM daily_steps WHERE source = :source AND day BETWEEN :start AND :end")
     suspend fun deleteFrom(

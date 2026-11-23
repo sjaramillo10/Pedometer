@@ -1,54 +1,33 @@
 [versions]
-activity = "1.4.0"
+activity = "1.13.0"
 android-gradle = "9.3.0"
-appcompat = "1.4.2"
-compose-core = '1.1.1'
-compose-theme-adapter = '1.1.5'
-eaze-graph = "1.0.3"
-fragment = "1.4.1"
+compose-core = "1.12.1"
 hilt = "2.60.1"
 health-connect = "1.1.0"
 junit = "4.13.2"
 kotlin = "2.3.21"
 ktlint = "14.2.0"
 ksp = "2.3.11"
-lifecycle = "2.4.1"
+lifecycle = "2.10.0"
 logcat = "0.1"
-material = "1.4.0"
-navigation = "2.4.2"
-preference = "1.2.0"
 room = "2.7.2"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
-activity-core = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-core"}
-compose-material-core = { module = "androidx.compose.material:material", version.ref = "compose-core" }
-compose-material-theme-adapter = { module = "com.google.android.material:compose-theme-adapter", version.ref = "compose-theme-adapter" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-core" }
-eaze-graph = { module = "com.github.j4velin.EazeGraph:EazeGraph", version.ref = "eaze-graph"}
-fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 hilt-compiler = { module ="com.google.dagger:hilt-compiler", version.ref = "hilt" }
 hilt-core = { module ="com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-gradle = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 health-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "health-connect" }
 junit = { module = "junit:junit", version.ref = "junit" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
-material = { module = "com.google.android.material:material", version.ref = "material" }
-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
-preference = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-core = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 viewmodel-core = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
-
-[bundles]
-compose = ["activity-compose", "compose-foundation", "compose-material-core", "compose-material-theme-adapter", "compose-ui-tooling"]
 
 [plugins]
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
