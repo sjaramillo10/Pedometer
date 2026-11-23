@@ -9,7 +9,7 @@ kotlin = "2.3.21"
 ktlint = "14.2.0"
 ksp = "2.3.11"
 lifecycle = "2.10.0"
-logcat = "0.1"
+logcat = "0.4"
 room = "2.7.2"
 
 [libraries]
