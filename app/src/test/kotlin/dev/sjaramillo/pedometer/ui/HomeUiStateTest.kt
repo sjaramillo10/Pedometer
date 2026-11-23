@@ -25,13 +25,44 @@ class HomeUiStateTest {
     private val current = DailySteps(today.toEpochDay(), 10_000, fromBackup = false)
 
     @Test
+    fun `given active Home state when the shared goal changes then Home emits the new goal`() =
+        runBlocking {
+            // Given
+            val goals = MutableStateFlow(12_000)
+            val states =
+                observeHomeUiState(
+                    flowOf(today),
+                    { flowOf(listOf(current)) },
+                    goals,
+                    flowOf(HealthConnectSyncState.Ready),
+                    flowOf(listOf(current)),
+                )
+            val updates = Channel<HomeUiState>(Channel.UNLIMITED)
+            val observer = launch { states.collect { updates.send(it) } }
+
+            // When
+            try {
+                withTimeout(5_000) {
+                    val initial = updates.receive()
+                    goals.value = 12_100
+                    val updated = updates.receive()
+
+                    // Then
+                    assertEquals(12_000, initial.goal)
+                    assertEquals(initial.copy(goal = 12_100), updated)
+                }
+            } finally {
+                observer.cancel()
+            }
+        }
+
+    @Test
     fun `given an open screen when backup and refresh commit then totals update and survive a failed refresh`() =
         runBlocking {
             // Given
             val rows = MutableStateFlow<List<DailySteps>>(emptyList())
             val older = DailySteps(today.minusDays(40).toEpochDay(), 1_000, fromBackup = true)
             val history = rows.map { listOf(older) + it }
-            val files = MutableStateFlow(FileState())
             var refreshFails = false
             val coordinator =
                 HealthConnectSyncCoordinator({ HealthConnectAccess.Available }) {
@@ -41,7 +72,7 @@ class HomeUiStateTest {
             val states = Channel<HomeUiState>(Channel.UNLIMITED)
             val observer =
                 launch {
-                    observeHomeUiState(flowOf(today), { rows }, flowOf(10_000), coordinator.state, files, history)
+                    observeHomeUiState(flowOf(today), { rows }, flowOf(10_000), coordinator.state, history)
                         .collect { states.send(it) }
                 }
 
@@ -50,9 +81,8 @@ class HomeUiStateTest {
                 withTimeout(5_000) {
                     assertEquals(HomeTotals(today), states.receive().totals)
                     rows.value = listOf(previous)
-                    files.value = FileState(message = "CSV imported")
                     var imported = states.receive()
-                    while (imported.bestDay != previous || imported.totals.entries != listOf(previous) || imported.file.message == null) {
+                    while (imported.bestDay != previous || imported.totals.entries != listOf(previous)) {
                         imported = states.receive()
                     }
                     coordinator.refresh()
@@ -74,7 +104,6 @@ class HomeUiStateTest {
                     assertEquals(listOf(previous), imported.totals.entries)
                     assertNull(imported.totals.today)
                     assertEquals(6_000L, imported.lifetimeSteps)
-                    assertEquals("CSV imported", imported.file.message)
                     assertEquals(current, refreshed.bestDay)
                     assertEquals(refreshed.bestDay, failed.bestDay)
                     assertEquals(refreshed.lifetimeSteps, failed.lifetimeSteps)
@@ -99,7 +128,6 @@ class HomeUiStateTest {
                         { flowOf(listOf(previous, current)) },
                         flowOf(10_000),
                         flowOf(HealthConnectSyncState.Ready),
-                        flowOf(FileState()),
                         flowOf(emptyList()),
                     ).collect { states.send(it) }
                 }
@@ -167,18 +195,15 @@ class HomeUiStateTest {
     }
 
     @Test
-    fun `given an editable goal when parsing and comparing totals then only valid targets count and equality reaches the goal`() {
+    fun `given a saved goal when comparing totals then equality reaches the goal`() {
         // Given
-        val inputs = listOf("", "0", "100001", "1.5", " 10000 ", "1", "100000")
         val state = HomeUiState(totals = HomeTotals(today, listOf(current)), goal = 10_000)
 
         // When
-        val parsed = inputs.map(::parseGoal)
         val atGoal = state.reachedGoal(current.steps)
         val belowGoal = state.copy(goal = 10_001).reachedGoal(current.steps)
 
         // Then
-        assertEquals(listOf(null, null, null, null, 10_000, 1, 100_000), parsed)
         assertTrue(atGoal)
         assertFalse(belowGoal)
         assertEquals(1f, state.progress, 0f)

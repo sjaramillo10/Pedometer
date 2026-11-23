@@ -33,6 +33,10 @@ android {
         }
     }
 
+    androidResources {
+        localeFilters += "en"
+    }
+
     buildFeatures {
         compose = true
     }

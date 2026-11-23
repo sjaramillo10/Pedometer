@@ -49,6 +49,9 @@
 
 ## Verification
 
+When a PR includes UI changes, include before and after screenshots of the
+affected UI in the PR description.
+
 Run from the repository root:
 
 ```sh
