@@ -64,14 +64,9 @@ android {
 }
 
 dependencies {
-    // AndroidX
-    implementation(libs.appcompat)
-    implementation(libs.activity.core)
-    implementation(libs.fragment)
-    implementation(libs.preference)
-
-    // Compose
-    implementation(libs.bundles.compose)
+    implementation(libs.activity.compose)
+    implementation(libs.compose.foundation)
+    debugImplementation(libs.compose.ui.tooling)
 
     // Hilt
     implementation(libs.hilt.core)
@@ -80,26 +75,17 @@ dependencies {
     // Health Connect
     implementation(libs.health.connect.client)
 
-    // Material Components
-    implementation(libs.material)
-
-    // Navigation
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
-
     // Room
     implementation(libs.room.core)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 
     // ViewModel
-    implementation(libs.viewmodel.compose)
     implementation(libs.viewmodel.core)
-    implementation(libs.lifecycle.runtime)
+    implementation(libs.lifecycle.compose)
 
     // Other
     implementation(libs.logcat)
-    implementation(libs.eaze.graph)
 
     // Unit Tests
     testImplementation(libs.junit)

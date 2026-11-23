@@ -12,12 +12,6 @@ interface DailyStepsDao {
     suspend fun getAll(): List<StoredDailySteps>
 
     @Query("SELECT * FROM daily_steps WHERE day BETWEEN :start AND :end ORDER BY day")
-    suspend fun getEntriesInRange(
-        start: Long,
-        end: Long,
-    ): List<StoredDailySteps>
-
-    @Query("SELECT * FROM daily_steps WHERE day BETWEEN :start AND :end ORDER BY day")
     fun observeEntriesInRange(
         start: Long,
         end: Long,

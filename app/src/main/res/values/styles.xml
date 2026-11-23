@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="PedometerTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Color -->
-        <item name="colorPrimary">#43a047</item>
-
-        <!-- Typography -->
-
-        <!-- Shape -->
+    <style name="PedometerTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#F5F7F3</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
-
 </resources>
