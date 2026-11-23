@@ -92,10 +92,12 @@ internal fun PedometerRoute(
     }
 
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var revealHealthConnect by rememberSaveable { mutableStateOf(false) }
     val homeScroll = rememberScrollState()
     val connect = { permission.launch(setOf(READ_STEPS_PERMISSION)) }
     val closeSettings = {
         showSettings = false
+        revealHealthConnect = false
         if (settingsState.file.message != null) settings.dismissFileMessage()
     }
     BackHandler(enabled = showSettings && !showPrivacy, onBack = closeSettings)
@@ -103,6 +105,8 @@ internal fun PedometerRoute(
         if (showSettings) {
             SettingsScreen(
                 state = settingsState,
+                revealHealthConnect = revealHealthConnect,
+                onHealthConnectRevealed = { revealHealthConnect = false },
                 onBack = closeSettings,
                 onConnect = connect,
                 onRetry = { home.refresh(restart = true) },
@@ -113,7 +117,15 @@ internal fun PedometerRoute(
                 onDismissFileMessage = settings::dismissFileMessage,
             )
         } else {
-            HomeScreen(homeState, homeScroll) { showSettings = true }
+            HomeScreen(
+                homeState,
+                homeScroll,
+                onOpenSettings = { showSettings = true },
+                onOpenHealthConnect = {
+                    revealHealthConnect = true
+                    showSettings = true
+                },
+            )
         }
         when {
             showPrivacy ->

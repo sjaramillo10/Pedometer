@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -23,12 +25,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -50,6 +57,8 @@ internal fun nextGoalRepeatDelay(delayMillis: Long): Long = (delayMillis - 15L).
 @Composable
 internal fun SettingsScreen(
     state: SettingsUiState,
+    revealHealthConnect: Boolean,
+    onHealthConnectRevealed: () -> Unit,
     onBack: () -> Unit,
     onConnect: () -> Unit,
     onRetry: () -> Unit,
@@ -60,6 +69,14 @@ internal fun SettingsScreen(
     onDismissFileMessage: () -> Unit,
 ) {
     val file = state.file
+    val healthConnectRequester = remember { BringIntoViewRequester() }
+    var healthConnectPlaced by remember { mutableStateOf(false) }
+    LaunchedEffect(revealHealthConnect, healthConnectPlaced) {
+        if (revealHealthConnect && healthConnectPlaced) {
+            healthConnectRequester.bringIntoView()
+            onHealthConnectRevealed()
+        }
+    }
     Column(Modifier.fillMaxSize().background(LocalPalette.current.background).safeDrawingPadding()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
@@ -73,13 +90,20 @@ internal fun SettingsScreen(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            HealthConnectCard(state.sync, onConnect, onRetry)
             SettingsCard(stringResource(R.string.daily_step_goal)) {
                 GoalControl(state.goal, onAdjustGoal)
             }
             SettingsCard(stringResource(R.string.appearance)) {
                 ThemeOptions(state.theme, onSetTheme)
             }
+            HealthConnectCard(
+                state.sync,
+                onConnect,
+                onRetry,
+                Modifier
+                    .bringIntoViewRequester(healthConnectRequester)
+                    .onGloballyPositioned { healthConnectPlaced = true },
+            )
             SettingsCard(stringResource(R.string.backup)) {
                 Column {
                     TextAction(stringResource(R.string.import_title), !file.busy, onClick = onImport)
@@ -117,8 +141,9 @@ private fun HealthConnectCard(
     status: HealthConnectSyncState,
     onConnect: () -> Unit,
     onRetry: () -> Unit,
+    modifier: Modifier,
 ) {
-    SettingsCard(stringResource(R.string.health_connect)) {
+    SettingsCard(stringResource(R.string.health_connect), modifier) {
         AppText(stringResource(R.string.health_connect_description))
         val message =
             when (status) {
@@ -171,10 +196,11 @@ private fun ThemeOptions(
 @Composable
 private fun SettingsCard(
     title: String,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     Column(
-        Modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(16.dp),
+        modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AppText(title, Modifier.semantics { heading() }, size = 20, bold = true)

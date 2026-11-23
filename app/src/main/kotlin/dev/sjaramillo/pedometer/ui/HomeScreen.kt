@@ -27,6 +27,7 @@ internal fun HomeScreen(
     state: HomeUiState,
     scroll: ScrollState,
     onOpenSettings: () -> Unit,
+    onOpenHealthConnect: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize().background(LocalPalette.current.background).safeDrawingPadding()) {
         Row(
@@ -46,7 +47,7 @@ internal fun HomeScreen(
                     stringResource(R.string.health_connect_permission_required),
                     Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
-                TextAction(stringResource(R.string.open_settings), onClick = onOpenSettings)
+                TextAction(stringResource(R.string.open_settings), onClick = onOpenHealthConnect)
             }
             WeekChart(state)
             StatsSummary(state.bestDay, state.lifetimeSteps)
