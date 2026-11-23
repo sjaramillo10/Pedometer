@@ -186,30 +186,41 @@ class HomeUiStateTest {
     }
 
     @Test
-    fun `given a goal off the hundred grid when adjusted then both button sizes preserve its offset`() {
+    fun `given a goal off the hundred grid when adjusted in either direction then it preserves its offset`() {
         // Given
         val goal = 7_550
 
         // When
-        val adjusted = listOf(-1_000, -100, 100, 1_000).map { adjustGoal(goal, it) }
+        val adjusted = listOf(-100, 100).map { adjustGoal(goal, it) }
 
         // Then
-        assertEquals(listOf(6_550, 7_450, 7_650, 8_550), adjusted)
+        assertEquals(listOf(7_450, 7_650), adjusted)
     }
 
     @Test
-    fun `given goals near or at the limits when adjusted outward then both button sizes clamp to the limits`() {
+    fun `given goals near or at the limits when adjusted outward then they clamp to the limits`() {
         // Given
         val lowerGoals = listOf(1, 50)
         val upperGoals = listOf(99_950, 100_000)
-        val amounts = listOf(100, 1_000)
 
         // When
-        val lowerResults = lowerGoals.flatMap { goal -> amounts.map { adjustGoal(goal, -it) } }
-        val upperResults = upperGoals.flatMap { goal -> amounts.map { adjustGoal(goal, it) } }
+        val lowerResults = lowerGoals.map { adjustGoal(it, -100) }
+        val upperResults = upperGoals.map { adjustGoal(it, 100) }
 
         // Then
-        assertEquals(List(4) { 1 }, lowerResults)
-        assertEquals(List(4) { 100_000 }, upperResults)
+        assertEquals(listOf(1, 1), lowerResults)
+        assertEquals(listOf(100_000, 100_000), upperResults)
+    }
+
+    @Test
+    fun `given a held goal button when successive repeats occur then the delay decreases to a minimum`() {
+        // Given
+        val initialDelay = FIRST_GOAL_REPEAT_DELAY
+
+        // When
+        val delays = generateSequence(initialDelay, ::nextGoalRepeatDelay).take(10).toList()
+
+        // Then
+        assertEquals(listOf(150L, 135L, 120L, 105L, 90L, 75L, 60L, 45L, 45L, 45L), delays)
     }
 }
