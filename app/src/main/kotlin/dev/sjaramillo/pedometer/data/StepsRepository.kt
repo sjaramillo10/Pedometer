@@ -39,6 +39,7 @@ class StepsRepository @Inject constructor(
 
 internal fun resolveDailySteps(entries: List<StoredDailySteps>): List<DailySteps> =
     entries
+        .filter { isSupportedStepDay(it.day) }
         .groupBy(StoredDailySteps::day)
         .map { (day, totals) ->
             val preferred = totals.firstOrNull { it.source == StepSource.HEALTH_CONNECT } ?: totals.first()

@@ -8,6 +8,24 @@ import org.junit.Test
 
 class DailyStepsResolutionTest {
     @Test
+    fun `given an unsupported stored day when resolving history then it contributes to neither best day nor lifetime steps`() {
+        // Given
+        val entries =
+            listOf(
+                StoredDailySteps(10, 500, StepSource.HEALTH_CONNECT),
+                StoredDailySteps(11, 300, StepSource.BACKUP),
+                StoredDailySteps(1_795_392_000_000, 1234, StepSource.BACKUP),
+            )
+
+        // When
+        val resolved = resolveDailySteps(entries)
+
+        // Then
+        assertEquals(DailySteps(10, 500, fromBackup = false), resolved.maxByOrNull(DailySteps::steps))
+        assertEquals(800L, resolved.sumOf(DailySteps::steps))
+    }
+
+    @Test
     fun `given overlapping totals when resolving days then Health Connect wins and backup provenance is retained`() {
         // Given
         val entries =
