@@ -7,16 +7,16 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.DailySteps
@@ -37,32 +37,21 @@ internal fun StatsSummary(
             DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale).format(LocalDate.ofEpochDay(it.day))
         }
     val empty = stringResource(R.string.no_recorded_steps)
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        AppText(stringResource(R.string.your_journey), Modifier.semantics { heading() }, size = 20, bold = true)
+    SectionCard(stringResource(R.string.your_journey)) {
         MetricPair(
             Modifier.fillMaxWidth(),
             first = {
-                JourneyCard {
-                    StepMetric(stringResource(R.string.best_day), record?.let { numbers.format(it.steps) } ?: "—", recordDate ?: empty)
-                }
+                StepMetric(stringResource(R.string.best_day), record?.let { numbers.format(it.steps) } ?: "—", recordDate ?: empty)
             },
             second = {
-                JourneyCard {
-                    StepMetric(
-                        stringResource(R.string.lifetime_steps),
-                        lifetimeSteps?.let(numbers::format) ?: "—",
-                        stringResource(R.string.steps_unit),
-                    )
-                }
+                StepMetric(
+                    stringResource(R.string.lifetime_steps),
+                    lifetimeSteps?.let(numbers::format) ?: "—",
+                    stringResource(R.string.steps_unit),
+                )
             },
+            rowDivider = { Box(Modifier.width(1.dp).height(56.dp).background(LocalPalette.current.text.copy(alpha = 0.10f))) },
         )
-    }
-}
-
-@Composable
-private fun JourneyCard(content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(16.dp)) {
-        content()
     }
 }
 
@@ -72,10 +61,14 @@ internal fun StepMetric(
     value: String,
     detail: String,
 ) {
-    Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        AppText(label)
-        AppText(value, size = 24, bold = true)
-        AppText(detail)
+    Column(
+        Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        AppText(label, size = 14, secondary = true, align = TextAlign.Center)
+        AppText(value, size = 22, bold = true, align = TextAlign.Center)
+        AppText(detail, size = 13, secondary = true, align = TextAlign.Center)
     }
 }
 
@@ -87,7 +80,7 @@ internal fun MetricPair(
     rowDivider: (@Composable () -> Unit)? = null,
 ) {
     BoxWithConstraints(modifier) {
-        if (maxWidth < 300.dp || LocalDensity.current.fontScale >= 1.5f) {
+        if (maxWidth < 280.dp || LocalDensity.current.fontScale >= 1.5f) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),

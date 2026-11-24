@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -29,6 +31,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -43,10 +46,54 @@ internal data class Palette(
 )
 
 internal val LightPalette =
-    Palette(Color(0xFFF5F7F3), Color.White, Color(0xFF1B261E), Color(0xFF23633C), Color(0xFFD6E4D9), Color(0xFF49728C))
+    Palette(Color(0xFFF8F7F2), Color.White, Color(0xFF202722), Color(0xFF3D5948), Color(0xFFECF2ED), Color(0xFF49728C))
 internal val DarkPalette =
     Palette(Color(0xFF111914), Color(0xFF1C2920), Color(0xFFE6F0E7), Color(0xFF9BDAAA), Color(0xFF35483A), Color(0xFF8EB4CD))
 internal val LocalPalette = staticCompositionLocalOf { LightPalette }
+
+@Composable
+internal fun SectionCard(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(20.dp),
+    ) {
+        AppText(title, Modifier.fillMaxWidth().semantics { heading() }, size = 18, bold = true, align = TextAlign.Center)
+        Spacer(Modifier.height(12.dp))
+        content()
+    }
+}
+
+@Composable
+internal fun ScreenToolbar(
+    title: String,
+    actionAtStart: Boolean = false,
+    action: @Composable () -> Unit,
+) {
+    Box(Modifier.fillMaxWidth().sizeIn(minHeight = 56.dp).padding(horizontal = 16.dp)) {
+        AppText(
+            title,
+            Modifier
+                .align(Alignment.Center)
+                .fillMaxWidth()
+                .padding(horizontal = 48.dp)
+                .semantics { heading() },
+            size = 24,
+            bold = true,
+            align = TextAlign.Center,
+        )
+        Box(Modifier.align(if (actionAtStart) Alignment.CenterStart else Alignment.CenterEnd)) {
+            action()
+        }
+    }
+}
+
+@Composable
+internal fun SectionDivider() {
+    Box(Modifier.fillMaxWidth().height(1.dp).background(LocalPalette.current.text.copy(alpha = 0.10f)))
+}
 
 @Composable
 internal fun ToolbarAction(
@@ -100,6 +147,8 @@ internal fun AppText(
     size: Int = 16,
     bold: Boolean = false,
     accent: Boolean = false,
+    secondary: Boolean = false,
+    align: TextAlign = TextAlign.Start,
 ) {
     val palette = LocalPalette.current
     BasicText(
@@ -107,8 +156,14 @@ internal fun AppText(
         modifier,
         style =
             TextStyle(
-                color = if (accent) palette.accent else palette.text,
+                color =
+                    when {
+                        accent -> palette.accent
+                        secondary -> palette.text.copy(alpha = 0.72f)
+                        else -> palette.text
+                    },
                 fontSize = size.sp,
+                textAlign = align,
                 fontWeight = if (bold) FontWeight.SemiBold else FontWeight.Normal,
             ),
     )

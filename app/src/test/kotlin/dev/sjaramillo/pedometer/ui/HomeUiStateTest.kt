@@ -344,6 +344,37 @@ class HomeUiStateTest {
     }
 
     @Test
+    fun `given a partial day when comparing steps to the goal then progress is fractional`() {
+        // Given
+        val entry = current.copy(steps = 8_844)
+        val week = WeekSelection().range(today, DayOfWeek.SUNDAY).withEntries(listOf(entry))
+
+        // When
+        val state = HomeUiState(today, week, entry, goal = 10_000)
+
+        // Then
+        assertEquals(0.8844f, state.progress, 0.00001f)
+        assertFalse(state.reachedGoal(entry.steps))
+    }
+
+    @Test
+    fun `given a missing day and recorded backup zero when reading progress then only the zero has a total`() {
+        // Given
+        val week = WeekSelection().range(today, DayOfWeek.SUNDAY).withEntries(emptyList())
+        val missing = HomeUiState(today, week)
+        val entry = current.copy(steps = 0, fromBackup = true)
+
+        // When
+        val recorded = missing.copy(today = entry)
+
+        // Then
+        assertEquals(0f, missing.progress, 0f)
+        assertEquals(0f, recorded.progress, 0f)
+        assertNull(missing.today)
+        assertEquals(entry, recorded.today)
+    }
+
+    @Test
     fun `given a goal off the hundred grid when adjusted in either direction then it preserves its offset`() {
         // Given
         val goal = 7_550
