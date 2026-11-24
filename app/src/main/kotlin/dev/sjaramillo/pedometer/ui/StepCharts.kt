@@ -3,6 +3,8 @@ package dev.sjaramillo.pedometer.ui
 import android.icu.number.Notation
 import android.icu.number.NumberFormatter
 import android.icu.number.Precision
+import android.icu.text.ConstrainedFieldPosition
+import android.icu.text.DateFormat
 import android.icu.text.DateIntervalFormat
 import android.icu.util.DateInterval
 import android.icu.util.TimeZone
@@ -57,7 +59,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.sjaramillo.pedometer.R
-import java.text.FieldPosition
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -150,7 +151,7 @@ internal fun WeekChart(
             Column(Modifier.weight(1f)) {
                 AppText(stringResource(R.string.weekly_rhythm), Modifier.semantics { heading() }, size = 14)
                 AppText(
-                    displayWeekRange(week.days.first().date, week.days.last().date, locale),
+                    displayWeekRange(week.days.first().date, week.days.last().date, today.year, locale),
                     Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     size = 20,
                     bold = true,
@@ -268,13 +269,26 @@ private fun WeekNavigationButton(
 private fun displayWeekRange(
     start: LocalDate,
     end: LocalDate,
+    currentYear: Int,
     locale: Locale,
 ): String {
-    val skeleton = if (start.year == end.year) "MMMd" else "yMMMd"
+    val showYear = start.year != currentYear || end.year != currentYear
+    val skeleton = if (showYear) "yyMMMd" else "MMMd"
     val format = DateIntervalFormat.getInstance(skeleton, locale)
     format.timeZone = TimeZone.getTimeZone("UTC")
     val interval = DateInterval(start.toEpochDay() * 86_400_000L, end.toEpochDay() * 86_400_000L)
-    return format.format(interval, StringBuffer(), FieldPosition(0)).toString()
+    val formatted = format.formatToValue(interval)
+    if (!showYear || locale.language != "en") return formatted.toString()
+
+    val result = StringBuilder(formatted.toString())
+    val year = ConstrainedFieldPosition().apply { constrainField(DateFormat.Field.YEAR) }
+    var added = 0
+    while (formatted.nextPosition(year)) {
+        val shortYear = formatted.subSequence(year.start, year.limit).takeLast(2)
+        result.replace(year.start + added, year.limit + added, "’$shortYear")
+        added += 1 + shortYear.length - (year.limit - year.start)
+    }
+    return result.toString()
 }
 
 @Composable
