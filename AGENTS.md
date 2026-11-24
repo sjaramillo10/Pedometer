@@ -49,8 +49,7 @@
 
 ## Verification
 
-When a PR includes UI changes, include before and after screenshots of the
-affected UI in the PR description.
+Pull requests should follow the [PR template](.github/pull_request_template.md).
 
 Run from the repository root:
 
