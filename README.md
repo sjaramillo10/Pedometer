@@ -5,9 +5,6 @@ Connect. Home shows today’s steps and goal progress, weekly totals, your best
 day, and lifetime steps. In Settings, you can change your daily goal and import
 or export a CSV backup. Export filenames include the date by default.
 
-Android installs Nemi separately from Pedometer. To bring over your step
-history, export a CSV backup in Pedometer and import it in Nemi.
-
 ## Build
 
 Use JDK 25 and Android SDK 37, then run `./gradlew :app:assembleDebug` from

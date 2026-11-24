@@ -27,6 +27,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,8 +49,15 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 import kotlin.math.abs
@@ -266,10 +274,26 @@ private fun AboutDetails(version: String) {
         secondary = true,
         align = TextAlign.Center,
     )
-    AppText(stringResource(R.string.about_text), size = 14)
-    SettingsLink(R.string.original_project, "https://github.com/j4velin/Pedometer")
+    AboutLinkedText(R.string.about_text)
+    AboutLinkedText(R.string.original_project, Modifier.padding(vertical = 10.dp))
     SectionDivider()
     SettingsLink(R.string.source_code, "https://github.com/sjaramillo10/Nemi")
+}
+
+@Composable
+private fun AboutLinkedText(
+    text: Int,
+    modifier: Modifier = Modifier,
+) {
+    val palette = LocalPalette.current
+    BasicText(
+        AnnotatedString.fromHtml(
+            stringResource(text),
+            linkStyles = TextLinkStyles(style = SpanStyle(color = palette.accent, textDecoration = TextDecoration.Underline)),
+        ),
+        modifier,
+        style = TextStyle(color = palette.text, fontSize = 14.sp),
+    )
 }
 
 @Composable

@@ -59,8 +59,8 @@
     <string name="back">Back</string>
     <string name="backup_working">Working with CSV file…</string>
     <string name="dismiss_result">Dismiss result</string>
-    <string name="about_text">Nemi is a tranquil companion for mindful daily movement. Inspired by classical Nahuatl, nemi (“to live, exist, or dwell”) and nenemi (“to walk or wander”) honor human presence with every step taken along life’s winding path.</string>
-    <string name="original_project">Inspired by Pedometer, by Thomas Hoffmann</string>
+    <string name="about_text"><![CDATA[Nemi is a tranquil companion for mindful daily movement. Inspired by classical Nahuatl, <a href="https://nahuatl.wired-humanities.org/content/nemi">nemi</a> (“to live, exist, or dwell”) and <a href="https://nahuatl.wired-humanities.org/content/nenemi">nenemi</a> (“to walk or wander”) honor human presence with every step taken along life’s winding path.]]></string>
+    <string name="original_project"><![CDATA[Inspired by <a href="https://github.com/j4velin/Pedometer">Pedometer</a>, by Thomas Hoffmann]]></string>
     <string name="source_code">Source code on GitHub</string>
     <string name="your_journey">Your journey</string>
     <string name="journey_slogan">· Life, one step at a time ·</string>

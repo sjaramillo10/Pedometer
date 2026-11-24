@@ -8,4 +8,3 @@ your best day and lifetime steps. Export your history as a CSV backup or import
 a previous backup from Settings.
 
 Nemi is open source: https://github.com/sjaramillo10/Nemi
-Inspired by Pedometer, originally created by Thomas Hoffmann.
