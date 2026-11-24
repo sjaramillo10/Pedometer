@@ -59,18 +59,16 @@ import androidx.compose.ui.unit.sp
 import dev.sjaramillo.pedometer.R
 import java.text.FieldPosition
 import java.text.NumberFormat
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.time.temporal.WeekFields
 import java.util.Locale
 import java.time.format.TextStyle as DayTextStyle
 
 @Composable
 internal fun TodayChart(state: HomeUiState) {
     val palette = LocalPalette.current
-    val today = state.totals.today
+    val today = state.today
     val locale = LocalConfiguration.current.locales[0]
     val progressLabel = stringResource(R.string.daily_goal_progress)
     Column(
@@ -131,14 +129,13 @@ internal fun TodayChart(state: HomeUiState) {
 @Composable
 internal fun WeekChart(
     state: HomeUiState,
-    onPreviousWeek: (DayOfWeek) -> Unit,
-    onNextWeek: (DayOfWeek) -> Unit,
+    onPreviousWeek: () -> Unit,
+    onNextWeek: () -> Unit,
 ) {
     val palette = LocalPalette.current
     val locale = LocalConfiguration.current.locales[0]
-    val today = state.totals.date
-    val firstDay = WeekFields.of(locale).firstDayOfWeek
-    val week = state.totals.week(state.weekSelection, firstDay)
+    val today = state.date
+    val week = state.week
     val numberFormat = NumberFormat.getIntegerInstance(locale)
     val maximum = week.scaleMaximum(state.goal)
 
@@ -159,12 +156,13 @@ internal fun WeekChart(
                     bold = true,
                 )
             }
-            WeekNavigationButton(stringResource(R.string.previous_week), forward = false) { onPreviousWeek(firstDay) }
+            WeekNavigationButton(stringResource(R.string.previous_week), forward = false, onClick = onPreviousWeek)
             WeekNavigationButton(
                 stringResource(R.string.next_week),
                 forward = true,
-                enabled = state.weekSelection.canGoNext(today, firstDay),
-            ) { onNextWeek(firstDay) }
+                enabled = week.range.canGoNext,
+                onClick = onNextWeek,
+            )
         }
         if (week.isEmpty) {
             AppText(stringResource(R.string.no_steps_for_week), Modifier.padding(horizontal = 16.dp))

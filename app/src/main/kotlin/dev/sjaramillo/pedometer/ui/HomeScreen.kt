@@ -25,7 +25,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.HealthConnectSyncState
-import java.time.DayOfWeek
 
 @Composable
 internal fun HomeScreen(
@@ -33,8 +32,8 @@ internal fun HomeScreen(
     scroll: ScrollState,
     onOpenSettings: () -> Unit,
     onOpenHealthConnect: () -> Unit,
-    onPreviousWeek: (DayOfWeek) -> Unit,
-    onNextWeek: (DayOfWeek) -> Unit,
+    onPreviousWeek: () -> Unit,
+    onNextWeek: () -> Unit,
 ) {
     val safeDrawing = WindowInsets.safeDrawing
     Column(

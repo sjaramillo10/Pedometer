@@ -8,6 +8,6 @@ data class DailySteps(
     val fromBackup: Boolean,
 )
 
-private val lastSupportedEpochDay = LocalDate.MAX.toEpochDay()
+internal val lastSupportedEpochDay = LocalDate.MAX.toEpochDay()
 
 internal fun isSupportedStepDay(day: Long): Boolean = day in 1..lastSupportedEpochDay

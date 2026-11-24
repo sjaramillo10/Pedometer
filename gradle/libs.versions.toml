@@ -11,6 +11,7 @@ ksp = "2.3.11"
 lifecycle = "2.10.0"
 logcat = "0.1"
 room = "2.7.2"
+sqlite-jdbc = "3.41.2.2"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
@@ -28,6 +29,8 @@ room-core = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 viewmodel-core = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 
 [plugins]
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

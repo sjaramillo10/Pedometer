@@ -32,7 +32,7 @@ internal data class WeekSelection(private val anchor: LocalDate? = null) {
 
 internal data class WeekDay(val date: LocalDate, val total: DailySteps?)
 
-internal data class WeeklySteps(val days: List<WeekDay>, val today: LocalDate) {
+internal data class WeeklySteps(val days: List<WeekDay>, val range: WeekRange) {
     val isEmpty: Boolean
         get() = days.none { it.total != null }
 
@@ -40,24 +40,33 @@ internal data class WeeklySteps(val days: List<WeekDay>, val today: LocalDate) {
         get() = days.sumOf { it.total?.steps ?: 0L }
 
     val average: Long
-        get() = total / days.count { it.date <= today }.coerceAtLeast(1)
+        get() = total / days.count { it.date <= range.through }.coerceAtLeast(1)
 
     fun scaleMaximum(goal: Int): Long = maxOf(goal.toLong(), days.maxOf { it.total?.steps ?: 0L })
 }
 
-internal fun HomeTotals.week(
-    selection: WeekSelection,
+internal data class WeekRange(
+    val start: LocalDate,
+    val through: LocalDate,
+    val canGoNext: Boolean,
+) {
+    fun withEntries(entries: List<DailySteps>): WeeklySteps {
+        val byDay = entries.associateBy(DailySteps::day)
+        return WeeklySteps(
+            days =
+                List(7) { index ->
+                    val day = start.plusDays(index.toLong())
+                    WeekDay(day, byDay[day.toEpochDay()]?.takeIf { day <= through })
+                },
+            range = this,
+        )
+    }
+}
+
+internal fun WeekSelection.range(
+    today: LocalDate,
     firstDay: DayOfWeek,
-): WeeklySteps {
-    val start = selection.start(date, firstDay)
-    val range = start.toEpochDay()..minOf(start.plusDays(6), date).toEpochDay()
-    val byDay = entries.filter { it.day in range }.associateBy(DailySteps::day)
-    return WeeklySteps(
-        days =
-            List(7) { index ->
-                val day = start.plusDays(index.toLong())
-                WeekDay(day, byDay[day.toEpochDay()])
-            },
-        today = date,
-    )
+): WeekRange {
+    val start = start(today, firstDay)
+    return WeekRange(start, minOf(start.plusDays(6), today), canGoNext(today, firstDay))
 }

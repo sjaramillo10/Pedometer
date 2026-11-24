@@ -6,18 +6,24 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.sjaramillo.pedometer.data.DailySteps
 import dev.sjaramillo.pedometer.data.HealthConnectSyncCoordinator
 import dev.sjaramillo.pedometer.data.HealthConnectSyncState
+import dev.sjaramillo.pedometer.data.StepHistoryStats
 import dev.sjaramillo.pedometer.data.StepsRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.WeekFields
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,22 +34,39 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
     private val date = MutableStateFlow(LocalDate.now())
     private val weekSelection = MutableStateFlow(WeekSelection())
+    private val firstDayOfWeek = MutableStateFlow(WeekFields.of(Locale.getDefault()).firstDayOfWeek)
     private var refreshJob: Job? = null
 
     internal val uiState =
-        observeHomeUiState(date, weekSelection, preferences.goal, coordinator.state, stepsRepository.observeAll())
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
-                HomeUiState(HomeTotals(date.value), goal = preferences.goal.value),
-            )
+        observeHomeUiState(
+            date,
+            weekSelection,
+            firstDayOfWeek,
+            preferences.goal,
+            coordinator.state,
+            stepsRepository::observeDay,
+            stepsRepository::observeDays,
+            stepsRepository.observeHistoryStats(),
+        ).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            HomeUiState(
+                date = date.value,
+                week = weekSelection.value.range(date.value, firstDayOfWeek.value).withEntries(emptyList()),
+                goal = preferences.goal.value,
+            ),
+        )
 
-    internal fun previousWeek(firstDay: DayOfWeek) {
-        weekSelection.update { it.previous(date.value, firstDay) }
+    internal fun updateFirstDayOfWeek(firstDay: DayOfWeek) {
+        firstDayOfWeek.value = firstDay
     }
 
-    internal fun nextWeek(firstDay: DayOfWeek) {
-        weekSelection.update { it.next(date.value, firstDay) }
+    internal fun previousWeek() {
+        weekSelection.update { it.previous(date.value, firstDayOfWeek.value) }
+    }
+
+    internal fun nextWeek() {
+        weekSelection.update { it.next(date.value, firstDayOfWeek.value) }
     }
 
     fun refresh(restart: Boolean = false) {
@@ -56,50 +79,46 @@ class HomeViewModel @Inject constructor(
 }
 
 internal data class HomeUiState(
-    val totals: HomeTotals,
+    val date: LocalDate,
+    val week: WeeklySteps,
+    val today: DailySteps? = null,
     val goal: Int = DEFAULT_GOAL,
     val sync: HealthConnectSyncState = HealthConnectSyncState.Loading,
     val bestDay: DailySteps? = null,
     val lifetimeSteps: Long? = null,
-    val weekSelection: WeekSelection = WeekSelection(),
 ) {
     val progress: Float
-        get() = ((totals.today?.steps ?: 0L).toDouble() / goal).coerceIn(0.0, 1.0).toFloat()
+        get() = ((today?.steps ?: 0L).toDouble() / goal).coerceIn(0.0, 1.0).toFloat()
 
     fun reachedGoal(steps: Long): Boolean = steps >= goal
 }
 
-internal data class HomeTotals(val date: LocalDate, val entries: List<DailySteps> = emptyList()) {
-    val today: DailySteps?
-        get() = entries.firstOrNull { it.day == date.toEpochDay() }
-}
-
+@OptIn(ExperimentalCoroutinesApi::class)
 internal fun observeHomeUiState(
     dates: Flow<LocalDate>,
     weekSelections: Flow<WeekSelection>,
+    firstDays: Flow<DayOfWeek>,
     goals: Flow<Int>,
     sync: Flow<HealthConnectSyncState>,
-    history: Flow<List<DailySteps>>,
-): Flow<HomeUiState> =
-    combine(
-        dates,
-        weekSelections,
-        goals,
-        sync,
-        history.map { entries -> Triple(entries, entries.maxByOrNull(DailySteps::steps), entries.sumOf(DailySteps::steps)) },
-    ) {
-        date,
-        selection,
-        goal,
-        syncState,
-        (entries, bestDay, lifetimeSteps),
-        ->
+    observeDay: (LocalDate) -> Flow<DailySteps?>,
+    observeDays: (LocalDate, LocalDate) -> Flow<List<DailySteps>>,
+    historyStats: Flow<StepHistoryStats>,
+): Flow<HomeUiState> {
+    val today = dates.flatMapLatest { date -> observeDay(date).map { date to it } }
+    val weeks =
+        combine(dates, weekSelections, firstDays) { date, selection, firstDay -> selection.range(date, firstDay) }
+            .distinctUntilChanged()
+            .flatMapLatest { range -> observeDays(range.start, range.through).map(range::withEntries) }
+
+    return combine(today, weeks, goals, sync, historyStats) { (date, steps), week, goal, syncState, stats ->
         HomeUiState(
-            totals = HomeTotals(date, entries),
-            weekSelection = selection,
+            date = date,
+            week = week,
+            today = steps,
             goal = goal,
             sync = syncState,
-            bestDay = bestDay,
-            lifetimeSteps = lifetimeSteps,
+            bestDay = stats.bestDay,
+            lifetimeSteps = stats.lifetimeSteps,
         )
     }
+}
