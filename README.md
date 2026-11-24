@@ -3,7 +3,10 @@
 Nemi is an Android step tracker powered by Health Connect. Set a daily goal,
 see how much you walked this week, and keep your step history on your phone.
 
-<img src="playstore/screenshot1.png" alt="Nemi Home showing daily goal progress and a weekly step chart" width="320">
+<p>
+  <img src="media/home-light.png" alt="Nemi Home in light mode with synthetic step data" width="300">
+  <img src="media/home-dark.png" alt="Nemi Home in dark mode with synthetic step data" width="300">
+</p>
 
 ## What you can do
 
