@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name" translatable="false">Pedometer</string>
+    <string name="app_name" translatable="false">Nemi</string>
     <string name="appearance">Appearance</string>
     <string name="theme_system">System default</string>
     <string name="theme_light">Light</string>
@@ -24,7 +24,7 @@
 
     <string name="health_connect">Health Connect</string>
     <string name="health_connect_status">Health Connect status</string>
-    <string name="health_connect_description">Pedometer reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. Previously saved totals can still appear in your history.</string>
+    <string name="health_connect_description">Nemi reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. Previously saved totals can still appear in your history.</string>
     <string name="health_connect_disconnected">Step access is off.</string>
     <string name="health_connect_connected">Connected</string>
     <string name="learn_health_connect">Learn about Health Connect</string>
@@ -33,7 +33,7 @@
     <string name="health_connect_permission_required">Connect Health Connect in Settings to read steps from this phone.</string>
     <string name="health_connect_syncing">Refreshing phone steps…</string>
     <string name="health_connect_error">Unable to refresh phone steps. Check Health Connect and try again.</string>
-    <string name="health_connect_privacy_policy">Pedometer reads step data recorded by this phone through Health Connect. It stores daily totals only on this device to show recent history and statistics. Pedometer does not write Health Connect data and does not transmit your health data.</string>
+    <string name="health_connect_privacy_policy">Nemi reads step data recorded by this phone through Health Connect. It stores daily totals only on this device to show recent history and statistics. Nemi does not write Health Connect data and does not transmit your health data.</string>
 
     <string name="health_connect_unavailable">Health Connect is unavailable on this device.</string>
     <string name="today">Today</string>
@@ -59,8 +59,8 @@
     <string name="back">Back</string>
     <string name="backup_working">Working with CSV file…</string>
     <string name="dismiss_result">Dismiss result</string>
-    <string name="about_text">Pedometer was originally created by Thomas Hoffmann. Pedometer is open source.</string>
-    <string name="original_author_site">Original author’s website</string>
+    <string name="about_text">Nemi is a tranquil companion for mindful daily movement. Inspired by classical Nahuatl, nemi (“to live, exist, or dwell”) and nenemi (“to walk or wander”) honor human presence with every step taken along life’s winding path.</string>
+    <string name="original_project">Inspired by Pedometer, by Thomas Hoffmann</string>
     <string name="source_code">Source code on GitHub</string>
     <string name="your_journey">Your journey</string>
     <string name="journey_slogan">· Life, one step at a time ·</string>

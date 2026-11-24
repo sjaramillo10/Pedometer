@@ -8,8 +8,8 @@
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/PedometerTheme"
-        android:name=".PedometerApplication"
+        android:theme="@style/NemiTheme"
+        android:name=".NemiApplication"
         android:allowBackup="false">
 
         <activity
