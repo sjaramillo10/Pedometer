@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,7 +51,14 @@ internal fun StatsSummary(
                     stringResource(R.string.steps_unit),
                 )
             },
-            rowDivider = { Box(Modifier.width(1.dp).height(56.dp).background(LocalPalette.current.text.copy(alpha = 0.10f))) },
+        )
+        Box(Modifier.padding(top = 16.dp)) { SectionDivider() }
+        AppText(
+            stringResource(R.string.journey_slogan),
+            Modifier.fillMaxWidth().padding(top = 12.dp),
+            size = 13,
+            secondary = true,
+            align = TextAlign.Center,
         )
     }
 }
@@ -77,7 +85,6 @@ internal fun MetricPair(
     modifier: Modifier,
     first: @Composable () -> Unit,
     second: @Composable () -> Unit,
-    rowDivider: (@Composable () -> Unit)? = null,
 ) {
     BoxWithConstraints(modifier) {
         if (maxWidth < 280.dp || LocalDensity.current.fontScale >= 1.5f) {
@@ -94,7 +101,7 @@ internal fun MetricPair(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.weight(1f)) { first() }
-                rowDivider?.invoke()
+                Box(Modifier.width(1.dp).height(56.dp).background(LocalPalette.current.text.copy(alpha = 0.10f)))
                 Box(Modifier.weight(1f)) { second() }
             }
         }

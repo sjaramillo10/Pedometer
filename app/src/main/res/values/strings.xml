@@ -9,7 +9,6 @@
     <string name="backup">Backup</string>
     <string name="backup_precedence">Health Connect data takes precedence over imported data.</string>
     <string name="about">About</string>
-    <string name="goal_summary">Current goal: %,d steps</string>
     <string name="export_title">Export CSV</string>
     <string name="export_summary">Save daily steps as a CSV file</string>
     <string name="import_title">Import CSV</string>
@@ -64,6 +63,7 @@
     <string name="original_author_site">Original author’s website</string>
     <string name="source_code">Source code on GitHub</string>
     <string name="your_journey">Your journey</string>
+    <string name="journey_slogan">· Life, one step at a time ·</string>
     <string name="best_day">Best day</string>
     <string name="lifetime_steps">Lifetime steps</string>
     <string name="week_total">Weekly total</string>
