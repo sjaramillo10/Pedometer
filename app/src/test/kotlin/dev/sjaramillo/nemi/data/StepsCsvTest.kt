@@ -6,6 +6,18 @@ import java.time.LocalDate
 
 class StepsCsvTest {
     @Test
+    fun `given a single digit month and day when naming an export then includes the padded local date`() {
+        // Given
+        val date = LocalDate.of(2026, 2, 3)
+
+        // When
+        val filename = stepsCsvFileName(date)
+
+        // Then
+        assertEquals("Nemi_2026-02-03.csv", filename)
+    }
+
+    @Test
     fun `given unsupported epoch days when importing then ignores them and keeps valid boundary dates`() {
         // Given
         val lastDay = LocalDate.MAX.toEpochDay()

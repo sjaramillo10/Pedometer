@@ -29,6 +29,8 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.READ_STEPS_PERMISSION
+import dev.sjaramillo.nemi.data.stepsCsvFileName
+import java.time.LocalDate
 import java.time.temporal.WeekFields
 
 @Composable
@@ -117,7 +119,7 @@ internal fun NemiRoute(
                 onAdjustGoal = settings::adjustGoal,
                 onSetTheme = settings::saveTheme,
                 onImport = { importDocument.launch(arrayOf("text/*")) },
-                onExport = { exportDocument.launch("Nemi.csv") },
+                onExport = { exportDocument.launch(stepsCsvFileName(LocalDate.now())) },
                 onDismissFileMessage = settings::dismissFileMessage,
             )
         } else {

@@ -1,9 +1,13 @@
 package dev.sjaramillo.nemi.data
 
+import java.time.LocalDate
+
 internal data class StepsCsvImport(
     val dailySteps: List<DailySteps>,
     val ignoredRows: Int,
 )
+
+internal fun stepsCsvFileName(date: LocalDate): String = "Nemi_$date.csv"
 
 internal fun encodeStepsCsv(dailySteps: List<DailySteps>): String =
     buildString {
