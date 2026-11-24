@@ -103,10 +103,12 @@ class HomeUiStateTest {
                         imported = states.receive()
                     }
                     coordinator.refresh()
+                    val expectedWeek = listOf(previous, current)
                     var refreshed = states.receive()
                     while (refreshed.sync != HealthConnectSyncState.Ready ||
                         refreshed.today != current ||
-                        refreshed.lifetimeSteps != 16_000L
+                        refreshed.lifetimeSteps != 16_000L ||
+                        refreshed.week.days.mapNotNull(WeekDay::total) != expectedWeek
                     ) {
                         refreshed = states.receive()
                     }
@@ -129,7 +131,7 @@ class HomeUiStateTest {
                     assertEquals(current, refreshed.bestDay)
                     assertEquals(refreshed.bestDay, failed.bestDay)
                     assertEquals(refreshed.lifetimeSteps, failed.lifetimeSteps)
-                    assertEquals(listOf(previous, current), refreshed.week.days.mapNotNull(WeekDay::total))
+                    assertEquals(expectedWeek, refreshed.week.days.mapNotNull(WeekDay::total))
                     assertEquals(refreshed.week, failed.week)
                     assertEquals(refreshed.today, failed.today)
                 }
