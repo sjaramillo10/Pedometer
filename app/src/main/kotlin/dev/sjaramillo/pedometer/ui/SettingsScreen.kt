@@ -46,9 +46,9 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.HealthConnectSyncState
@@ -88,26 +88,21 @@ internal fun SettingsScreen(
             .background(LocalPalette.current.background)
             .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        ScreenToolbar(stringResource(R.string.settings_title), actionAtStart = true) {
             ToolbarAction(R.drawable.ic_back, stringResource(R.string.back), onBack)
-            AppText(stringResource(R.string.settings_title), Modifier.semantics { heading() }, size = 22, bold = true)
         }
         Column(
             Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Bottom))
-                .padding(20.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SettingsCard(stringResource(R.string.daily_step_goal)) {
+            SectionCard(stringResource(R.string.daily_step_goal)) {
                 GoalControl(state.goal, onAdjustGoal)
             }
-            SettingsCard(stringResource(R.string.appearance)) {
+            SectionCard(stringResource(R.string.appearance)) {
                 ThemeOptions(state.theme, onSetTheme)
             }
             HealthConnectCard(
@@ -118,15 +113,17 @@ internal fun SettingsScreen(
                     .bringIntoViewRequester(healthConnectRequester)
                     .onGloballyPositioned { healthConnectPlaced = true },
             )
-            SettingsCard(stringResource(R.string.backup)) {
-                Column {
-                    TextAction(stringResource(R.string.import_title), !file.busy, onClick = onImport)
-                    AppText(stringResource(R.string.import_summary))
-                }
-                Column {
-                    TextAction(stringResource(R.string.export_title), !file.busy, onClick = onExport)
-                    AppText(stringResource(R.string.export_summary))
-                }
+            SectionCard(stringResource(R.string.backup)) {
+                BackupRow(R.string.import_title, R.string.import_summary, !file.busy, onImport)
+                SectionDivider()
+                BackupRow(R.string.export_title, R.string.export_summary, !file.busy, onExport)
+                SectionDivider()
+                AppText(
+                    stringResource(R.string.backup_precedence),
+                    Modifier.padding(top = 12.dp),
+                    size = 13,
+                    secondary = true,
+                )
                 if (file.busy) {
                     AppText(stringResource(R.string.backup_working), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                 }
@@ -135,16 +132,8 @@ internal fun SettingsScreen(
                     TextAction(stringResource(R.string.dismiss_result), onClick = onDismissFileMessage)
                 }
             }
-            SettingsCard(stringResource(R.string.about)) {
-                AppText(stringResource(R.string.about_text))
-                AppText(stringResource(R.string.about_app_version, state.version))
-                val uriHandler = LocalUriHandler.current
-                TextAction(stringResource(R.string.original_author_site)) {
-                    uriHandler.openUri("https://www.j4velin.de")
-                }
-                TextAction(stringResource(R.string.source_code)) {
-                    uriHandler.openUri("https://github.com/sjaramillo10/Pedometer")
-                }
+            SectionCard(stringResource(R.string.about)) {
+                AboutDetails(state.version)
             }
         }
     }
@@ -157,8 +146,8 @@ private fun HealthConnectCard(
     onRetry: () -> Unit,
     modifier: Modifier,
 ) {
-    SettingsCard(stringResource(R.string.health_connect), modifier) {
-        AppText(stringResource(R.string.health_connect_description))
+    SectionCard(stringResource(R.string.health_connect), modifier) {
+        val palette = LocalPalette.current
         val message =
             when (status) {
                 HealthConnectSyncState.Loading, HealthConnectSyncState.Syncing -> R.string.health_connect_syncing
@@ -167,16 +156,48 @@ private fun HealthConnectCard(
                 HealthConnectSyncState.Error -> R.string.health_connect_error
                 HealthConnectSyncState.Ready -> R.string.health_connect_connected
             }
-        AppText(stringResource(message), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-        when (status) {
-            HealthConnectSyncState.PermissionRequired -> TextAction(stringResource(R.string.connect_health_connect), onClick = onConnect)
-            HealthConnectSyncState.Error -> TextAction(stringResource(R.string.retry), onClick = onRetry)
-            else -> Unit
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            AppText(stringResource(R.string.health_connect_description), size = 14, secondary = true)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(palette.background, RoundedCornerShape(16.dp))
+                    .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val connected = status == HealthConnectSyncState.Ready
+                Box(Modifier.size(8.dp).background(if (connected) palette.accent else palette.text.copy(alpha = 0.55f), CircleShape))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    AppText(stringResource(R.string.health_connect_status), size = 13, bold = true)
+                    if (!connected) AppText(stringResource(message), size = 13, secondary = true)
+                }
+                if (connected) {
+                    AppText(
+                        stringResource(message),
+                        Modifier.background(palette.track, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
+                        size = 13,
+                        bold = true,
+                        accent = true,
+                    )
+                }
+            }
+            when (status) {
+                HealthConnectSyncState.PermissionRequired ->
+                    TextAction(
+                        stringResource(R.string.connect_health_connect),
+                        onClick = onConnect,
+                    )
+                HealthConnectSyncState.Error -> TextAction(stringResource(R.string.retry), onClick = onRetry)
+                else -> Unit
+            }
         }
-        val uriHandler = LocalUriHandler.current
-        TextAction(stringResource(R.string.learn_health_connect)) {
-            uriHandler.openUri("https://developer.android.com/health-and-fitness/health-connect/get-started")
-        }
+        SettingsLink(
+            R.string.learn_health_connect,
+            "https://developer.android.com/health-and-fitness/health-connect/get-started",
+            external = false,
+        )
     }
 }
 
@@ -187,38 +208,88 @@ private fun ThemeOptions(
 ) {
     val palette = LocalPalette.current
     Column(Modifier.selectableGroup()) {
-        for (option in AppTheme.entries) {
+        for ((index, option) in AppTheme.entries.withIndex()) {
+            if (index > 0) SectionDivider()
             val selected = option == theme
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .sizeIn(minHeight = 48.dp)
+                    .sizeIn(minHeight = 56.dp)
                     .selectable(selected = selected, role = Role.RadioButton) { onSetTheme(option) }
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                    .padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(20.dp).border(2.dp, palette.accent, CircleShape), contentAlignment = Alignment.Center) {
-                    if (selected) Box(Modifier.size(10.dp).background(palette.accent, CircleShape))
-                }
-                AppText(stringResource(option.label), bold = selected)
+                AppText(stringResource(option.label), Modifier.weight(1f), size = 15)
+                Box(
+                    Modifier.size(20.dp).border(
+                        if (selected) 7.dp else 1.dp,
+                        if (selected) palette.accent else palette.text.copy(alpha = 0.40f),
+                        CircleShape,
+                    ),
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SettingsCard(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
+private fun BackupRow(
+    title: Int,
+    summary: Int,
+    enabled: Boolean,
+    onClick: () -> Unit,
 ) {
-    Column(
-        modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = 60.dp)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        AppText(title, Modifier.semantics { heading() }, size = 20, bold = true)
-        content()
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            AppText(stringResource(title), size = 15, bold = true, accent = enabled, secondary = !enabled)
+            AppText(stringResource(summary), size = 13, secondary = true)
+        }
+        AppText("›", Modifier.clearAndSetSemantics {}, size = 22, secondary = true)
+    }
+}
+
+@Composable
+private fun AboutDetails(version: String) {
+    AppText(
+        stringResource(R.string.about_app_version, version),
+        Modifier.fillMaxWidth().padding(bottom = 16.dp),
+        size = 13,
+        secondary = true,
+        align = TextAlign.Center,
+    )
+    AppText(stringResource(R.string.about_text), size = 14)
+    SettingsLink(R.string.original_author_site, "https://www.j4velin.de")
+    SectionDivider()
+    SettingsLink(R.string.source_code, "https://github.com/sjaramillo10/Pedometer")
+}
+
+@Composable
+private fun SettingsLink(
+    label: Int,
+    url: String,
+    external: Boolean = true,
+) {
+    val uriHandler = LocalUriHandler.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = 48.dp)
+            .clickable(role = Role.Button) { uriHandler.openUri(url) }
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppText(stringResource(label), size = 14, bold = true, accent = true)
+        AppText(if (external) "↗" else "›", Modifier.clearAndSetSemantics {}, size = 16, accent = true)
     }
 }
 
@@ -240,8 +311,8 @@ private fun GoalControl(
             modifier = Modifier.weight(1f).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            AppText(stringResource(R.string.selected_goal, goal), size = 24, bold = true)
-            AppText(stringResource(R.string.steps_per_day), size = 14)
+            AppText(stringResource(R.string.selected_goal, goal), size = 24, bold = true, align = TextAlign.Center)
+            AppText(stringResource(R.string.steps_per_day), size = 14, secondary = true, align = TextAlign.Center)
         }
         GoalAdjustment(goal, 100, onAdjust)
     }
@@ -288,6 +359,13 @@ private fun GoalAdjustment(
                 },
         contentAlignment = Alignment.Center,
     ) {
-        AppText(if (increasing) "+" else "−", Modifier.clearAndSetSemantics {}, size = 24, bold = true, accent = enabled)
+        AppText(
+            if (increasing) "+" else "−",
+            Modifier.clearAndSetSemantics {},
+            size = 24,
+            bold = true,
+            accent = enabled,
+            secondary = !enabled,
+        )
     }
 }

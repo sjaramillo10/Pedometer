@@ -9,7 +9,6 @@ import android.icu.text.DateIntervalFormat
 import android.icu.util.DateInterval
 import android.icu.util.TimeZone
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -24,8 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
@@ -45,16 +44,12 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,15 +67,17 @@ internal fun TodayChart(state: HomeUiState) {
     val today = state.today
     val locale = LocalConfiguration.current.locales[0]
     val progressLabel = stringResource(R.string.daily_goal_progress)
-    Column(
-        modifier = Modifier.fillMaxWidth().background(palette.surface, RoundedCornerShape(24.dp)).padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        AppText(stringResource(R.string.today), Modifier.semantics { heading() }, size = 20, bold = true)
+    SectionCard(stringResource(R.string.today)) {
         val progress = state.progress
         Box(
-            modifier = Modifier.widthIn(max = 224.dp).fillMaxWidth().aspectRatio(1f),
+            modifier =
+                Modifier
+                    .padding(top = 12.dp, bottom = 20.dp)
+                    .fillMaxWidth()
+                    .wrapContentWidth()
+                    .widthIn(max = 214.dp)
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
             contentAlignment = Alignment.Center,
         ) {
             Canvas(
@@ -89,7 +86,7 @@ internal fun TodayChart(state: HomeUiState) {
                     progressBarRangeInfo = ProgressBarRangeInfo(progress, 0f..1f)
                 },
             ) {
-                val stroke = 14.dp.toPx()
+                val stroke = 20.dp.toPx()
                 val inset = Offset(stroke / 2, stroke / 2)
                 val diameter = Size(size.width - stroke, size.height - stroke)
                 drawCircle(palette.track, radius = diameter.width / 2, style = Stroke(stroke))
@@ -113,16 +110,20 @@ internal fun TodayChart(state: HomeUiState) {
                     text = today?.let { NumberFormat.getIntegerInstance(locale).format(it.steps) } ?: "—",
                     style = TextStyle(color = palette.text, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
                     maxLines = 1,
-                    autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 44.sp),
+                    autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 38.sp),
                 )
-                AppText(stringResource(R.string.steps_unit))
+                if (today == null) {
+                    AppText(stringResource(R.string.no_steps_today), size = 13, secondary = true, align = TextAlign.Center)
+                } else {
+                    AppText(stringResource(R.string.steps_unit), size = 14, secondary = true, align = TextAlign.Center)
+                    if (today.fromBackup) {
+                        AppText(stringResource(R.string.from_backup), size = 12, secondary = true, align = TextAlign.Center)
+                    }
+                    if (state.reachedGoal(today.steps)) {
+                        AppText(stringResource(R.string.goal_reached), size = 12, accent = true, align = TextAlign.Center)
+                    }
+                }
             }
-        }
-        AppText(stringResource(R.string.goal_summary, state.goal))
-        if (today == null) AppText(stringResource(R.string.no_steps_today))
-        if (today?.fromBackup == true) AppText(stringResource(R.string.from_backup))
-        if (today != null && state.reachedGoal(today.steps)) {
-            AppText(stringResource(R.string.goal_reached), accent = true, bold = true)
         }
     }
 }
@@ -133,102 +134,64 @@ internal fun WeekChart(
     onPreviousWeek: () -> Unit,
     onNextWeek: () -> Unit,
 ) {
-    val palette = LocalPalette.current
     val locale = LocalConfiguration.current.locales[0]
     val today = state.date
     val week = state.week
     val numberFormat = NumberFormat.getIntegerInstance(locale)
     val maximum = week.scaleMaximum(state.goal)
+    val unit = stringResource(R.string.steps_unit)
 
-    Column(
-        modifier = Modifier.fillMaxWidth().background(palette.surface, RoundedCornerShape(24.dp)).padding(vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                AppText(stringResource(R.string.weekly_rhythm), Modifier.semantics { heading() }, size = 14)
+    SectionCard(stringResource(R.string.weekly_rhythm)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                WeekNavigationButton(stringResource(R.string.previous_week), forward = false, onClick = onPreviousWeek)
                 AppText(
                     displayWeekRange(week.days.first().date, week.days.last().date, today.year, locale),
-                    Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                    size = 20,
-                    bold = true,
+                    Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite },
+                    size = 14,
+                    secondary = true,
+                    align = TextAlign.Center,
+                )
+                WeekNavigationButton(
+                    stringResource(R.string.next_week),
+                    forward = true,
+                    enabled = week.range.canGoNext,
+                    onClick = onNextWeek,
                 )
             }
-            WeekNavigationButton(stringResource(R.string.previous_week), forward = false, onClick = onPreviousWeek)
-            WeekNavigationButton(
-                stringResource(R.string.next_week),
-                forward = true,
-                enabled = week.range.canGoNext,
-                onClick = onNextWeek,
-            )
-        }
-        if (week.isEmpty) {
-            AppText(stringResource(R.string.no_steps_for_week), Modifier.padding(horizontal = 16.dp))
-        }
-        BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()).width(maxOf(maxWidth, 336.dp)),
-            ) {
-                week.days.forEach { day ->
-                    WeekBar(
-                        day,
-                        today,
-                        locale,
-                        maximum,
-                        state.goal,
-                        Modifier.weight(1f),
-                    )
+            if (week.isEmpty) {
+                AppText(stringResource(R.string.no_steps_for_week), Modifier.padding(horizontal = 16.dp))
+            }
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()).width(maxOf(maxWidth, 294.dp)),
+                ) {
+                    week.days.forEach { day ->
+                        WeekBar(
+                            day,
+                            today,
+                            locale,
+                            maximum,
+                            state.goal,
+                            Modifier.weight(1f),
+                        )
+                    }
                 }
             }
-        }
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .height(1.dp)
-                .background(palette.track),
-        )
-        MetricPair(
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            first = {
-                WeekMetric(stringResource(R.string.week_total), numberFormat.format(week.total))
-            },
-            second = {
-                WeekMetric(stringResource(R.string.week_average), numberFormat.format(week.average))
-            },
-            rowDivider = { Box(Modifier.width(1.dp).height(16.dp).background(palette.track)) },
-        )
-    }
-}
-
-@Composable
-private fun WeekMetric(
-    label: String,
-    value: String,
-) {
-    val palette = LocalPalette.current
-    val secondary = palette.text.copy(alpha = 0.72f)
-    val unit = stringResource(R.string.steps_unit)
-    Column(
-        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        BasicText(label, style = TextStyle(color = secondary, fontSize = 14.sp, textAlign = TextAlign.Center))
-        BasicText(
-            text =
-                buildAnnotatedString {
-                    append(value)
-                    append(' ')
-                    withStyle(SpanStyle(color = secondary, fontSize = 13.sp, fontWeight = FontWeight.Normal)) {
-                        append(unit)
-                    }
+            SectionDivider()
+            MetricPair(
+                Modifier.fillMaxWidth(),
+                first = {
+                    StepMetric(stringResource(R.string.week_total), numberFormat.format(week.total), unit)
                 },
-            style = TextStyle(color = palette.text, fontSize = 22.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center),
-        )
+                second = {
+                    StepMetric(stringResource(R.string.week_average), numberFormat.format(week.average), unit)
+                },
+            )
+        }
     }
 }
 
