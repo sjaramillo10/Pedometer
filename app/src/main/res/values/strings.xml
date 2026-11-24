@@ -7,6 +7,7 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="backup">Backup</string>
+    <string name="backup_precedence">Health Connect data takes precedence over imported data.</string>
     <string name="about">About</string>
     <string name="goal_summary">Current goal: %,d steps</string>
     <string name="export_title">Export CSV</string>
@@ -17,12 +18,13 @@
     <string name="entries_imported">%1$d entries imported; %2$d invalid rows ignored.</string>
     <string name="error_file">Error accessing the file: %s</string>
     <string name="daily_step_goal">Daily step goal</string>
-    <string name="about_app_version">App version: %s</string>
+    <string name="about_app_version">App version %s</string>
 
     <string name="settings_title">Settings</string>
 
 
     <string name="health_connect">Health Connect</string>
+    <string name="health_connect_status">Health Connect status</string>
     <string name="health_connect_description">Pedometer reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. Previously saved totals can still appear in your history.</string>
     <string name="health_connect_disconnected">Step access is off.</string>
     <string name="health_connect_connected">Connected</string>
