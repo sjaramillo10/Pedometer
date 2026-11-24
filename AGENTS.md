@@ -1,13 +1,13 @@
-# Pedometer
+# Nemi
 
 - This is a single Android module, `:app`, with application ID and namespace
-  `dev.sjaramillo.pedometer`. The min, compile, and target SDK are all 37; CI
+  `dev.sjaramillo.nemi`. The min, compile, and target SDK are all 37; CI
   uses JDK 25.
 - Use the Kotlin DSL and dependency/plugin versions in
   `gradle/libs.versions.toml`. The app uses AndroidX, Hilt/KSP, Room, Health
   Connect, and a single Compose Foundation screen.
 - Keep `MainActivity` as the Compose host. Wire Android lifecycle events,
-  activity results, and privacy intents in `PedometerRoute`. Have
+  activity results, and privacy intents in `NemiRoute`. Have
   `HomeViewModel` expose one `HomeUiState`, and pass state and callbacks to
   `HomeScreen`.
 - Add deterministic unit tests under `app/src/test` for behavior changes.
@@ -57,7 +57,7 @@ Run from the repository root:
 ```sh
 ./gradlew build
 ./gradlew ktlintCheck
-./gradlew :app:testDebugUnitTest --tests 'dev.sjaramillo.pedometer.data.StepsCsvTest'
+./gradlew :app:testDebugUnitTest --tests 'dev.sjaramillo.nemi.data.StepsCsvTest'
 ```
 
 Ktlint exceptions are defined in `.editorconfig` for annotated constructors,

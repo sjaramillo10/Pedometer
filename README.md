@@ -1,10 +1,9 @@
-Pedometer
-=========
+# Nemi
 
-Pedometer is an Android app for tracking steps from your phone through Health
-Connect. Home shows today's steps and goal progress, this week's daily totals,
-your best day, and lifetime steps. Open Settings to edit the daily goal or
-import and export a CSV backup.
+Nemi is an Android app for tracking steps from your phone through Health
+Connect. Home shows today’s steps and goal progress, weekly totals, your best
+day, and lifetime steps. In Settings, you can change your daily goal and import
+or export a CSV backup. Export filenames include the date by default.
 
 ## Build
 
@@ -14,4 +13,7 @@ deployment instructions.
 
 ## Acknowledgements
 
-This project was forked from https://github.com/j4velin/Pedometer. I asked GitHub support to detach this from the parent repo, because my intention is to continue making changes and publish it to the Play Store.
+Nemi began as a fork of [Pedometer](https://github.com/j4velin/Pedometer),
+originally created by Thomas Hoffmann.
+
+[Source code on GitHub](https://github.com/sjaramillo10/Nemi)

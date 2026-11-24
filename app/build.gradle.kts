@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.sjaramillo.pedometer"
+    namespace = "dev.sjaramillo.nemi"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "dev.sjaramillo.pedometer"
+        applicationId = "dev.sjaramillo.nemi"
         targetSdk = 37
         minSdk = 37
         versionCode = 1

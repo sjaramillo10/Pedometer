@@ -1,12 +1,10 @@
-en-US
+Nemi
 
-Lightweight pedometer app using the <b>hardware step-sensor</b> for minimal battery consumption.
-This app is designed to be running all the time without having any impact on your battery life! It uses the hardware step detection sensor of devices like the Nexus 5, which is already running even when not using any pedometer app. Therefore the app does not consume any additional battery drain. Unlike other pedometer apps, this app does <b>not</b> track your movement or your location so it doesn't need to turn on your GPS sensor (again: <b>no impact on your battery</b>).
+Track your daily steps and see how your movement changes over time.
 
-<b>FAQ:</b>
-• Do not use any task killer if you want the app to work
-• Achievements are granted the day <u>after</u> meeting the requirements
+Nemi reads step totals recorded by your phone through Health Connect and saves
+daily totals on your device. Set a daily step goal, browse past weeks, and see
+your best day and lifetime steps. Export your history as a CSV backup or import
+a previous backup from Settings.
 
-Pedometer is open source: https://github.com/j4velin/Pedometer
-Pedometer uses the 'EazeGraph' library by Paul Cech and 'ColorPickerPreference' by Sergey Margaritov
-Icon provided by https://utopian.io/@tobaloidee
+Nemi is open source: https://github.com/sjaramillo10/Nemi
