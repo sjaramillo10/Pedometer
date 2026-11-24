@@ -1,19 +1,43 @@
 # Nemi
 
-Nemi is an Android app for tracking steps from your phone through Health
-Connect. Home shows today’s steps and goal progress, weekly totals, your best
-day, and lifetime steps. In Settings, you can change your daily goal and import
-or export a CSV backup. Export filenames include the date by default.
+Nemi is an Android step tracker powered by Health Connect. Set a daily goal,
+see how much you walked this week, and keep your step history on your phone.
 
-## Build
+<img src="playstore/screenshot1.png" alt="Nemi Home showing daily goal progress and a weekly step chart" width="320">
 
-Use JDK 25 and Android SDK 37, then run `./gradlew :app:assembleDebug` from
-the repository root. See [AGENTS.md](AGENTS.md) for verification and device
-deployment instructions.
+## What you can do
+
+- Check today’s steps and your progress toward your daily goal.
+- Browse past weeks and see your daily totals, weekly average, best day, and
+  lifetime steps.
+- Save a dated CSV backup or restore one from Settings.
+
+## How Nemi uses your data
+
+Connect Health Connect in Settings to let Nemi read steps recorded by your
+phone. Nemi stores daily totals on your device, leaves Health Connect data
+untouched, and never transmits your health data. Imported CSV totals
+fill in dates when Health Connect has no total.
+
+## Why Nemi?
+
+The name comes from classical Nahuatl.
+[*Nemi*](https://nahuatl.wired-humanities.org/content/nemi) means “to live,
+exist, or dwell,” and
+[*nenemi*](https://nahuatl.wired-humanities.org/content/nenemi) means “to walk
+or wander.”
+
+## Build from source
+
+With JDK 25 and Android SDK 37 installed, run this from the repository root:
+
+```sh
+./gradlew :app:assembleDebug
+```
+
+See [AGENTS.md](AGENTS.md) for verification and device deployment.
 
 ## Acknowledgements
 
 Nemi began as a fork of [Pedometer](https://github.com/j4velin/Pedometer),
 originally created by Thomas Hoffmann.
-
-[Source code on GitHub](https://github.com/sjaramillo10/Nemi)
