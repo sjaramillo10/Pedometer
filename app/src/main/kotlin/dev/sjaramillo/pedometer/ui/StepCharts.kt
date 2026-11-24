@@ -1,9 +1,16 @@
 package dev.sjaramillo.pedometer.ui
+
 import android.icu.number.Notation
 import android.icu.number.NumberFormatter
 import android.icu.number.Precision
+import android.icu.text.ConstrainedFieldPosition
+import android.icu.text.DateFormat
+import android.icu.text.DateIntervalFormat
+import android.icu.util.DateInterval
+import android.icu.util.TimeZone
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +21,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -32,15 +40,22 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.sjaramillo.pedometer.R
@@ -48,14 +63,13 @@ import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.time.temporal.WeekFields
 import java.util.Locale
 import java.time.format.TextStyle as DayTextStyle
 
 @Composable
 internal fun TodayChart(state: HomeUiState) {
     val palette = LocalPalette.current
-    val today = state.totals.today
+    val today = state.today
     val locale = LocalConfiguration.current.locales[0]
     val progressLabel = stringResource(R.string.daily_goal_progress)
     Column(
@@ -114,30 +128,51 @@ internal fun TodayChart(state: HomeUiState) {
 }
 
 @Composable
-internal fun WeekChart(state: HomeUiState) {
+internal fun WeekChart(
+    state: HomeUiState,
+    onPreviousWeek: () -> Unit,
+    onNextWeek: () -> Unit,
+) {
     val palette = LocalPalette.current
     val locale = LocalConfiguration.current.locales[0]
-    val today = state.totals.date
-    val week = state.totals.currentWeek(WeekFields.of(locale).firstDayOfWeek)
-    val summary = summarizeWeek(week, today)
+    val today = state.date
+    val week = state.week
     val numberFormat = NumberFormat.getIntegerInstance(locale)
-    val maximum = maxOf(state.goal.toLong(), week.maxOf { it.total?.steps ?: 0L })
+    val maximum = week.scaleMaximum(state.goal)
 
     Column(
         modifier = Modifier.fillMaxWidth().background(palette.surface, RoundedCornerShape(24.dp)).padding(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        AppText(
-            stringResource(R.string.current_week),
-            Modifier.padding(horizontal = 16.dp).semantics { heading() },
-            size = 20,
-            bold = true,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                AppText(stringResource(R.string.weekly_rhythm), Modifier.semantics { heading() }, size = 14)
+                AppText(
+                    displayWeekRange(week.days.first().date, week.days.last().date, today.year, locale),
+                    Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    size = 20,
+                    bold = true,
+                )
+            }
+            WeekNavigationButton(stringResource(R.string.previous_week), forward = false, onClick = onPreviousWeek)
+            WeekNavigationButton(
+                stringResource(R.string.next_week),
+                forward = true,
+                enabled = week.range.canGoNext,
+                onClick = onNextWeek,
+            )
+        }
+        if (week.isEmpty) {
+            AppText(stringResource(R.string.no_steps_for_week), Modifier.padding(horizontal = 16.dp))
+        }
         BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()).width(maxOf(maxWidth, 336.dp)),
             ) {
-                week.forEach { day ->
+                week.days.forEach { day ->
                     WeekBar(
                         day,
                         today,
@@ -149,24 +184,111 @@ internal fun WeekChart(state: HomeUiState) {
                 }
             }
         }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .height(1.dp)
+                .background(palette.track),
+        )
         MetricPair(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             first = {
-                StepMetric(
-                    stringResource(R.string.week_total),
-                    numberFormat.format(summary.total),
-                    stringResource(R.string.steps_unit),
-                )
+                WeekMetric(stringResource(R.string.week_total), numberFormat.format(week.total))
             },
             second = {
-                StepMetric(
-                    stringResource(R.string.week_average),
-                    numberFormat.format(summary.average),
-                    stringResource(R.string.steps_per_day),
-                )
+                WeekMetric(stringResource(R.string.week_average), numberFormat.format(week.average))
             },
+            rowDivider = { Box(Modifier.width(1.dp).height(16.dp).background(palette.track)) },
         )
     }
+}
+
+@Composable
+private fun WeekMetric(
+    label: String,
+    value: String,
+) {
+    val palette = LocalPalette.current
+    val secondary = palette.text.copy(alpha = 0.72f)
+    val unit = stringResource(R.string.steps_unit)
+    Column(
+        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        BasicText(label, style = TextStyle(color = secondary, fontSize = 14.sp, textAlign = TextAlign.Center))
+        BasicText(
+            text =
+                buildAnnotatedString {
+                    append(value)
+                    append(' ')
+                    withStyle(SpanStyle(color = secondary, fontSize = 13.sp, fontWeight = FontWeight.Normal)) {
+                        append(unit)
+                    }
+                },
+            style = TextStyle(color = palette.text, fontSize = 22.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center),
+        )
+    }
+}
+
+@Composable
+private fun WeekNavigationButton(
+    label: String,
+    forward: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val palette = LocalPalette.current
+    Box(
+        Modifier
+            .size(48.dp)
+            .semantics { contentDescription = label }
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.size(16.dp)) {
+            val pointsRight = forward == (layoutDirection == LayoutDirection.Ltr)
+            val tip = if (pointsRight) 0.65f else 0.35f
+            val tail = 1f - tip
+            val chevron =
+                Path().apply {
+                    moveTo(size.width * tail, size.height * 0.2f)
+                    lineTo(size.width * tip, size.height * 0.5f)
+                    lineTo(size.width * tail, size.height * 0.8f)
+                }
+            drawPath(
+                chevron,
+                if (enabled) palette.accent else palette.text.copy(alpha = 0.38f),
+                style = Stroke(2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+            )
+        }
+    }
+}
+
+private fun displayWeekRange(
+    start: LocalDate,
+    end: LocalDate,
+    currentYear: Int,
+    locale: Locale,
+): String {
+    val showYear = start.year != currentYear || end.year != currentYear
+    val skeleton = if (showYear) "yyMMMd" else "MMMd"
+    val format = DateIntervalFormat.getInstance(skeleton, locale)
+    format.timeZone = TimeZone.getTimeZone("UTC")
+    val interval = DateInterval(start.toEpochDay() * 86_400_000L, end.toEpochDay() * 86_400_000L)
+    val formatted = format.formatToValue(interval)
+    if (!showYear || locale.language != "en") return formatted.toString()
+
+    val result = StringBuilder(formatted.toString())
+    val year = ConstrainedFieldPosition().apply { constrainField(DateFormat.Field.YEAR) }
+    var added = 0
+    while (formatted.nextPosition(year)) {
+        val shortYear = formatted.subSequence(year.start, year.limit).takeLast(2)
+        result.replace(year.start + added, year.limit + added, "’$shortYear")
+        added += 1 + shortYear.length - (year.limit - year.start)
+    }
+    return result.toString()
 }
 
 @Composable

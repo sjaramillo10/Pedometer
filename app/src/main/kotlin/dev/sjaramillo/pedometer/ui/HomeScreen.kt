@@ -32,6 +32,8 @@ internal fun HomeScreen(
     scroll: ScrollState,
     onOpenSettings: () -> Unit,
     onOpenHealthConnect: () -> Unit,
+    onPreviousWeek: () -> Unit,
+    onNextWeek: () -> Unit,
 ) {
     val safeDrawing = WindowInsets.safeDrawing
     Column(
@@ -63,7 +65,7 @@ internal fun HomeScreen(
                 )
                 TextAction(stringResource(R.string.open_settings), onClick = onOpenHealthConnect)
             }
-            WeekChart(state)
+            WeekChart(state, onPreviousWeek, onNextWeek)
             StatsSummary(state.bestDay, state.lifetimeSteps)
         }
     }

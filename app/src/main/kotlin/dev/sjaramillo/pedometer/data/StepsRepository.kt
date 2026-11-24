@@ -2,6 +2,7 @@ package dev.sjaramillo.pedometer.data
 
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
@@ -11,14 +12,17 @@ class StepsRepository @Inject constructor(
 ) {
     private val dailyStepsDao = database.dailyStepsDao()
 
-    suspend fun getAll(): List<DailySteps> = resolveDailySteps(dailyStepsDao.getAll())
+    suspend fun getAll(): List<DailySteps> = dailyStepsDao.getResolvedDays(1, lastSupportedEpochDay)
 
-    fun observeAll(): Flow<List<DailySteps>> = dailyStepsDao.observeAll().resolveDailySteps()
+    fun observeDay(day: LocalDate): Flow<DailySteps?> = observeDays(day, day).map { it.singleOrNull() }
 
-    fun observeRecentDays(today: LocalDate): Flow<List<DailySteps>> =
-        dailyStepsDao
-            .observeEntriesInRange(today.minusDays(7).toEpochDay(), today.toEpochDay())
-            .resolveDailySteps()
+    fun observeDays(
+        start: LocalDate,
+        end: LocalDate,
+    ): Flow<List<DailySteps>> =
+        dailyStepsDao.observeResolvedDays(start.toEpochDay().coerceAtLeast(1), end.toEpochDay()).distinctUntilChanged()
+
+    fun observeHistoryStats(): Flow<StepHistoryStats> = dailyStepsDao.observeHistoryStats(1, lastSupportedEpochDay).distinctUntilChanged()
 
     suspend fun importDailySteps(dailySteps: List<DailySteps>) {
         dailyStepsDao.insertAll(dailySteps.map { StoredDailySteps(it.day, it.steps, StepSource.BACKUP) })
@@ -36,14 +40,3 @@ class StepsRepository @Inject constructor(
         }
     }
 }
-
-internal fun resolveDailySteps(entries: List<StoredDailySteps>): List<DailySteps> =
-    entries
-        .filter { isSupportedStepDay(it.day) }
-        .groupBy(StoredDailySteps::day)
-        .map { (day, totals) ->
-            val preferred = totals.firstOrNull { it.source == StepSource.HEALTH_CONNECT } ?: totals.first()
-            DailySteps(day, preferred.steps, fromBackup = preferred.source == StepSource.BACKUP)
-        }
-
-internal fun Flow<List<StoredDailySteps>>.resolveDailySteps(): Flow<List<DailySteps>> = map(::resolveDailySteps)

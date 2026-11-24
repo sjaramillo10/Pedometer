@@ -40,7 +40,10 @@
     <string name="no_steps_today">No steps recorded today</string>
     <string name="from_backup">From backup</string>
     <string name="goal_reached">Goal reached</string>
-    <string name="current_week">This week</string>
+    <string name="weekly_rhythm">Weekly rhythm</string>
+    <string name="previous_week">Previous week</string>
+    <string name="next_week">Next week</string>
+    <string name="no_steps_for_week">No steps recorded this week</string>
     <string name="steps_unit">steps</string>
     <string name="no_steps_for_day">No steps recorded</string>
     <string name="future_day">Upcoming</string>
@@ -61,7 +64,7 @@
     <string name="your_journey">Your journey</string>
     <string name="best_day">Best day</string>
     <string name="lifetime_steps">Lifetime steps</string>
-    <string name="week_total">Total this week</string>
+    <string name="week_total">Weekly total</string>
     <string name="week_average">Daily average</string>
     <string name="steps_per_day">steps per day</string>
     <string name="no_recorded_steps">No recorded steps</string>

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -83,16 +84,24 @@ internal fun MetricPair(
     modifier: Modifier,
     first: @Composable () -> Unit,
     second: @Composable () -> Unit,
+    rowDivider: (@Composable () -> Unit)? = null,
 ) {
     BoxWithConstraints(modifier) {
         if (maxWidth < 300.dp || LocalDensity.current.fontScale >= 1.5f) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 first()
                 second()
             }
         } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Box(Modifier.weight(1f)) { first() }
+                rowDivider?.invoke()
                 Box(Modifier.weight(1f)) { second() }
             }
         }

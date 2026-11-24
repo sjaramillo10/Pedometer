@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.ViewModelProvider
@@ -28,6 +29,7 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.sjaramillo.pedometer.R
 import dev.sjaramillo.pedometer.data.READ_STEPS_PERMISSION
+import java.time.temporal.WeekFields
 
 @Composable
 internal fun PedometerRoute(
@@ -87,7 +89,9 @@ internal fun PedometerRoute(
     val lightBars =
         WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
             WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+    val firstDayOfWeek = WeekFields.of(LocalConfiguration.current.locales[0]).firstDayOfWeek
     SideEffect {
+        home.updateFirstDayOfWeek(firstDayOfWeek)
         activity.window.insetsController?.setSystemBarsAppearance(if (dark) 0 else lightBars, lightBars)
     }
 
@@ -120,6 +124,8 @@ internal fun PedometerRoute(
             HomeScreen(
                 homeState,
                 homeScroll,
+                onPreviousWeek = home::previousWeek,
+                onNextWeek = home::nextWeek,
                 onOpenSettings = { showSettings = true },
                 onOpenHealthConnect = {
                     revealHealthConnect = true
