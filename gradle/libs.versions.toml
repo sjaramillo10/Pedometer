@@ -8,7 +8,7 @@ junit = "4.13.2"
 kotlin = "2.4.21"
 ktlint = "14.2.0"
 ksp = "2.3.14"
-lifecycle = "2.10.0"
+lifecycle = "2.11.1"
 room = "2.7.2"
 sqlite-jdbc = "3.41.2.2"
 
