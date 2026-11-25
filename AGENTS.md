@@ -4,10 +4,9 @@
 
 - Nemi is a single Android module, `:app`. Its application ID and namespace
   are `dev.sjaramillo.nemi`, and debug builds add the `.debug` suffix.
-- Use Android SDK 37.2 for compile SDK, 37 for min and target SDK, and JDK 25
-  to match CI.
-  Use Kotlin DSL and manage dependency and plugin versions in
-  `gradle/libs.versions.toml`.
+- Read the Android SDK levels from `app/build.gradle.kts` and the minimum JDK
+  from `settings.gradle.kts`. Use Kotlin DSL and manage dependency and plugin
+  versions in `gradle/libs.versions.toml`.
 - When updating Gradle, run
   `./gradlew wrapper --gradle-version <version> --distribution-type bin`
   twice so the wrapper scripts and properties stay synchronized.
@@ -32,8 +31,8 @@
 
 - For phone-only queries, include `DataOrigin("android")` and add the current
   device origin when `HealthConnectManager.getCurrentDeviceDataSource` returns
-  one. On API 37, suspend on the callback and use the legacy origin alone when
-  the current origin is unavailable.
+  one. Suspend on the callback and use the legacy origin alone when the
+  current origin is unavailable.
 - Keep the privacy alias qualified by `${applicationId}` so the system can
   resolve it in each build variant. When changing app identity or manifest
   wiring, inspect the built APK for the application ID, launcher activity,
