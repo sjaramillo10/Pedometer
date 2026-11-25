@@ -89,9 +89,6 @@ dependencies {
     implementation(libs.viewmodel.core)
     implementation(libs.lifecycle.compose)
 
-    // Other
-    implementation(libs.logcat)
-
     // Unit Tests
     testImplementation(libs.junit)
     testImplementation(libs.sqlite.jdbc)

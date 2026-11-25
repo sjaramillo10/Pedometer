@@ -9,7 +9,6 @@ kotlin = "2.3.21"
 ktlint = "14.2.0"
 ksp = "2.3.11"
 lifecycle = "2.10.0"
-logcat = "0.1"
 room = "2.7.2"
 sqlite-jdbc = "3.41.2.2"
 
@@ -23,7 +22,6 @@ hilt-core = { module ="com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-gradle = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 health-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "health-connect" }
 junit = { module = "junit:junit", version.ref = "junit" }
-logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-core = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
