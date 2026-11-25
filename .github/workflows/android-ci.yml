@@ -45,16 +45,27 @@ jobs:
       - name: Assemble unsigned release APK
         run: ./gradlew :app:assembleRelease
       - name: Check release APK size
-        shell: bash
+        shell: python
         run: |
-          apk=app/build/outputs/apk/release/app-release-unsigned.apk
-          budget=2000000
-          bytes=$(stat -c %s "$apk")
-          printf 'Release APK size: %s bytes (budget: %s bytes)\n' "$bytes" "$budget" | tee -a "$GITHUB_STEP_SUMMARY"
-          if (( bytes > budget )); then
-            echo "::error::Release APK exceeds the size budget by $((bytes - budget)) bytes"
-            exit 1
-          fi
+          import os
+          import re
+          from pathlib import Path
+          from zipfile import ZIP_STORED, ZipFile
+
+          apk = Path("app/build/outputs/apk/release/app-release-unsigned.apk")
+          budget = 1_800_000
+          size = apk.stat().st_size
+          message = f"Release APK size: {size:,} bytes (budget: {budget:,} bytes)"
+          print(message)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              print(message, file=summary)
+
+          with ZipFile(apk) as archive:
+              dex = [entry for entry in archive.infolist() if re.fullmatch(r"classes\d*\.dex", entry.filename)]
+          if not dex or any(entry.compress_type != ZIP_STORED for entry in dex):
+              raise SystemExit("Release APK must contain uncompressed DEX files.")
+          if size > budget:
+              raise SystemExit(f"Release APK exceeds the size budget by {size - budget:,} bytes.")
 
   ktlint:
     runs-on: ubuntu-latest

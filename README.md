@@ -3,6 +3,10 @@
 Nemi is an Android step tracker powered by Health Connect. Set a daily goal,
 see how much you walked this week, and keep your step history on your phone.
 
+Nemi strives to be beautiful, simple, and lightweight. Just to keep things fun,
+we cap the release APK at 1.8 MB (1,800,000 bytes). CI measures the entire
+release APK with DEX files stored uncompressed.
+
 <p>
   <img src="media/home-light.png" alt="Nemi Home in light mode with synthetic step data" width="300">
   <img src="media/home-dark.png" alt="Nemi Home in dark mode with synthetic step data" width="300">
