@@ -1,0 +1,74 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6.4.1
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6.3.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Run unit tests
+        run: ./gradlew :app:testDebugUnitTest
+
+  release-apk-size:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6.4.1
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6.3.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Assemble unsigned release APK
+        run: ./gradlew :app:assembleRelease
+      - name: Check release APK size
+        shell: bash
+        run: |
+          apk=app/build/outputs/apk/release/app-release-unsigned.apk
+          budget=2000000
+          bytes=$(stat -c %s "$apk")
+          printf 'Release APK size: %s bytes (budget: %s bytes)\n' "$bytes" "$budget" | tee -a "$GITHUB_STEP_SUMMARY"
+          if (( bytes > budget )); then
+            echo "::error::Release APK exceeds the size budget by $((bytes - budget)) bytes"
+            exit 1
+          fi
+
+  ktlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6.4.1
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6.3.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Run ktlint check
+        run: ./gradlew ktlintCheck

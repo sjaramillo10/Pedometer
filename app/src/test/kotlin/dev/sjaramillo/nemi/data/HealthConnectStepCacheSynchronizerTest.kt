@@ -1,11 +1,11 @@
 package dev.sjaramillo.nemi.data
 
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertSame
-import org.junit.Test
 import java.time.LocalDate
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
 
 class HealthConnectStepCacheSynchronizerTest {
     @Test

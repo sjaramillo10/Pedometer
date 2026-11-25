@@ -1,103 +1,79 @@
 package dev.sjaramillo.nemi.data
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.health.connect.AggregateRecordsGroupedByPeriodResponse
+import android.health.connect.AggregateRecordsRequest
 import android.health.connect.DeviceDataSource
-import android.health.connect.HealthConnectException
 import android.health.connect.HealthConnectManager
-import android.os.OutcomeReceiver
-import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.metadata.DataOrigin
-import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
-import androidx.health.connect.client.time.TimeRangeFilter
-import dagger.hilt.android.qualifiers.ApplicationContext
+import android.health.connect.HealthPermissions.READ_STEPS
+import android.health.connect.LocalTimeRangeFilter
+import android.health.connect.datatypes.DataOrigin
+import android.health.connect.datatypes.StepsRecord.STEPS_COUNT_TOTAL
+import androidx.core.os.asOutcomeReceiver
+import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.Period
-import javax.inject.Inject
-import javax.inject.Provider
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /** Reads phone-recorded steps, including the current device's synthetic Health Connect origin. */
-class PhoneStepsDataSource @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val healthConnectClient: Provider<HealthConnectClient>,
+@Inject
+class PhoneStepsDataSource(
+    private val context: Context,
 ) {
-    internal suspend fun access(): HealthConnectAccess {
-        if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) {
-            return HealthConnectAccess.Unavailable
+    internal fun access(): HealthConnectAccess =
+        when {
+            context.getSystemService(HealthConnectManager::class.java) == null -> HealthConnectAccess.Unavailable
+            context.checkSelfPermission(READ_STEPS) == PackageManager.PERMISSION_GRANTED -> HealthConnectAccess.Available
+            else -> HealthConnectAccess.PermissionRequired
         }
-        return if (READ_STEPS_PERMISSION in healthConnectClient.get().permissionController.getGrantedPermissions()) {
-            HealthConnectAccess.Available
-        } else {
-            HealthConnectAccess.PermissionRequired
-        }
-    }
 
     suspend fun readDailySteps(
         start: LocalDate,
         end: LocalDate,
     ): Map<LocalDate, Long> {
-        val dataOrigins = phoneStepDataOrigins(getCurrentDeviceOrigin())
+        val manager = checkNotNull(context.getSystemService(HealthConnectManager::class.java))
+        val timeRange =
+            LocalTimeRangeFilter
+                .Builder()
+                .setStartTime(start.atStartOfDay())
+                .setEndTime(end.plusDays(1).atStartOfDay())
+                .build()
+        val request = AggregateRecordsRequest.Builder<Long>(timeRange).addAggregationType(STEPS_COUNT_TOTAL)
+        for (packageName in phoneStepOriginPackages(getCurrentDeviceOrigin(manager))) {
+            request.addDataOriginsFilter(DataOrigin.Builder().setPackageName(packageName).build())
+        }
 
         val response =
-            healthConnectClient.get().aggregateGroupByPeriod(
-                AggregateGroupByPeriodRequest(
-                    metrics = setOf(StepsRecord.COUNT_TOTAL),
-                    timeRangeFilter =
-                        TimeRangeFilter.between(
-                            LocalDateTime.of(start, java.time.LocalTime.MIN),
-                            LocalDateTime.of(end.plusDays(1), java.time.LocalTime.MIN),
-                        ),
-                    timeRangeSlicer = Period.ofDays(1),
-                    dataOriginFilter = dataOrigins,
-                ),
-            )
+            suspendCancellableCoroutine<List<AggregateRecordsGroupedByPeriodResponse<Long>>> { continuation ->
+                manager.aggregateGroupByPeriod(request.build(), Period.ofDays(1), context.mainExecutor, continuation.asOutcomeReceiver())
+            }
 
         return response
-            .mapNotNull { bucket ->
-                bucket.result[StepsRecord.COUNT_TOTAL]?.let { bucket.startTime.toLocalDate() to it }
-            }.toMap()
+            .mapNotNull { bucket -> bucket.get(STEPS_COUNT_TOTAL)?.let { bucket.startTime.toLocalDate() to it } }
+            .toMap()
     }
 
-    private suspend fun getCurrentDeviceOrigin(): String? =
-        suspendCoroutine { continuation ->
-            val healthConnectManager = context.getSystemService(HealthConnectManager::class.java)
-            if (healthConnectManager == null) {
-                continuation.resume(null)
-                return@suspendCoroutine
-            }
-
-            runCatching {
-                healthConnectManager.getCurrentDeviceDataSource(
-                    context.mainExecutor,
-                    object : OutcomeReceiver<DeviceDataSource, HealthConnectException> {
-                        override fun onResult(result: DeviceDataSource) {
-                            continuation.resume(result.deviceDataOrigin.packageName)
-                        }
-
-                        override fun onError(error: HealthConnectException) {
-                            continuation.resume(null)
-                        }
-                    },
-                )
-            }.onFailure {
-                continuation.resume(null)
-            }
+    private suspend fun getCurrentDeviceOrigin(manager: HealthConnectManager): String? =
+        try {
+            val source =
+                suspendCancellableCoroutine<DeviceDataSource> { continuation ->
+                    manager.getCurrentDeviceDataSource(context.mainExecutor, continuation.asOutcomeReceiver())
+                }
+            source.deviceDataOrigin.packageName
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Exception) {
+            null
         }
 }
 
-internal fun phoneStepDataOrigins(currentDeviceOrigin: String?): Set<DataOrigin> =
+internal fun phoneStepOriginPackages(currentDeviceOrigin: String?): Set<String> =
     buildSet {
-        add(DataOrigin(LEGACY_ANDROID_DATA_ORIGIN))
-        currentDeviceOrigin?.let { add(DataOrigin(it)) }
+        add("android")
+        currentDeviceOrigin?.let(::add)
     }
-
-private const val LEGACY_ANDROID_DATA_ORIGIN = "android"
-
-internal val READ_STEPS_PERMISSION = HealthPermission.getReadPermission(StepsRecord::class)
 
 internal enum class HealthConnectAccess {
     Available,

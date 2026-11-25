@@ -2,12 +2,12 @@ package dev.sjaramillo.nemi.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.sjaramillo.nemi.data.DailySteps
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 import dev.sjaramillo.nemi.data.StepHistoryStats
 import dev.sjaramillo.nemi.data.StepsRepository
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -24,10 +24,9 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.WeekFields
 import java.util.Locale
-import javax.inject.Inject
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
+@Inject
+class HomeViewModel(
     preferences: NemiPreferences,
     private val stepsRepository: StepsRepository,
     private val coordinator: HealthConnectSyncCoordinator,

@@ -4,14 +4,13 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 import dev.sjaramillo.nemi.data.StepsRepository
 import dev.sjaramillo.nemi.data.decodeStepsCsv
 import dev.sjaramillo.nemi.data.encodeStepsCsv
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,11 +20,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
-import javax.inject.Inject
 
-@HiltViewModel
-class SettingsViewModel @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+@Inject
+class SettingsViewModel(
+    private val context: Context,
     private val preferences: NemiPreferences,
     private val stepsRepository: StepsRepository,
     coordinator: HealthConnectSyncCoordinator,
