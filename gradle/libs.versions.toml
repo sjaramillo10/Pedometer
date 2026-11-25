@@ -1,31 +1,30 @@
 [versions]
-metro = "1.6.0"
 activity = "1.13.0"
 android-gradle = "9.5.2"
 compose-core = "1.13.0"
 kotlin = "2.4.21"
-ktlint = "14.2.0"
 ksp = "2.3.14"
+ktlint = "14.2.0"
 lifecycle = "2.11.1"
+metro = "1.6.0"
 room = "2.8.5"
 sqlite-jdbc = "3.54.1.0"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
-android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-core"}
+compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-core" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-core" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-core = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 viewmodel-core = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 
-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
-
 [plugins]
-metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
+android-application = { id = "com.android.application", version.ref = "android-gradle" }
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
