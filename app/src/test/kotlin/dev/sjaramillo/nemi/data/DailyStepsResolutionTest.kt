@@ -1,12 +1,12 @@
 package dev.sjaramillo.nemi.data
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class DailyStepsResolutionTest {
     @Test

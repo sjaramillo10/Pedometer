@@ -1,7 +1,7 @@
 package dev.sjaramillo.nemi.ui
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AppThemeTest {
     @Test

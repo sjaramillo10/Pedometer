@@ -1,8 +1,8 @@
 package dev.sjaramillo.nemi.data
 
 import androidx.health.connect.client.records.metadata.DataOrigin
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class PhoneStepsDataSourceTest {
     @Test

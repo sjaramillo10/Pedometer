@@ -95,7 +95,7 @@ dependencies {
     implementation(libs.lifecycle.compose)
 
     // Unit Tests
-    testImplementation(libs.junit)
+    testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.sqlite.jdbc)
 }
 

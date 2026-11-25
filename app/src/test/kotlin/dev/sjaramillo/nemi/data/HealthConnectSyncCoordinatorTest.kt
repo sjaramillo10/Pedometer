@@ -2,11 +2,11 @@ package dev.sjaramillo.nemi.data
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertSame
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class HealthConnectSyncCoordinatorTest {
     @Test
