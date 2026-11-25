@@ -1,22 +1,42 @@
 package dev.sjaramillo.nemi.data
 
-import androidx.health.connect.client.records.metadata.DataOrigin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PhoneStepsDataSourceTest {
     @Test
-    fun `includes legacy Android and current device origins`() {
+    fun `given a current device origin when building the phone filter then both origins are included`() {
+        // Given
         val deviceOrigin = "com.android.healthconnect.phone.test"
 
-        assertEquals(
-            setOf(DataOrigin("android"), DataOrigin(deviceOrigin)),
-            phoneStepDataOrigins(deviceOrigin),
-        )
+        // When
+        val origins = phoneStepOriginPackages(deviceOrigin)
+
+        // Then
+        assertEquals(setOf("android", deviceOrigin), origins)
     }
 
     @Test
-    fun `uses legacy Android origin when current device origin is unavailable`() {
-        assertEquals(setOf(DataOrigin("android")), phoneStepDataOrigins(null))
+    fun `given no current device origin when building the phone filter then only the legacy origin is included`() {
+        // Given
+        val deviceOrigin = null
+
+        // When
+        val origins = phoneStepOriginPackages(deviceOrigin)
+
+        // Then
+        assertEquals(setOf("android"), origins)
+    }
+
+    @Test
+    fun `given the legacy origin as the device origin when building the phone filter then it is included once`() {
+        // Given
+        val deviceOrigin = "android"
+
+        // When
+        val origins = phoneStepOriginPackages(deviceOrigin)
+
+        // Then
+        assertEquals(setOf("android"), origins)
     }
 }

@@ -78,9 +78,6 @@ dependencies {
     implementation(libs.compose.foundation)
     debugImplementation(libs.compose.ui.tooling)
 
-    // Health Connect
-    implementation(libs.health.connect.client)
-
     // Room
     implementation(libs.room.core)
     implementation(libs.room.runtime)

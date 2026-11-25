@@ -2,7 +2,6 @@ package dev.sjaramillo.nemi.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.health.connect.client.HealthConnectClient
 import dev.sjaramillo.nemi.data.NemiDatabase
 import dev.sjaramillo.nemi.ui.HomeViewModel
 import dev.sjaramillo.nemi.ui.SettingsViewModel
@@ -19,10 +18,6 @@ internal interface NemiGraph {
     @Provides
     @SingleIn(AppScope::class)
     fun provideDatabase(context: Context): NemiDatabase = NemiDatabase.getInstance(context)
-
-    @Provides
-    @SingleIn(AppScope::class)
-    fun provideHealthConnectClient(context: Context): HealthConnectClient = HealthConnectClient.getOrCreate(context)
 
     @Provides
     @SingleIn(AppScope::class)

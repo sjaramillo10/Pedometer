@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.health.connect.HealthPermissions.READ_STEPS
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -22,13 +23,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.sjaramillo.nemi.R
-import dev.sjaramillo.nemi.data.READ_STEPS_PERMISSION
 import dev.sjaramillo.nemi.data.stepsCsvFileName
 import java.time.LocalDate
 import java.time.temporal.WeekFields
@@ -51,7 +50,7 @@ internal fun NemiRoute(
     }
 
     val permission =
-        rememberLauncherForActivityResult(PermissionController.createRequestPermissionResultContract()) {
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
             home.refresh(restart = true)
         }
     val importDocument =
@@ -100,7 +99,7 @@ internal fun NemiRoute(
     var showSettings by rememberSaveable { mutableStateOf(false) }
     var revealHealthConnect by rememberSaveable { mutableStateOf(false) }
     val homeScroll = rememberScrollState()
-    val connect = { permission.launch(setOf(READ_STEPS_PERMISSION)) }
+    val connect = { permission.launch(READ_STEPS) }
     val closeSettings = {
         showSettings = false
         revealHealthConnect = false
