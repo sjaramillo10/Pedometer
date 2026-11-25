@@ -48,11 +48,12 @@
                 C18.3,5.6 18.55,6.6 19.4,6.6
                 H20.7" />
 
-        <!-- Half-moon -->
+        <!-- Crescent moon -->
         <path
             android:fillColor="#FF6D8B75"
-            android:pathData="M11.95,3.2
-                A1.4,1.4 0,0 1,11.95,6
+            android:pathData="M12.48,2.58
+                A2.1,2.1 0,1 0,12.48,6.62
+                A2.1,2.1 0,0 1,12.48,2.58
                 Z" />
 
         <!-- Winding path -->
