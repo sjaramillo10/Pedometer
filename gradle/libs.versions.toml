@@ -1,6 +1,6 @@
 [versions]
 activity = "1.13.0"
-android-gradle = "9.3.0"
+android-gradle = "9.5.2"
 compose-core = "1.12.1"
 hilt = "2.60.1"
 health-connect = "1.1.0"
