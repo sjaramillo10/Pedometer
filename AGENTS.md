@@ -4,7 +4,8 @@
 
 - Nemi is a single Android module, `:app`. Its application ID and namespace
   are `dev.sjaramillo.nemi`, and debug builds add the `.debug` suffix.
-- Use Android SDK 37 for min, compile, and target SDK and JDK 25 to match CI.
+- Use Android SDK 37.2 for compile SDK, 37 for min and target SDK, and JDK 25
+  to match CI.
   Use Kotlin DSL and manage dependency and plugin versions in
   `gradle/libs.versions.toml`.
 - When updating Gradle, run

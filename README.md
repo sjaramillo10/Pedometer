@@ -32,7 +32,7 @@ or wander.”
 
 ## Build from source
 
-With JDK 25 and Android SDK 37 installed, run this from the repository root:
+With JDK 25 and Android SDK Platform 37.2 installed, run this from the repository root:
 
 ```sh
 ./gradlew :app:assembleDebug

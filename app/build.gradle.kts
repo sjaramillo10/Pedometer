@@ -10,7 +10,12 @@ plugins {
 
 android {
     namespace = "dev.sjaramillo.nemi"
-    compileSdk = 37
+    compileSdk {
+        version =
+            release(37) {
+                minorApiLevel = 2
+            }
+    }
 
     defaultConfig {
         applicationId = "dev.sjaramillo.nemi"
