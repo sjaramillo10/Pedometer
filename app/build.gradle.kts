@@ -2,10 +2,10 @@ import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
+    alias(libs.plugins.android.application)
     alias(libs.plugins.metro)
-    id("com.google.devtools.ksp")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.compose)
 }
 
 android {
