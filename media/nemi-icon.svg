@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <title>Nemi app icon</title>
+  <rect width="120" height="120" rx="29" fill="#FFFFFF"/>
+  <g transform="translate(60 60) scale(5.1) translate(-12 -12)">
+    <path fill="none" stroke="#6D8B75" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+          d="M4.25,15.2 C7.4,14.7 8.5,8.95 11.95,8.95 C14.05,8.95 14.55,11.7 15.55,11.7 C16.35,11.7 16.8,10.75 17.65,10.75 C18.5,10.75 19.25,11.7 19.8,12.4"/>
+    <path fill="none" stroke="#6D8B75" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+          d="M3.2,7 C4,7 4.45,6.2 5.2,6.2 C6,6.2 6.1,7.05 6.9,7.05 C7.3,7.05 7.65,6.9 7.95,7"/>
+    <path fill="none" stroke="#6D8B75" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+          d="M15.6,6.45 C16.3,6.2 16.65,5.6 17.4,5.6 C18.3,5.6 18.55,6.6 19.4,6.6 H20.7"/>
+    <path fill="#6D8B75"
+          d="M11.95,3.5 A1.1,1.1 0,1 1,11.95,5.7 A1.1,1.1 0,1 1,11.95,3.5 Z"/>
+    <path fill="none" stroke="#6D8B75" stroke-width="0.45" stroke-linecap="round" stroke-linejoin="miter"
+          d="M11.95,2.05 V2.75 M14.16,3.33 L13.55,3.68 M14.16,5.87 L13.55,5.52 M11.95,7.15 V6.45 M9.74,5.87 L10.35,5.52 M9.74,3.33 L10.35,3.68"/>
+    <path fill="#6D8B75"
+          d="M11.5,13.5 C15.5,14 16.3,15.4 12.6,16.5 C9.5,17.5 7.4,18.8 11.8,19.8 C12.9,20.1 12.5,21.2 11.4,21.2 C8.8,21.2 6.5,19.7 7.1,18.3 C7.7,16.9 10.9,16.1 12.7,15.4 C14.7,14.6 13.2,14.1 11.5,13.5 Z"/>
+  </g>
+</svg>

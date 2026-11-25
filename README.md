@@ -1,4 +1,4 @@
-# Nemi
+# ![](media/nemi-icon.png) Nemi
 
 Nemi is an Android step tracker powered by Health Connect. Set a daily goal,
 see how much you walked this week, and keep your step history on your phone.
