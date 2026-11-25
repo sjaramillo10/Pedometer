@@ -1,13 +1,15 @@
 package dev.sjaramillo.nemi.ui
 
 import android.content.SharedPreferences
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class NemiPreferences @Inject constructor(private val preferences: SharedPreferences) {
+@SingleIn(AppScope::class)
+@Inject
+class NemiPreferences(private val preferences: SharedPreferences) {
     private val currentGoal = MutableStateFlow(preferences.getInt(GOAL_KEY, DEFAULT_GOAL))
     private val currentTheme = MutableStateFlow(AppTheme.fromPreference(preferences.getString(THEME_KEY, null)))
 

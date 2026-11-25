@@ -1,7 +1,9 @@
 package dev.sjaramillo.nemi
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import dev.sjaramillo.nemi.di.NemiGraph
+import dev.zacsweers.metro.createGraphFactory
 
-@HiltAndroidApp
-class NemiApplication : Application()
+class NemiApplication : Application() {
+    internal val graph by lazy { createGraphFactory<NemiGraph.Factory>().create(this) }
+}

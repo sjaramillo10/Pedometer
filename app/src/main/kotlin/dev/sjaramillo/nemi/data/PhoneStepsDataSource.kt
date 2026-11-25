@@ -11,25 +11,24 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.time.TimeRangeFilter
-import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.zacsweers.metro.Inject
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
-import javax.inject.Inject
-import javax.inject.Provider
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 /** Reads phone-recorded steps, including the current device's synthetic Health Connect origin. */
-class PhoneStepsDataSource @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val healthConnectClient: Provider<HealthConnectClient>,
+@Inject
+class PhoneStepsDataSource(
+    private val context: Context,
+    private val healthConnectClient: () -> HealthConnectClient,
 ) {
     internal suspend fun access(): HealthConnectAccess {
         if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) {
             return HealthConnectAccess.Unavailable
         }
-        return if (READ_STEPS_PERMISSION in healthConnectClient.get().permissionController.getGrantedPermissions()) {
+        return if (READ_STEPS_PERMISSION in healthConnectClient().permissionController.getGrantedPermissions()) {
             HealthConnectAccess.Available
         } else {
             HealthConnectAccess.PermissionRequired
@@ -43,7 +42,7 @@ class PhoneStepsDataSource @Inject constructor(
         val dataOrigins = phoneStepDataOrigins(getCurrentDeviceOrigin())
 
         val response =
-            healthConnectClient.get().aggregateGroupByPeriod(
+            healthConnectClient().aggregateGroupByPeriod(
                 AggregateGroupByPeriodRequest(
                     metrics = setOf(StepsRecord.COUNT_TOTAL),
                     timeRangeFilter =

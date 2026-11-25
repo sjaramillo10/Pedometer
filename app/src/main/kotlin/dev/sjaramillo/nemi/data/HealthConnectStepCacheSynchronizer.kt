@@ -1,7 +1,7 @@
 package dev.sjaramillo.nemi.data
 
+import dev.zacsweers.metro.Inject
 import java.time.LocalDate
-import javax.inject.Inject
 
 class HealthConnectStepCacheSynchronizer internal constructor(
     private val currentDate: () -> LocalDate,

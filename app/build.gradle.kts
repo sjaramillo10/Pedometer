@@ -3,7 +3,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("dagger.hilt.android.plugin")
+    alias(libs.plugins.metro)
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.compose")
 }
@@ -77,10 +77,6 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.compose.foundation)
     debugImplementation(libs.compose.ui.tooling)
-
-    // Hilt
-    implementation(libs.hilt.core)
-    ksp(libs.hilt.compiler)
 
     // Health Connect
     implementation(libs.health.connect.client)

@@ -1,8 +1,8 @@
 [versions]
+metro = "1.6.0"
 activity = "1.13.0"
 android-gradle = "9.5.2"
 compose-core = "1.13.0"
-hilt = "2.60.1"
 health-connect = "1.1.0"
 kotlin = "2.4.21"
 ktlint = "14.2.0"
@@ -16,9 +16,6 @@ activity-compose = { module = "androidx.activity:activity-compose", version.ref 
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
 compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-core"}
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-core" }
-hilt-compiler = { module ="com.google.dagger:hilt-compiler", version.ref = "hilt" }
-hilt-core = { module ="com.google.dagger:hilt-android", version.ref = "hilt" }
-hilt-gradle = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 health-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "health-connect" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
@@ -30,6 +27,7 @@ viewmodel-core = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", versio
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 
 [plugins]
+metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
