@@ -2,7 +2,7 @@
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background>
         <shape android:shape="rectangle">
-            <solid android:color="#43a047" />
+            <solid android:color="#FFFFFF" />
         </shape>
     </background>
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
