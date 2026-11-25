@@ -9,7 +9,7 @@ kotlin = "2.4.21"
 ktlint = "14.2.0"
 ksp = "2.3.14"
 lifecycle = "2.11.1"
-room = "2.7.2"
+room = "2.8.5"
 sqlite-jdbc = "3.41.2.2"
 
 [libraries]
