@@ -9,8 +9,7 @@ Nemi is a personal app with three priorities, in this order.
 2. Look beautiful.
 3. Be as lightweight as possible.
 
-To keep things fun, we cap the release APK at 0.5 MB (500,000 bytes). CI
-measures the entire unsigned release APK.
+The release APK size is capped at 0.5 MB (500,000 bytes) by CI.
 
 <p>
   <img src="media/home-light.png" alt="Nemi Home in light mode with synthetic step data" width="300">
