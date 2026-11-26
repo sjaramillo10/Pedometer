@@ -1,15 +1,14 @@
 # ![](media/nemi-icon.png) Nemi
 
-Nemi is an Android step tracker powered by Health Connect. Set a daily goal,
-see how much you walked this week, and keep your step history on your phone.
+Nemi is a ridiculously small Android step tracker powered by Health Connect.
+Set a daily goal, see how much you walked this week, and keep your step history
+on your phone.
 
 Nemi is a personal app with three priorities, in this order.
 
 1. Be useful for daily step tracking.
 2. Look beautiful.
 3. Be as lightweight as possible.
-
-The release APK size is capped at 0.5 MB (500,000 bytes) by CI.
 
 <p>
   <img src="media/home-light.png" alt="Nemi Home in light mode with synthetic step data" width="300">
@@ -22,6 +21,16 @@ The release APK size is capped at 0.5 MB (500,000 bytes) by CI.
 - Browse past weeks and see your daily totals, weekly average, best day, and
   lifetime steps.
 - Save a dated CSV backup or restore one from Settings.
+
+## APK size
+
+CI caps the unsigned release APK at **0.1 MB (100,000 bytes)**.
+
+Nemi uses Java, Android framework Views, custom-drawn charts, and Android’s
+built-in SQLite. The app ships without Kotlin, Jetpack Compose, AndroidX, or
+other third-party runtime libraries. That saves space and means maintaining
+the charts, activity lifecycle and result handling, and database access with
+framework APIs.
 
 ## Device requirements
 

@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           apk=app/build/outputs/apk/release/app-release-unsigned.apk
-          budget=500000
+          budget=100000
           bytes=$(stat -c %s "$apk")
           printf 'Release APK size: %s bytes (budget: %s bytes)\n' "$bytes" "$budget" | tee -a "$GITHUB_STEP_SUMMARY"
           if (( bytes > budget )); then
