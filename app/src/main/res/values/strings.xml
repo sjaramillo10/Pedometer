@@ -24,7 +24,7 @@
     <string name="health_connect">Health Connect</string>
     <string name="health_connect_status">Health Connect status</string>
     <string name="health_connect_description">Nemi reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. For each date, Nemi uses the Health Connect total when one is available, even if it’s zero. Imported totals fill in dates without a Health Connect total.</string>
-    <string name="health_connect_disconnected">Steps access is off.</string>
+    <string name="health_connect_disconnected">Disconnected</string>
     <string name="health_connect_connected">Connected</string>
     <string name="learn_health_connect">Learn about Health Connect</string>
     <string name="view_health_connect_status">View Health Connect status</string>

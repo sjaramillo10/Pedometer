@@ -172,6 +172,7 @@ internal class SettingsScreen(
         healthStatus.removeAllViews()
         val message = status.statusMessage
         val connected = status == HealthConnectSyncState.Ready
+        val showBadge = connected || status == HealthConnectSyncState.PermissionRequired
         healthStatus.item(
             context.row().apply {
                 liveRegion()
@@ -186,13 +187,15 @@ internal class SettingsScreen(
                 weighted(
                     context.column().apply {
                         item(context.label(context.getString(R.string.health_connect_status), colors.text, 13, 600))
-                        if (!connected) item(context.label(context.getString(message), colors.secondary, 13), top = 6)
+                        if (!showBadge) item(context.label(context.getString(message), colors.secondary, 13), top = 6)
                     },
                 )
-                if (connected) {
+                if (showBadge) {
+                    val badgeText = if (connected) colors.accent else colors.text
+                    val badgeBackground = if (connected) colors.track else colors.divider
                     addView(
-                        context.label(context.getString(message), colors.accent, 13, 600).apply {
-                            background = context.rounded(colors.track, 24)
+                        context.label(context.getString(message), badgeText, 13, 600).apply {
+                            background = context.rounded(badgeBackground, 24)
                             pad(10, 4)
                         },
                     )
