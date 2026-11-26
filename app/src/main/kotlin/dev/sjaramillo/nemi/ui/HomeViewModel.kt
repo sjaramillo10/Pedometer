@@ -1,7 +1,6 @@
 package dev.sjaramillo.nemi.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.DailySteps
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
@@ -10,6 +9,8 @@ import dev.sjaramillo.nemi.data.StepHistoryStats
 import dev.sjaramillo.nemi.data.StepsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,6 +31,12 @@ class HomeViewModel(
     private val stepsRepository: StepsRepository,
     private val coordinator: HealthConnectSyncCoordinator,
 ) : ViewModel() {
+    private val workScope = MainScope()
+
+    override fun onCleared() {
+        workScope.cancel()
+    }
+
     private val date = MutableStateFlow(LocalDate.now())
     private val weekSelection = MutableStateFlow(WeekSelection())
     private val firstDayOfWeek = MutableStateFlow(WeekFields.of(Locale.getDefault()).firstDayOfWeek)
@@ -46,7 +53,7 @@ class HomeViewModel(
             stepsRepository::observeDays,
             stepsRepository.observeHistoryStats(),
         ).stateIn(
-            viewModelScope,
+            workScope,
             SharingStarted.WhileSubscribed(5_000),
             HomeUiState(
                 date = date.value,
@@ -72,7 +79,7 @@ class HomeViewModel(
         if (!restart && today == date.value && refreshJob?.isActive == true) return
         date.value = today
         refreshJob?.cancel()
-        refreshJob = viewModelScope.launch { coordinator.refresh() }
+        refreshJob = workScope.launch { coordinator.refresh() }
     }
 }
 

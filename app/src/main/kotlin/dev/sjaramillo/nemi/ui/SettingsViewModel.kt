@@ -3,7 +3,6 @@ package dev.sjaramillo.nemi.ui
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
@@ -12,6 +11,8 @@ import dev.sjaramillo.nemi.data.decodeStepsCsv
 import dev.sjaramillo.nemi.data.encodeStepsCsv
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -26,6 +27,12 @@ class SettingsViewModel(
     private val stepsRepository: StepsRepository,
     coordinator: HealthConnectSyncCoordinator,
 ) : ViewModel() {
+    private val workScope = MainScope()
+
+    override fun onCleared() {
+        workScope.cancel()
+    }
+
     private val fileState = MutableStateFlow(FileState())
     private val version =
         context.packageManager
@@ -36,7 +43,7 @@ class SettingsViewModel(
         combine(preferences.goal, preferences.theme, fileState, coordinator.state) { goal, theme, file, sync ->
             SettingsUiState(goal, theme, file, version, sync)
         }.stateIn(
-            viewModelScope,
+            workScope,
             SharingStarted.Eagerly,
             SettingsUiState(preferences.goal.value, preferences.theme.value, fileState.value, version, coordinator.state.value),
         )
@@ -75,7 +82,7 @@ class SettingsViewModel(
     private fun runFileOperation(operation: suspend () -> String) {
         if (fileState.value.busy) return
         fileState.value = FileState(busy = true)
-        viewModelScope.launch {
+        workScope.launch {
             val message =
                 try {
                     operation()

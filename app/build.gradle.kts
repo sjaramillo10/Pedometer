@@ -56,7 +56,6 @@ dependencies {
     }
 
     // ViewModel
-    implementation(libs.viewmodel.core)
     implementation(libs.lifecycle.runtime)
 
     // Unit Tests
