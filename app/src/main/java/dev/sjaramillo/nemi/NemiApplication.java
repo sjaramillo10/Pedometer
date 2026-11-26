@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 
 public final class NemiApplication extends Application {
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    private final ExecutorService documents = Executors.newSingleThreadExecutor();
     private StepsRepository steps;
     private NemiPreferences preferences;
     private HealthConnectSyncCoordinator healthConnect;
@@ -30,6 +31,6 @@ public final class NemiApplication extends Application {
     }
 
     public SettingsViewModel createSettingsViewModel() {
-        return new SettingsViewModel(this, preferences, steps, healthConnect, worker);
+        return new SettingsViewModel(this, preferences, steps, healthConnect, worker, documents);
     }
 }

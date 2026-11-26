@@ -11,6 +11,8 @@ import dev.sjaramillo.nemi.data.StepsCsv;
 import dev.sjaramillo.nemi.data.StepsRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 public final class SettingsViewModel {
@@ -18,7 +20,7 @@ public final class SettingsViewModel {
     private final NemiPreferences preferences;
     private final StepsRepository steps;
     private final HealthConnectSyncCoordinator coordinator;
-    private final Executor worker;
+    private final BackupWork backup;
     private final String version;
     private final Runnable stopGoal;
     private final Runnable stopTheme;
@@ -28,12 +30,12 @@ public final class SettingsViewModel {
     final State<SettingsUiState> uiState;
 
     public SettingsViewModel(Context context, NemiPreferences preferences, StepsRepository steps,
-            HealthConnectSyncCoordinator coordinator, Executor worker) {
+            HealthConnectSyncCoordinator coordinator, Executor database, Executor documents) {
         this.context = context;
         this.preferences = preferences;
         this.steps = steps;
         this.coordinator = coordinator;
-        this.worker = worker;
+        this.backup = new BackupWork(database, documents);
         version = readVersion(context);
         uiState = new State<>(snapshot());
         stopGoal = preferences.goal.observe(ignored -> publish());
@@ -50,23 +52,29 @@ public final class SettingsViewModel {
     }
 
     void importCsv(Uri uri) {
-        runFileOperation(() -> {
-            StepsCsv.Import decoded;
+        if (!startFileOperation()) {
+            return;
+        }
+        finishFileOperation(backup.importFile(() -> {
             try (var input = context.getContentResolver().openInputStream(uri)) {
                 if (input == null) {
                     throw new IOException("Unable to open import source");
                 }
-                decoded = StepsCsv.decode(new String(input.readAllBytes(), StandardCharsets.UTF_8));
+                return StepsCsv.decode(new String(input.readAllBytes(), StandardCharsets.UTF_8));
             }
+        }, decoded -> {
             steps.importDailySteps(decoded.dailySteps());
             return context.getString(R.string.entries_imported, decoded.dailySteps().size(),
                     decoded.ignoredRows());
-        });
+        }));
     }
 
     void exportCsv(Uri uri) {
-        runFileOperation(() -> {
-            String csv = StepsCsv.encode(steps.getAll());
+        if (!startFileOperation()) {
+            return;
+        }
+        finishFileOperation(backup.exportFile(() -> steps.getAll(), totals -> {
+            String csv = StepsCsv.encode(totals);
             try (var output = context.getContentResolver().openOutputStream(uri)) {
                 if (output == null) {
                     throw new IOException("Unable to open export destination");
@@ -74,7 +82,7 @@ public final class SettingsViewModel {
                 output.write(csv.getBytes(StandardCharsets.UTF_8));
             }
             return context.getString(R.string.data_exported);
-        });
+        }));
     }
 
     void dismissFileMessage() {
@@ -83,34 +91,35 @@ public final class SettingsViewModel {
     }
 
     void close() {
+        backup.close();
         closed = true;
         stopGoal.run();
         stopTheme.run();
         stopSync.run();
     }
 
-    private void runFileOperation(FileOperation operation) {
-        if (file.busy()) {
-            return;
+    private boolean startFileOperation() {
+        if (closed || file.busy()) {
+            return false;
         }
         file = new FileState(true, null);
         publish();
-        worker.execute(() -> {
-            String message;
-            try {
-                message = operation.run();
-            } catch (Exception error) {
+        return true;
+    }
+
+    private void finishFileOperation(CompletableFuture<String> operation) {
+        operation.whenCompleteAsync((message, failure) -> {
+            if (closed) {
+                return;
+            }
+            if (failure != null) {
+                Throwable error = failure instanceof CompletionException ? failure.getCause() : failure;
                 String detail = error.getLocalizedMessage();
                 message = context.getString(R.string.error_file, detail == null ? "" : detail);
             }
-            String result = message;
-            context.getMainExecutor().execute(() -> {
-                if (!closed) {
-                    file = new FileState(false, result);
-                    publish();
-                }
-            });
-        });
+            file = new FileState(false, message);
+            publish();
+        }, context.getMainExecutor());
     }
 
     private void publish() {
@@ -130,10 +139,6 @@ public final class SettingsViewModel {
         } catch (NameNotFoundException error) {
             throw new IllegalStateException(error);
         }
-    }
-
-    private interface FileOperation {
-        String run() throws Exception;
     }
 }
 
