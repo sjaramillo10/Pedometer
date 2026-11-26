@@ -1,5 +1,6 @@
 package dev.sjaramillo.nemi.ui
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,14 +8,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.health.connect.HealthPermissions.READ_STEPS
+import android.net.Uri
 import android.os.Bundle
 import android.view.WindowInsetsController
-import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProvider
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.stepsCsvFileName
 import kotlinx.coroutines.Job
@@ -26,14 +24,13 @@ import java.time.LocalDate
 import java.time.temporal.WeekFields
 
 internal class NemiRoute(
-    private val activity: ComponentActivity,
+    private val activity: Activity,
     savedState: Bundle?,
-) : DefaultLifecycleObserver {
+    private val home: HomeViewModel,
+    private val settings: SettingsViewModel,
+) {
     private val renderScope = MainScope()
     private var renderJob: Job? = null
-    private val models = ViewModelProvider(activity)
-    private val home = models[HomeViewModel::class.java]
-    private val settings = models[SettingsViewModel::class.java]
     private var showSettings = savedState?.getBoolean("settings") ?: false
     private var showPrivacy = savedState?.getBoolean("privacy") ?: opensPrivacyPolicy(activity.intent)
     private var revealHealthConnect = savedState?.getBoolean("revealHealthConnect") ?: false
@@ -44,23 +41,9 @@ internal class NemiRoute(
     private var palette: Palette? = null
     private var dialog: Dialog? = null
     private var dialogContent: Pair<Int, String>? = null
-    private val settingsBack =
-        object : OnBackPressedCallback(false) {
-            override fun handleOnBackPressed() = closeSettings()
-        }
+    private val settingsBack = OnBackInvokedCallback { closeSettings() }
+    private var settingsBackRegistered = false
 
-    private val permission =
-        activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            home.refresh(restart = true)
-        }
-    private val importDocument =
-        activity.registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-            uri?.let(settings::importCsv)
-        }
-    private val exportDocument =
-        activity.registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
-            uri?.let(settings::exportCsv)
-        }
     private val dateChanges =
         object : BroadcastReceiver() {
             override fun onReceive(
@@ -73,12 +56,10 @@ internal class NemiRoute(
 
     init {
         home.updateFirstDayOfWeek(WeekFields.of(activity.resources.configuration.locales[0]).firstDayOfWeek)
-        activity.onBackPressedDispatcher.addCallback(activity, settingsBack)
-        activity.lifecycle.addObserver(this)
         render()
     }
 
-    override fun onStart(owner: LifecycleOwner) {
+    fun start() {
         renderJob =
             renderScope.launch {
                 combine(home.uiState, settings.uiState) { homeState, settingsState -> homeState to settingsState }
@@ -93,20 +74,64 @@ internal class NemiRoute(
         activity.registerReceiver(dateChanges, filter, Context.RECEIVER_NOT_EXPORTED)
     }
 
-    override fun onResume(owner: LifecycleOwner) {
+    fun resume() {
         home.refresh()
     }
 
-    override fun onStop(owner: LifecycleOwner) {
+    fun stop() {
         renderJob?.cancel()
         renderJob = null
         activity.unregisterReceiver(dateChanges)
     }
 
-    override fun onDestroy(owner: LifecycleOwner) {
+    fun destroy() {
         renderScope.cancel()
+        setSettingsBackRegistered(false)
         dialog?.setOnDismissListener(null)
         dialog?.dismiss()
+    }
+
+    fun onPermissionResult(requestCode: Int) {
+        if (requestCode == READ_PERMISSION) home.refresh(restart = true)
+    }
+
+    fun onDocumentResult(
+        requestCode: Int,
+        resultCode: Int,
+        uri: Uri?,
+    ) {
+        if (resultCode != Activity.RESULT_OK || uri == null) return
+        when (requestCode) {
+            IMPORT_DOCUMENT -> settings.importCsv(uri)
+            EXPORT_DOCUMENT -> settings.exportCsv(uri)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun launchDocumentPicker(
+        action: String,
+        mimeType: String,
+        requestCode: Int,
+        title: String? = null,
+    ) {
+        val intent =
+            Intent(action).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = mimeType
+                title?.let { putExtra(Intent.EXTRA_TITLE, it) }
+            }
+        activity.startActivityForResult(intent, requestCode)
+    }
+
+    private fun setSettingsBackRegistered(value: Boolean) {
+        if (settingsBackRegistered == value) return
+        val dispatcher = activity.onBackInvokedDispatcher
+        if (value) {
+            dispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, settingsBack)
+        } else {
+            dispatcher.unregisterOnBackInvokedCallback(settingsBack)
+        }
+        settingsBackRegistered = value
     }
 
     fun handleIntent(intent: Intent) {
@@ -156,10 +181,10 @@ internal class NemiRoute(
         val themeChanged = palette != colors
         if (themeChanged) {
             val lightBars = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-            activity.window.insetsController?.setSystemBarsAppearance(if (dark) 0 else lightBars, lightBars)
+            activity.window.decorView.windowInsetsController?.setSystemBarsAppearance(if (dark) 0 else lightBars, lightBars)
             palette = colors
         }
-        settingsBack.isEnabled = showSettings
+        setSettingsBackRegistered(showSettings)
         if (showSettings) {
             var screen = settingsScreen
             if (screen == null || themeChanged) {
@@ -170,12 +195,19 @@ internal class NemiRoute(
                         activity,
                         colors,
                         ::closeSettings,
-                        onConnect = { permission.launch(READ_STEPS) },
+                        onConnect = { activity.requestPermissions(arrayOf(READ_STEPS), READ_PERMISSION) },
                         onRetry = { home.refresh(restart = true) },
                         onAdjustGoal = settings::adjustGoal,
                         onSetTheme = settings::saveTheme,
-                        onImport = { importDocument.launch(arrayOf("text/*")) },
-                        onExport = { exportDocument.launch(stepsCsvFileName(LocalDate.now())) },
+                        onImport = { launchDocumentPicker(Intent.ACTION_OPEN_DOCUMENT, "text/*", IMPORT_DOCUMENT) },
+                        onExport = {
+                            launchDocumentPicker(
+                                Intent.ACTION_CREATE_DOCUMENT,
+                                "text/csv",
+                                EXPORT_DOCUMENT,
+                                stepsCsvFileName(LocalDate.now()),
+                            )
+                        },
                         onDismissFileMessage = settings::dismissFileMessage,
                     )
                 settingsScreen = screen
@@ -230,3 +262,7 @@ internal class NemiRoute(
             }
     }
 }
+
+private const val READ_PERMISSION = 1
+private const val IMPORT_DOCUMENT = 2
+private const val EXPORT_DOCUMENT = 3

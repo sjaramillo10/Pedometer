@@ -50,10 +50,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.activity.core) {
-        // NavigationEvent uses Compose stability annotations. The View host does not use them.
-        exclude(group = "androidx.compose.runtime", module = "runtime-annotation")
-    }
+    // The Java port removes the remaining coroutine-based app state.
+    implementation(libs.coroutines.android)
 
     // Unit Tests
     testImplementation(libs.junit)

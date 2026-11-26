@@ -1,12 +1,12 @@
 [versions]
-activity = "1.13.0"
 android-gradle = "9.5.2"
+coroutines = "1.9.0"
 junit = "4.13.2"
 kotlin = "2.4.21"
 ktlint = "14.2.0"
 
 [libraries]
-activity-core = { module = "androidx.activity:activity", version.ref = "activity" }
+coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 

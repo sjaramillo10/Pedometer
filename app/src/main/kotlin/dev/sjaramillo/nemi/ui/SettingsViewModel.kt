@@ -2,7 +2,6 @@ package dev.sjaramillo.nemi.ui
 
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.ViewModel
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
@@ -26,10 +25,10 @@ class SettingsViewModel(
     private val preferences: NemiPreferences,
     private val stepsRepository: StepsRepository,
     coordinator: HealthConnectSyncCoordinator,
-) : ViewModel() {
+) {
     private val workScope = MainScope()
 
-    override fun onCleared() {
+    internal fun close() {
         workScope.cancel()
     }
 

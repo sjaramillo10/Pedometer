@@ -1,6 +1,5 @@
 package dev.sjaramillo.nemi.ui
 
-import androidx.lifecycle.ViewModel
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.DailySteps
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
@@ -30,10 +29,10 @@ class HomeViewModel(
     preferences: NemiPreferences,
     private val stepsRepository: StepsRepository,
     private val coordinator: HealthConnectSyncCoordinator,
-) : ViewModel() {
+) {
     private val workScope = MainScope()
 
-    override fun onCleared() {
+    internal fun close() {
         workScope.cancel()
     }
 

@@ -7,18 +7,22 @@ import android.hardware.SensorManager
 import android.health.connect.AggregateRecordsGroupedByPeriodResponse
 import android.health.connect.AggregateRecordsRequest
 import android.health.connect.DeviceDataSource
+import android.health.connect.HealthConnectException
 import android.health.connect.HealthConnectManager
 import android.health.connect.HealthPermissions.READ_STEPS
 import android.health.connect.LocalTimeRangeFilter
 import android.health.connect.datatypes.DataOrigin
 import android.health.connect.datatypes.StepsRecord.STEPS_COUNT_TOTAL
 import android.os.Build
+import android.os.OutcomeReceiver
 import android.os.ext.SdkExtensions
-import androidx.core.os.asOutcomeReceiver
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.time.LocalDate
 import java.time.Period
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /** Reads phone-recorded steps, including the current device's synthetic Health Connect origin. */
 class PhoneStepsDataSource(
@@ -76,6 +80,13 @@ class PhoneStepsDataSource(
             null
         }
 }
+
+private fun <T> CancellableContinuation<T>.asOutcomeReceiver(): OutcomeReceiver<T, HealthConnectException> =
+    object : OutcomeReceiver<T, HealthConnectException> {
+        override fun onResult(result: T) = resume(result)
+
+        override fun onError(error: HealthConnectException) = resumeWithException(error)
+    }
 
 internal fun phoneStepOriginPackages(currentDeviceOrigin: String?): Set<String> =
     buildSet {

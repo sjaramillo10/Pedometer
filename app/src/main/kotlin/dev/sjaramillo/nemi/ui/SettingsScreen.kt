@@ -17,7 +17,6 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
-import androidx.core.view.doOnLayout
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 import kotlin.math.abs
@@ -160,12 +159,35 @@ internal class SettingsScreen(
 
     fun revealHealthConnect() {
         scroll.post {
-            scroll.doOnLayout {
-                val bounds = Rect()
-                scroll.offsetDescendantRectToMyCoords(healthCard, bounds)
-                scroll.smoothScrollTo(0, bounds.top - scroll.paddingTop)
+            if (scroll.isLaidOut && !scroll.isLayoutRequested) {
+                scrollToHealthConnect()
+            } else {
+                scroll.addOnLayoutChangeListener(
+                    object : View.OnLayoutChangeListener {
+                        override fun onLayoutChange(
+                            view: View,
+                            left: Int,
+                            top: Int,
+                            right: Int,
+                            bottom: Int,
+                            oldLeft: Int,
+                            oldTop: Int,
+                            oldRight: Int,
+                            oldBottom: Int,
+                        ) {
+                            view.removeOnLayoutChangeListener(this)
+                            scrollToHealthConnect()
+                        }
+                    },
+                )
             }
         }
+    }
+
+    private fun scrollToHealthConnect() {
+        val bounds = Rect()
+        scroll.offsetDescendantRectToMyCoords(healthCard, bounds)
+        scroll.smoothScrollTo(0, bounds.top - scroll.paddingTop)
     }
 
     private fun bindHealthStatus(status: HealthConnectSyncState) {
