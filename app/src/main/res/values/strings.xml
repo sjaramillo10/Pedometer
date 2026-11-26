@@ -7,7 +7,6 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="backup">Backup</string>
-    <string name="backup_precedence">Health Connect data takes precedence over imported data.</string>
     <string name="about">About</string>
     <string name="export_title">Export CSV</string>
     <string name="export_summary">Save daily steps as a CSV file</string>
@@ -24,20 +23,23 @@
 
     <string name="health_connect">Health Connect</string>
     <string name="health_connect_status">Health Connect status</string>
-    <string name="health_connect_description">Nemi reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. Previously saved totals can still appear in your history.</string>
-    <string name="health_connect_disconnected">Step access is off.</string>
+    <string name="health_connect_description">Nemi reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. For each date, Nemi uses the Health Connect total when one is available, even if it’s zero. Imported totals fill in dates without a Health Connect total.</string>
+    <string name="health_connect_disconnected">Disconnected</string>
     <string name="health_connect_connected">Connected</string>
     <string name="learn_health_connect">Learn about Health Connect</string>
-    <string name="open_settings">Open Settings</string>
-    <string name="connect_health_connect">Connect Health Connect</string>
-    <string name="health_connect_permission_required">Connect Health Connect in Settings to read steps from this phone.</string>
+    <string name="view_health_connect_status">View Health Connect status</string>
+    <string name="allow_steps_access">Allow steps access</string>
+    <string name="check_health_connect_status">Check Health Connect status in Settings.</string>
     <string name="health_connect_syncing">Refreshing phone steps…</string>
     <string name="health_connect_error">Unable to refresh phone steps. Check Health Connect and try again.</string>
     <string name="health_connect_privacy_policy">Nemi reads step data recorded by this phone through Health Connect. It stores daily totals only on this device to show recent history and statistics. Nemi does not write Health Connect data and does not transmit your health data.</string>
 
-    <string name="health_connect_unavailable">Health Connect is unavailable on this device.</string>
+    <string name="health_connect_update_required">This Android build needs SDK Extension 20 or later to record phone steps in Health Connect. Check for a system update, or import a CSV backup in Settings.</string>
+    <string name="health_connect_no_step_counter">Android exposes no step counter on this device. To view existing steps, import a CSV backup in Settings.</string>
+    <string name="health_connect_unavailable">Health Connect is unavailable. Check for an update from your Android system provider, or import a CSV backup in Settings.</string>
     <string name="today">Today</string>
     <string name="step_count">%s steps</string>
+    <string name="no_step_total_today">No step total available today</string>
     <string name="no_steps_today">No steps recorded today</string>
     <string name="from_backup">From backup</string>
     <string name="goal_reached">Goal reached</string>
@@ -60,7 +62,6 @@
     <string name="backup_working">Working with CSV file…</string>
     <string name="dismiss_result">Dismiss result</string>
     <string name="about_text"><![CDATA[Nemi is a tranquil companion for mindful daily movement. Inspired by classical Nahuatl, <a href="https://nahuatl.wired-humanities.org/content/nemi">nemi</a> (“to live, exist, or dwell”) and <a href="https://nahuatl.wired-humanities.org/content/nenemi">nenemi</a> (“to walk or wander”) honor human presence with every step taken along life’s winding path.]]></string>
-    <string name="original_project"><![CDATA[Inspired by <a href="https://github.com/j4velin/Pedometer">Pedometer</a>, by Thomas Hoffmann]]></string>
     <string name="source_code">Source code on GitHub</string>
     <string name="your_journey">Your journey</string>
     <string name="journey_slogan">· Life, one step at a time ·</string>

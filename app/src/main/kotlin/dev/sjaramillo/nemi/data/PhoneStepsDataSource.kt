@@ -2,6 +2,8 @@ package dev.sjaramillo.nemi.data
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.health.connect.AggregateRecordsGroupedByPeriodResponse
 import android.health.connect.AggregateRecordsRequest
 import android.health.connect.DeviceDataSource
@@ -10,6 +12,8 @@ import android.health.connect.HealthPermissions.READ_STEPS
 import android.health.connect.LocalTimeRangeFilter
 import android.health.connect.datatypes.DataOrigin
 import android.health.connect.datatypes.StepsRecord.STEPS_COUNT_TOTAL
+import android.os.Build
+import android.os.ext.SdkExtensions
 import androidx.core.os.asOutcomeReceiver
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CancellationException
@@ -23,11 +27,12 @@ class PhoneStepsDataSource(
     private val context: Context,
 ) {
     internal fun access(): HealthConnectAccess =
-        when {
-            context.getSystemService(HealthConnectManager::class.java) == null -> HealthConnectAccess.Unavailable
-            context.checkSelfPermission(READ_STEPS) == PackageManager.PERMISSION_GRANTED -> HealthConnectAccess.Available
-            else -> HealthConnectAccess.PermissionRequired
-        }
+        phoneStepsAccess(
+            hasHealthConnect = context.getSystemService(HealthConnectManager::class.java) != null,
+            extensionVersion = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.UPSIDE_DOWN_CAKE),
+            hasStepCounter = context.getSystemService(SensorManager::class.java)?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null,
+            hasPermission = context.checkSelfPermission(READ_STEPS) == PackageManager.PERMISSION_GRANTED,
+        )
 
     suspend fun readDailySteps(
         start: LocalDate,
@@ -41,7 +46,10 @@ class PhoneStepsDataSource(
                 .setEndTime(end.plusDays(1).atStartOfDay())
                 .build()
         val request = AggregateRecordsRequest.Builder<Long>(timeRange).addAggregationType(STEPS_COUNT_TOTAL)
-        for (packageName in phoneStepOriginPackages(getCurrentDeviceOrigin(manager))) {
+        val extensionVersion = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        val currentDeviceOrigin =
+            if (supportsCurrentDeviceOrigin(Build.VERSION.SDK_INT, extensionVersion)) getCurrentDeviceOrigin(manager) else null
+        for (packageName in phoneStepOriginPackages(currentDeviceOrigin)) {
             request.addDataOriginsFilter(DataOrigin.Builder().setPackageName(packageName).build())
         }
 
@@ -55,6 +63,8 @@ class PhoneStepsDataSource(
             .toMap()
     }
 
+    // The caller checks API 37 or U Extension 22 before resolving this API.
+    @android.annotation.SuppressLint("NewApi")
     private suspend fun getCurrentDeviceOrigin(manager: HealthConnectManager): String? =
         try {
             val source =
@@ -75,8 +85,29 @@ internal fun phoneStepOriginPackages(currentDeviceOrigin: String?): Set<String> 
         currentDeviceOrigin?.let(::add)
     }
 
+internal fun supportsCurrentDeviceOrigin(
+    sdkInt: Int,
+    extensionVersion: Int,
+): Boolean = sdkInt >= 37 || extensionVersion >= 22
+
+internal fun phoneStepsAccess(
+    hasHealthConnect: Boolean,
+    extensionVersion: Int,
+    hasStepCounter: Boolean,
+    hasPermission: Boolean,
+): HealthConnectAccess =
+    when {
+        !hasHealthConnect -> HealthConnectAccess.Unavailable
+        extensionVersion < 20 -> HealthConnectAccess.UpdateRequired
+        !hasStepCounter -> HealthConnectAccess.NoStepCounter
+        !hasPermission -> HealthConnectAccess.PermissionRequired
+        else -> HealthConnectAccess.Available
+    }
+
 internal enum class HealthConnectAccess {
     Available,
     PermissionRequired,
     Unavailable,
+    UpdateRequired,
+    NoStepCounter,
 }

@@ -1,5 +1,6 @@
 package dev.sjaramillo.nemi.ui
 
+import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.DailySteps
 import dev.sjaramillo.nemi.data.HealthConnectAccess
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
@@ -25,6 +26,31 @@ class HomeUiStateTest {
     private val today = LocalDate.of(2026, 11, 22)
     private val previous = DailySteps(today.minusDays(1).toEpochDay(), 5_000, fromBackup = true)
     private val current = DailySteps(today.toEpochDay(), 10_000, fromBackup = false)
+
+    @Test
+    fun `given no saved steps when tracking is unsupported or ready then Today explains the missing total`() {
+        // Given
+        val week = WeekSelection().range(today, DayOfWeek.SUNDAY).withEntries(emptyList())
+        val unavailable = HomeUiState(date = today, week = week, sync = HealthConnectSyncState.Unavailable)
+        val outdated = unavailable.copy(sync = HealthConnectSyncState.UpdateRequired)
+        val noCounter = unavailable.copy(sync = HealthConnectSyncState.NoStepCounter)
+        val ready = unavailable.copy(sync = HealthConnectSyncState.Ready)
+        val importedZero = unavailable.copy(today = DailySteps(today.toEpochDay(), 0, fromBackup = true))
+
+        // When
+        val todayMessages = listOf(unavailable, outdated, noCounter, ready, importedZero).map { it.todayEmptyMessage }
+        val messages = listOf(unavailable, outdated, noCounter).map { it.sync.statusMessage }
+
+        // Then
+        assertEquals(
+            listOf(R.string.no_step_total_today, R.string.no_step_total_today, R.string.no_step_total_today, R.string.no_steps_today, null),
+            todayMessages,
+        )
+        assertEquals(
+            listOf(R.string.health_connect_unavailable, R.string.health_connect_update_required, R.string.health_connect_no_step_counter),
+            messages,
+        )
+    }
 
     @Test
     fun `given active Home state when the shared goal changes then Home emits the new goal`() =

@@ -9,17 +9,12 @@ plugins {
 
 android {
     namespace = "dev.sjaramillo.nemi"
-    compileSdk {
-        version =
-            release(37) {
-                minorApiLevel = 2
-            }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "dev.sjaramillo.nemi"
         targetSdk = 37
-        minSdk = 37
+        minSdk = 34
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

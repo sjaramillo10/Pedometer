@@ -33,6 +33,8 @@ class HealthConnectSyncCoordinator internal constructor(
                 when (checkAccess()) {
                     HealthConnectAccess.PermissionRequired -> _state.value = HealthConnectSyncState.PermissionRequired
                     HealthConnectAccess.Unavailable -> _state.value = HealthConnectSyncState.Unavailable
+                    HealthConnectAccess.UpdateRequired -> _state.value = HealthConnectSyncState.UpdateRequired
+                    HealthConnectAccess.NoStepCounter -> _state.value = HealthConnectSyncState.NoStepCounter
                     HealthConnectAccess.Available -> {
                         _state.value = HealthConnectSyncState.Syncing
                         syncCache()
@@ -51,6 +53,8 @@ enum class HealthConnectSyncState {
     Loading,
     PermissionRequired,
     Unavailable,
+    UpdateRequired,
+    NoStepCounter,
     Syncing,
     Ready,
     Error,

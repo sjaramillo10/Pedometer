@@ -17,6 +17,7 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.core.view.doOnLayout
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 import kotlin.math.abs
@@ -102,8 +103,6 @@ internal class SettingsScreen(
                     item(import)
                     item(context.divider(colors), height = context.dp(1))
                     item(export)
-                    item(context.divider(colors), height = context.dp(1))
-                    item(context.label(context.getString(R.string.backup_precedence), colors.secondary, 13), top = 12)
                     item(working, top = 6)
                     item(result, top = 6)
                     item(dismiss)
@@ -114,7 +113,6 @@ internal class SettingsScreen(
                 context.card(R.string.about, colors).apply {
                     item(version)
                     item(aboutText(R.string.about_text), top = 16)
-                    item(aboutText(R.string.original_project), top = 10)
                     item(context.divider(colors), top = 10, height = context.dp(1))
                     item(link(R.string.source_code, "https://github.com/sjaramillo10/Nemi", "↗"))
                 },
@@ -161,23 +159,20 @@ internal class SettingsScreen(
     fun restoreScroll(position: Int) = screen.restoreScroll(position)
 
     fun revealHealthConnect() {
-        healthCard.post {
-            val bounds = Rect(0, 0, healthCard.width, healthCard.height)
-            healthCard.requestRectangleOnScreen(bounds, false)
+        scroll.post {
+            scroll.doOnLayout {
+                val bounds = Rect()
+                scroll.offsetDescendantRectToMyCoords(healthCard, bounds)
+                scroll.smoothScrollTo(0, bounds.top - scroll.paddingTop)
+            }
         }
     }
 
     private fun bindHealthStatus(status: HealthConnectSyncState) {
         healthStatus.removeAllViews()
-        val message =
-            when (status) {
-                HealthConnectSyncState.Loading, HealthConnectSyncState.Syncing -> R.string.health_connect_syncing
-                HealthConnectSyncState.PermissionRequired -> R.string.health_connect_disconnected
-                HealthConnectSyncState.Unavailable -> R.string.health_connect_unavailable
-                HealthConnectSyncState.Error -> R.string.health_connect_error
-                HealthConnectSyncState.Ready -> R.string.health_connect_connected
-            }
+        val message = status.statusMessage
         val connected = status == HealthConnectSyncState.Ready
+        val showBadge = connected || status == HealthConnectSyncState.PermissionRequired
         healthStatus.item(
             context.row().apply {
                 liveRegion()
@@ -192,25 +187,35 @@ internal class SettingsScreen(
                 weighted(
                     context.column().apply {
                         item(context.label(context.getString(R.string.health_connect_status), colors.text, 13, 600))
-                        if (!connected) item(context.label(context.getString(message), colors.secondary, 13), top = 6)
+                        if (!showBadge) item(context.label(context.getString(message), colors.secondary, 13), top = 6)
                     },
                 )
-                if (connected) {
+                if (showBadge) {
+                    val badgeText = if (connected) colors.accent else colors.text
+                    val badgeBackground = if (connected) colors.track else colors.divider
                     addView(
-                        context.label(context.getString(message), colors.accent, 13, 600).apply {
-                            background = context.rounded(colors.track, 24)
+                        context.label(context.getString(message), badgeText, 13, 600).apply {
+                            background = context.rounded(badgeBackground, 24)
                             pad(10, 4)
                         },
                     )
                 }
             },
         )
-        when (status) {
-            HealthConnectSyncState.PermissionRequired ->
-                healthStatus.item(context.action(context.getString(R.string.connect_health_connect), colors, onConnect), top = 12)
-            HealthConnectSyncState.Error -> healthStatus.item(context.action(context.getString(R.string.retry), colors, onRetry), top = 12)
-            else -> Unit
-        }
+        val action =
+            when (status) {
+                HealthConnectSyncState.PermissionRequired ->
+                    context.action(context.getString(R.string.allow_steps_access), colors, onConnect).apply {
+                        setTextColor(colors.background)
+                        background = context.ripple(colors.background, maskRadius = 12, fill = colors.accent)
+                        gravity = Gravity.CENTER
+                        pad(16, 4)
+                    }
+                HealthConnectSyncState.Error ->
+                    context.action(context.getString(R.string.retry), colors, onRetry).apply { pad(0, 4) }
+                else -> null
+            }
+        action?.let { healthStatus.item(it, top = 12) }
     }
 
     private fun themeOption(
@@ -319,3 +324,15 @@ internal class SettingsScreen(
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
 }
+
+internal val HealthConnectSyncState.statusMessage: Int
+    get() =
+        when (this) {
+            HealthConnectSyncState.Loading, HealthConnectSyncState.Syncing -> R.string.health_connect_syncing
+            HealthConnectSyncState.PermissionRequired -> R.string.health_connect_disconnected
+            HealthConnectSyncState.Unavailable -> R.string.health_connect_unavailable
+            HealthConnectSyncState.UpdateRequired -> R.string.health_connect_update_required
+            HealthConnectSyncState.NoStepCounter -> R.string.health_connect_no_step_counter
+            HealthConnectSyncState.Error -> R.string.health_connect_error
+            HealthConnectSyncState.Ready -> R.string.health_connect_connected
+        }

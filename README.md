@@ -9,8 +9,7 @@ Nemi is a personal app with three priorities, in this order.
 2. Look beautiful.
 3. Be as lightweight as possible.
 
-To keep things fun, we cap the release APK at 0.5 MB (500,000 bytes). CI
-measures the entire unsigned release APK.
+The release APK size is capped at 0.5 MB (500,000 bytes) by CI.
 
 <p>
   <img src="media/home-light.png" alt="Nemi Home in light mode with synthetic step data" width="300">
@@ -24,12 +23,21 @@ measures the entire unsigned release APK.
   lifetime steps.
 - Save a dated CSV backup or restore one from Settings.
 
+## Device requirements
+
+Nemi installs on Android 14 or later. Live phone steps require the system
+Health Connect service, Android 14 (U) SDK Extension 20 or later, and a step
+counter sensor. On GrapheneOS and other Android distributions, support depends
+on the features shipped by the installed OS build. Nemi works independently of
+Google Play Services and can display imported CSV history on devices without
+native step tracking.
+
 ## How Nemi uses your data
 
-Connect Health Connect in Settings to let Nemi read steps recorded by your
-phone. Nemi stores daily totals on your device, leaves Health Connect data
-untouched, and never transmits your health data. Imported CSV totals
-fill in dates when Health Connect has no total.
+In Settings, open Health Connect and tap **Allow steps access** to let Nemi read
+steps recorded by your phone. Nemi stores daily totals on your device, leaves
+Health Connect data untouched, and never transmits your health data. Imported
+CSV totals fill in dates when Health Connect has no total.
 
 ## Why Nemi?
 
@@ -43,7 +51,8 @@ or wander.”
 
 Install a JDK that meets the minimum in [settings.gradle.kts](settings.gradle.kts)
 and the Android platform set by `compileSdk` in [app/build.gradle.kts](app/build.gradle.kts).
-Run this from the repository root:
+Set `sdk.dir` in the repository’s `local.properties` to the path of your Android
+SDK installation. Run this from the repository root:
 
 ```sh
 ./gradlew :app:assembleDebug
