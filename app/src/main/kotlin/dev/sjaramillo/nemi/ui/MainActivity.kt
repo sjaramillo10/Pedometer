@@ -13,10 +13,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var route: NemiRoute
 
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory by lazy {
-        val graph = (application as NemiApplication).graph
+        val nemi = application as NemiApplication
         viewModelFactory {
-            initializer { graph.homeViewModel }
-            initializer { graph.settingsViewModel }
+            initializer { nemi.createHomeViewModel() }
+            initializer { nemi.createSettingsViewModel() }
         }
     }
 

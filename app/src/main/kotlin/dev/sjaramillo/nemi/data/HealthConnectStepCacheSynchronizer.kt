@@ -1,6 +1,5 @@
 package dev.sjaramillo.nemi.data
 
-import dev.zacsweers.metro.Inject
 import java.time.LocalDate
 
 class HealthConnectStepCacheSynchronizer internal constructor(
@@ -8,7 +7,6 @@ class HealthConnectStepCacheSynchronizer internal constructor(
     private val readDailySteps: suspend (LocalDate, LocalDate) -> Map<LocalDate, Long>,
     private val replaceWindow: suspend (LocalDate, LocalDate, Map<LocalDate, Long>) -> Unit,
 ) {
-    @Inject
     constructor(
         stepsRepository: StepsRepository,
         phoneStepsDataSource: PhoneStepsDataSource,

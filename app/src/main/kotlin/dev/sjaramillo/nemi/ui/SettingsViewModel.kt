@@ -10,7 +10,6 @@ import dev.sjaramillo.nemi.data.HealthConnectSyncState
 import dev.sjaramillo.nemi.data.StepsRepository
 import dev.sjaramillo.nemi.data.decodeStepsCsv
 import dev.sjaramillo.nemi.data.encodeStepsCsv
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-@Inject
 class SettingsViewModel(
     private val context: Context,
     private val preferences: NemiPreferences,

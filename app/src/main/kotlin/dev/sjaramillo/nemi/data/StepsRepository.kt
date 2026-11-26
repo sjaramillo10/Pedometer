@@ -1,13 +1,11 @@
 package dev.sjaramillo.nemi.data
 
 import androidx.room.withTransaction
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
-@Inject
 class StepsRepository(
     private val database: NemiDatabase,
 ) {

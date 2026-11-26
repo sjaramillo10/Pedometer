@@ -1,8 +1,5 @@
 package dev.sjaramillo.nemi.data
 
-import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.Inject
-import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,12 +7,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-@SingleIn(AppScope::class)
 class HealthConnectSyncCoordinator internal constructor(
     private val checkAccess: suspend () -> HealthConnectAccess,
     private val syncCache: suspend () -> Unit,
 ) {
-    @Inject
     constructor(
         phoneStepsDataSource: PhoneStepsDataSource,
         cacheSynchronizer: HealthConnectStepCacheSynchronizer,

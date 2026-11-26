@@ -15,14 +15,12 @@ import android.health.connect.datatypes.StepsRecord.STEPS_COUNT_TOTAL
 import android.os.Build
 import android.os.ext.SdkExtensions
 import androidx.core.os.asOutcomeReceiver
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.time.LocalDate
 import java.time.Period
 
 /** Reads phone-recorded steps, including the current device's synthetic Health Connect origin. */
-@Inject
 class PhoneStepsDataSource(
     private val context: Context,
 ) {
