@@ -51,7 +51,7 @@ Run these commands from the repository root:
 
 ```sh
 ./gradlew build
-./gradlew ktlintCheck
+./gradlew :app:lintDebug
 ./gradlew :app:testDebugUnitTest --tests 'dev.sjaramillo.nemi.data.StepsCsvTest'
 ```
 

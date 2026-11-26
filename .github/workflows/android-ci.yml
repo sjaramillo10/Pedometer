@@ -59,7 +59,7 @@ jobs:
             exit 1
           fi
 
-  ktlint:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -73,5 +73,5 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Run ktlint check
-        run: ./gradlew ktlintCheck
+      - name: Run Android lint
+        run: ./gradlew :app:lintDebug
