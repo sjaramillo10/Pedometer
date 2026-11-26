@@ -17,18 +17,6 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // https://developer.android.com/jetpack/androidx/releases/room#compiler-options
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments +=
-                    mapOf(
-                        "room.schemaLocation" to "$projectDir/schemas",
-                        "room.incremental" to "true",
-                        "room.expandProjection" to "true",
-                    )
-            }
-        }
     }
 
     androidResources {
@@ -68,20 +56,10 @@ dependencies {
         exclude(group = "androidx.compose.runtime", module = "runtime-annotation")
     }
 
-    // Room
-    implementation(libs.room.runtime)
-    ksp(libs.room.compiler)
-
     // ViewModel
     implementation(libs.viewmodel.core)
     implementation(libs.lifecycle.runtime)
 
     // Unit Tests
     testImplementation(libs.junit)
-}
-
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.incremental", "true")
-    arg("room.expandProjection", "true")
 }

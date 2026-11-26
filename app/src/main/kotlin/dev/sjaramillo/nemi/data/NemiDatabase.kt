@@ -1,26 +1,27 @@
 package dev.sjaramillo.nemi.data
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
 
-@Database(entities = [StoredDailySteps::class], version = 1)
-abstract class NemiDatabase : RoomDatabase() {
-    abstract fun dailyStepsDao(): DailyStepsDao
+internal const val CREATE_DAILY_STEPS =
+    "CREATE TABLE IF NOT EXISTS daily_steps (day INTEGER NOT NULL, steps INTEGER NOT NULL, " +
+        "source TEXT NOT NULL, PRIMARY KEY (day, source))"
 
-    companion object {
-        @Volatile // For Singleton instantiation
-        private var instance: NemiDatabase? = null
+class NemiDatabase(context: Context) : SQLiteOpenHelper(context, "nemi-db", null, 1) {
+    init {
+        setWriteAheadLoggingEnabled(true)
+    }
 
-        fun getInstance(context: Context): NemiDatabase =
-            instance ?: synchronized(this) {
-                instance ?: buildDatabase(context).also { instance = it }
-            }
+    override fun onCreate(database: SQLiteDatabase) {
+        database.execSQL(CREATE_DAILY_STEPS)
+    }
 
-        private fun buildDatabase(context: Context): NemiDatabase =
-            Room
-                .databaseBuilder(context, NemiDatabase::class.java, "nemi-db")
-                .build()
+    override fun onUpgrade(
+        database: SQLiteDatabase,
+        oldVersion: Int,
+        newVersion: Int,
+    ) {
+        error("Unsupported Nemi database upgrade from $oldVersion to $newVersion")
     }
 }

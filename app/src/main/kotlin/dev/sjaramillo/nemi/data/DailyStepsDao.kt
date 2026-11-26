@@ -1,12 +1,5 @@
 package dev.sjaramillo.nemi.data
 
-import androidx.room.Dao
-import androidx.room.Embedded
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
-
 private const val RESOLVED_DAYS = """
     SELECT entry.day, entry.steps, entry.source = 'BACKUP' AS fromBackup
     FROM daily_steps AS entry
@@ -34,36 +27,5 @@ internal const val RESOLVED_STEP_STATS = """
 
 data class StepHistoryStats(
     val lifetimeSteps: Long,
-    @Embedded(prefix = "best_") val bestDay: DailySteps?,
+    val bestDay: DailySteps?,
 )
-
-@Dao
-interface DailyStepsDao {
-    @Query(RESOLVED_DAYS_IN_ORDER)
-    suspend fun getResolvedDays(
-        firstDay: Long,
-        lastDay: Long,
-    ): List<DailySteps>
-
-    @Query(RESOLVED_DAYS_IN_ORDER)
-    fun observeResolvedDays(
-        firstDay: Long,
-        lastDay: Long,
-    ): Flow<List<DailySteps>>
-
-    @Query(RESOLVED_STEP_STATS)
-    fun observeHistoryStats(
-        firstDay: Long,
-        lastDay: Long,
-    ): Flow<StepHistoryStats>
-
-    @Query("DELETE FROM daily_steps WHERE source = :source AND day BETWEEN :start AND :end")
-    suspend fun deleteFrom(
-        source: StepSource,
-        start: Long,
-        end: Long,
-    )
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(entries: List<StoredDailySteps>)
-}

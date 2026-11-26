@@ -11,7 +11,7 @@ import dev.sjaramillo.nemi.ui.NemiPreferences
 import dev.sjaramillo.nemi.ui.SettingsViewModel
 
 class NemiApplication : Application() {
-    private val steps by lazy { StepsRepository(NemiDatabase.getInstance(this)) }
+    private val steps by lazy { StepsRepository(NemiDatabase(this)) }
     private val preferences by lazy { NemiPreferences(getSharedPreferences("nemi", MODE_PRIVATE)) }
     private val healthConnect by lazy {
         val source = PhoneStepsDataSource(this)

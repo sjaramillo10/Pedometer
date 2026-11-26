@@ -17,12 +17,12 @@
   results, and privacy intents in `NemiRoute`. Have `HomeViewModel` expose a
   single `HomeUiState` and pass state and callbacks to `HomeScreen`.
 - Refresh Health Connect on lifecycle and user events. Observe committed data
-  through Room. Resolve one total per day, preferring Health Connect even when
+  through framework SQLite. Resolve one total per day, preferring Health Connect even when
   its total is zero. Use CSV backup totals when Health Connect has no total for
   that date and preserve `fromBackup`.
-- Keep Room's version 1 reinstall-only policy and track schema exports under
-  `app/schemas`. Change the version or add migrations only with an explicit
-  policy change.
+- Keep the SQLite database at version 1. Use the Room schema export under
+  `app/schemas` as the compatibility reference for existing installs. Change the
+  version or add migrations only with an explicit policy change.
 - Preserve compatibility with existing CSV backups. Suggest
   `Nemi_YYYY-MM-DD.csv` for new exports using the device's local date when
   the user starts the export.

@@ -102,10 +102,7 @@ class DailyStepsResolutionTest {
             }
         val sql =
             buildString {
-                appendLine(
-                    "CREATE TABLE daily_steps (day INTEGER NOT NULL, steps INTEGER NOT NULL, " +
-                        "source TEXT NOT NULL, PRIMARY KEY (day, source));",
-                )
+                appendLine("$CREATE_DAILY_STEPS;")
                 entries.forEach { entry ->
                     appendLine("INSERT INTO daily_steps VALUES (${entry.day}, ${entry.steps}, '${entry.source.name}');")
                 }

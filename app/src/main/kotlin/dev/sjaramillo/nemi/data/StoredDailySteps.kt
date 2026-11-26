@@ -1,8 +1,5 @@
 package dev.sjaramillo.nemi.data
 
-import androidx.room.Entity
-
-@Entity(tableName = "daily_steps", primaryKeys = ["day", "source"])
 data class StoredDailySteps(
     val day: Long,
     val steps: Long,
