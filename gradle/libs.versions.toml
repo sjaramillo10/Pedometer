@@ -1,7 +1,6 @@
 [versions]
 activity = "1.13.0"
 android-gradle = "9.5.2"
-compose-core = "1.13.0"
 kotlin = "2.4.21"
 ksp = "2.3.14"
 ktlint = "14.2.0"
@@ -11,11 +10,10 @@ room = "2.8.5"
 sqlite-jdbc = "3.54.1.0"
 
 [libraries]
-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-core" }
-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-core" }
+activity-core = { module = "androidx.activity:activity", version.ref = "activity" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-core = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -24,7 +22,6 @@ viewmodel-core = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", versio
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle" }
-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }

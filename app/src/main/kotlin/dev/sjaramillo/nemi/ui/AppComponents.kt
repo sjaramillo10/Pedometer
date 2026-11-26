@@ -1,188 +1,229 @@
 package dev.sjaramillo.nemi.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import android.app.Dialog
+import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.WindowInsets
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
+import dev.sjaramillo.nemi.R
+import kotlin.math.roundToInt
 
 internal data class Palette(
-    val background: Color,
-    val surface: Color,
-    val text: Color,
-    val accent: Color,
-    val track: Color,
-    val bar: Color,
-)
+    val background: Int,
+    val surface: Int,
+    val text: Int,
+    val accent: Int,
+    val track: Int,
+    val bar: Int,
+) {
+    val secondary: Int get() = text.withAlpha(0.72f)
+    val divider: Int get() = text.withAlpha(0.10f)
+}
 
 internal val LightPalette =
-    Palette(Color(0xFFF8F7F2), Color.White, Color(0xFF202722), Color(0xFF3D5948), Color(0xFFECF2ED), Color(0xFF49728C))
+    Palette(0xFFF8F7F2.toInt(), Color.WHITE, 0xFF202722.toInt(), 0xFF3D5948.toInt(), 0xFFECF2ED.toInt(), 0xFF49728C.toInt())
 internal val DarkPalette =
-    Palette(Color(0xFF111914), Color(0xFF1C2920), Color(0xFFE6F0E7), Color(0xFF9BDAAA), Color(0xFF35483A), Color(0xFF8EB4CD))
-internal val LocalPalette = staticCompositionLocalOf { LightPalette }
+    Palette(0xFF111914.toInt(), 0xFF1C2920.toInt(), 0xFFE6F0E7.toInt(), 0xFF9BDAAA.toInt(), 0xFF35483A.toInt(), 0xFF8EB4CD.toInt())
 
-@Composable
-internal fun SectionCard(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Column(
-        modifier.fillMaxWidth().background(LocalPalette.current.surface, RoundedCornerShape(24.dp)).padding(20.dp),
-    ) {
-        AppText(title, Modifier.fillMaxWidth().semantics { heading() }, size = 18, bold = true, align = TextAlign.Center)
-        Spacer(Modifier.height(12.dp))
-        content()
+internal fun Int.withAlpha(alpha: Float): Int = (this and 0xFFFFFF) or ((255 * alpha).roundToInt() shl 24)
+
+internal fun Context.dp(value: Int): Int = (value * resources.displayMetrics.density).roundToInt()
+
+internal fun Context.rounded(
+    color: Int,
+    radius: Int,
+): GradientDrawable =
+    GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = dp(radius).toFloat()
     }
-}
 
-@Composable
-internal fun ScreenToolbar(
-    title: String,
-    actionAtStart: Boolean = false,
-    action: @Composable () -> Unit,
+internal fun View.pad(
+    horizontal: Int,
+    vertical: Int = horizontal,
 ) {
-    Box(Modifier.fillMaxWidth().sizeIn(minHeight = 56.dp).padding(horizontal = 16.dp)) {
-        AppText(
-            title,
-            Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .padding(horizontal = 48.dp)
-                .semantics { heading() },
-            size = 24,
-            bold = true,
-            align = TextAlign.Center,
-        )
-        Box(Modifier.align(if (actionAtStart) Alignment.CenterStart else Alignment.CenterEnd)) {
-            action()
-        }
-    }
+    setPadding(context.dp(horizontal), context.dp(vertical), context.dp(horizontal), context.dp(vertical))
 }
 
-@Composable
-internal fun SectionDivider() {
-    Box(Modifier.fillMaxWidth().height(1.dp).background(LocalPalette.current.text.copy(alpha = 0.10f)))
-}
+internal fun Context.column(): LinearLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
 
-@Composable
-internal fun ToolbarAction(
-    icon: Int,
-    label: String,
-    onClick: () -> Unit,
+internal fun Context.row(): LinearLayout = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
+
+internal fun LinearLayout.item(
+    view: View,
+    top: Int = 0,
+    height: Int = WRAP_CONTENT,
 ) {
-    Box(
-        Modifier
-            .size(48.dp)
-            .semantics { contentDescription = label }
-            .clickable(role = Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Image(
-            painterResource(icon),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            colorFilter = ColorFilter.tint(LocalPalette.current.accent),
-        )
-    }
+    addView(view, LinearLayout.LayoutParams(MATCH_PARENT, height).apply { topMargin = context.dp(top) })
 }
 
-@Composable
-internal fun AppDialog(
-    title: String,
-    onDismiss: () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Column(
-            Modifier
-                .safeDrawingPadding()
-                .imePadding()
-                .fillMaxWidth()
-                .background(LocalPalette.current.surface, RoundedCornerShape(20.dp))
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            AppText(title, Modifier.semantics { heading() }, size = 24, bold = true)
-            content()
-        }
-    }
+internal fun LinearLayout.weighted(view: View) {
+    addView(view, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f))
 }
 
-@Composable
-internal fun AppText(
-    text: String,
-    modifier: Modifier = Modifier,
+internal fun Context.label(
+    value: CharSequence,
+    color: Int,
     size: Int = 16,
-    bold: Boolean = false,
-    accent: Boolean = false,
-    secondary: Boolean = false,
-    align: TextAlign = TextAlign.Start,
-) {
-    val palette = LocalPalette.current
-    BasicText(
-        text,
-        modifier,
-        style =
-            TextStyle(
-                color =
-                    when {
-                        accent -> palette.accent
-                        secondary -> palette.text.copy(alpha = 0.72f)
-                        else -> palette.text
-                    },
-                fontSize = size.sp,
-                textAlign = align,
-                fontWeight = if (bold) FontWeight.SemiBold else FontWeight.Normal,
-            ),
-    )
-}
+    weight: Int = 400,
+    centered: Boolean = false,
+): TextView =
+    TextView(this).apply {
+        text = value
+        setTextColor(color)
+        textSize = size.toFloat()
+        typeface = Typeface.create(Typeface.DEFAULT, weight, false)
+        includeFontPadding = false
+        if (centered) gravity = Gravity.CENTER
+    }
 
-@Composable
-internal fun TextAction(
-    label: String,
-    enabled: Boolean = true,
+internal fun Context.ripple(
+    color: Int,
+    maskRadius: Int = 8,
+    fill: Int? = null,
+): RippleDrawable =
+    RippleDrawable(
+        ColorStateList.valueOf(color.withAlpha(0.12f)),
+        fill?.let { rounded(it, maskRadius) },
+        rounded(Color.WHITE, maskRadius),
+    )
+
+internal fun Context.action(
+    title: String,
+    colors: Palette,
     onClick: () -> Unit,
+): Button =
+    Button(this).apply {
+        text = title
+        isAllCaps = false
+        textSize = 16f
+        typeface = Typeface.create(Typeface.DEFAULT, 600, false)
+        includeFontPadding = false
+        gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        minWidth = dp(48)
+        minHeight = dp(48)
+        minimumWidth = dp(48)
+        minimumHeight = dp(48)
+        pad(8, 4)
+        stateListAnimator = null
+        background = ripple(colors.accent)
+        setTextColor(
+            ColorStateList(
+                arrayOf(intArrayOf(-android.R.attr.state_enabled), intArrayOf()),
+                intArrayOf(colors.secondary, colors.accent),
+            ),
+        )
+        setOnClickListener { onClick() }
+    }
+
+internal fun Context.card(
+    title: Int,
+    colors: Palette,
+): LinearLayout =
+    column().apply {
+        background = rounded(colors.surface, 24)
+        pad(20)
+        item(label(getString(title), colors.text, 18, 600, centered = true).apply { isAccessibilityHeading = true })
+        item(View(context), height = dp(12))
+    }
+
+internal fun Context.divider(colors: Palette): View = View(this).apply { setBackgroundColor(colors.divider) }
+
+internal class ScreenLayout(
+    context: Context,
+    colors: Palette,
+    title: Int,
+    icon: Int,
+    actionLabel: Int,
+    actionAtStart: Boolean = false,
+    onAction: () -> Unit,
 ) {
-    Box(
-        modifier =
-            Modifier
-                .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-                .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        AppText(label, bold = true, accent = enabled)
+    val content = context.column().apply { pad(16) }
+    val scroll =
+        ScrollView(context).apply {
+            isVerticalScrollBarEnabled = false
+            clipToPadding = false
+            addView(content, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        }
+    val root =
+        context.column().apply {
+            setBackgroundColor(colors.background)
+            val toolbar =
+                FrameLayout(context).apply {
+                    minimumHeight = context.dp(56)
+                    pad(16, 0)
+                    addView(
+                        context.label(context.getString(title), colors.text, 24, 600, centered = true).apply {
+                            isAccessibilityHeading = true
+                        },
+                        FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.CENTER).apply {
+                            marginStart = context.dp(48)
+                            marginEnd = context.dp(48)
+                        },
+                    )
+                    addView(
+                        ImageButton(context).apply {
+                            setImageResource(icon)
+                            imageTintList = ColorStateList.valueOf(colors.accent)
+                            contentDescription = context.getString(actionLabel)
+                            background = context.ripple(colors.accent, 24)
+                            pad(12)
+                            setOnClickListener { onAction() }
+                        },
+                        FrameLayout.LayoutParams(
+                            context.dp(48),
+                            context.dp(48),
+                            Gravity.CENTER_VERTICAL or if (actionAtStart) Gravity.START else Gravity.END,
+                        ),
+                    )
+                }
+            item(toolbar)
+            addView(scroll, LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f))
+            setOnApplyWindowInsetsListener { _, insets ->
+                val safe = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+                setPadding(safe.left, safe.top, safe.right, 0)
+                scroll.setPadding(0, 0, 0, safe.bottom)
+                insets
+            }
+        }
+
+    fun restoreScroll(position: Int) {
+        if (position > 0) scroll.post { scroll.scrollTo(0, position) }
     }
 }
+
+internal fun showAppDialog(
+    context: Context,
+    colors: Palette,
+    title: Int,
+    message: String,
+    onDismiss: () -> Unit,
+): Dialog =
+    Dialog(context).apply {
+        val dialog = this
+        val content =
+            context.column().apply {
+                background = context.rounded(colors.surface, 20)
+                pad(20)
+                item(context.label(context.getString(title), colors.text, 24, 600).apply { isAccessibilityHeading = true })
+                item(context.label(message, colors.text), top = 8)
+                item(context.action(context.getString(R.string.close), colors, dialog::dismiss), top = 8)
+            }
+        setContentView(ScrollView(context).apply { addView(content) })
+        setOnDismissListener { onDismiss() }
+        window?.setBackgroundDrawableResource(android.R.color.transparent)
+        show()
+    }

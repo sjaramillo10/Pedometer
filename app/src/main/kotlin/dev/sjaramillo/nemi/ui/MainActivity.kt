@@ -3,8 +3,6 @@ package dev.sjaramillo.nemi.ui
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -12,7 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.sjaramillo.nemi.NemiApplication
 
 class MainActivity : ComponentActivity() {
-    private val incomingIntent = mutableStateOf<Intent?>(null)
+    private lateinit var route: NemiRoute
 
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory by lazy {
         val graph = (application as NemiApplication).graph
@@ -25,12 +23,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.enableEdgeToEdge(window)
-        val initialIntent = intent
-        setContent { NemiRoute(this, initialIntent, incomingIntent.value) }
+        route = NemiRoute(this, savedInstanceState)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        incomingIntent.value = intent
+        route.handleIntent(intent)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        route.saveState(outState)
     }
 }

@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.metro)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.compose)
 }
 
 android {
@@ -42,10 +41,6 @@ android {
         localeFilters += "en"
     }
 
-    buildFeatures {
-        compose = true
-    }
-
     buildTypes {
         getByName("debug") {
             applicationIdSuffix = ".debug"
@@ -74,9 +69,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.activity.compose)
-    implementation(libs.compose.foundation)
-    debugImplementation(libs.compose.ui.tooling)
+    implementation(libs.activity.core) {
+        // NavigationEvent uses Compose stability annotations. The View host does not use them.
+        exclude(group = "androidx.compose.runtime", module = "runtime-annotation")
+    }
 
     // Room
     implementation(libs.room.core)
@@ -85,7 +81,7 @@ dependencies {
 
     // ViewModel
     implementation(libs.viewmodel.core)
-    implementation(libs.lifecycle.compose)
+    implementation(libs.lifecycle.runtime)
 
     // Unit Tests
     testImplementation(libs.kotlin.test.junit)
