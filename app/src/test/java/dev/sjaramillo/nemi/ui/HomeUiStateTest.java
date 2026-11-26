@@ -12,10 +12,12 @@ import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator;
 import dev.sjaramillo.nemi.data.HealthConnectSyncState;
 import dev.sjaramillo.nemi.data.StepHistoryStats;
 import java.time.LocalDate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.LongStream;
@@ -314,6 +316,55 @@ public class HomeUiStateTest {
         assertEquals(List.of(150L, 135L, 120L, 105L, 90L, 75L, 60L, 45L, 45L, 45L), delays);
     }
 
+    @Test
+    public void givenAWeekResultIsQueued_whenChangingWeeks_thenTheOldResultIsIgnored() {
+        // Given
+        var worker = new ArrayDeque<Runnable>();
+        var main = new ArrayDeque<Runnable>();
+        var fixture = new Fixture(new History(), withoutPermission(), worker::add, main::add);
+        fixture.home.updateFirstDayOfWeek(SUNDAY);
+        fixture.history.commit(List.of(CURRENT));
+        drain(worker);
+        drain(main);
+        fixture.home.previousWeek();
+        worker.remove().run();
+        var before = fixture.home.uiState.value();
+
+        // When
+        fixture.home.previousWeek();
+        main.remove().run();
+
+        // Then
+        assertEquals(before, fixture.home.uiState.value());
+        drain(worker);
+        drain(main);
+        assertEquals(TODAY.minusWeeks(2), fixture.home.uiState.value().week().range().start());
+    }
+
+    @Test
+    public void givenStepResultsAreQueued_whenHomeCloses_thenNoResultsArePublished() {
+        // Given
+        var worker = new ArrayDeque<Runnable>();
+        var main = new ArrayDeque<Runnable>();
+        var fixture = new Fixture(new History(), withoutPermission(), worker::add, main::add);
+        fixture.history.commit(List.of(CURRENT));
+        drain(worker);
+        var before = fixture.home.uiState.value();
+
+        // When
+        fixture.home.close();
+        drain(main);
+
+        // Then
+        assertEquals(before, fixture.home.uiState.value());
+    }
+
+    private static void drain(ArrayDeque<Runnable> queue) {
+        while (!queue.isEmpty()) {
+            queue.remove().run();
+        }
+    }
+
     private static HomeUiState state(DailySteps entry, int goal, HealthConnectSyncState sync) {
         var week = new WeekSelection().range(TODAY, SUNDAY).withEntries(entry == null ? List.of() : List.of(entry));
         return new HomeUiState(TODAY, week, entry, goal, sync, null, null);
@@ -331,8 +382,12 @@ public class HomeUiStateTest {
         }
 
         Fixture(History history, HealthConnectSyncCoordinator coordinator) {
+            this(history, coordinator, Runnable::run, Runnable::run);
+        }
+
+        Fixture(History history, HealthConnectSyncCoordinator coordinator, Executor worker, Executor main) {
             this.history = history;
-            home = new HomeViewModel(preferences, history, coordinator, Runnable::run, Runnable::run, clock::get);
+            home = new HomeViewModel(preferences, history, coordinator, worker, main, clock::get);
         }
     }
 
