@@ -30,18 +30,26 @@ public class NemiPreferencesTest {
     }
 
     static SharedPreferences inMemoryPreferences(Map<String, Object> stored) {
-        var editor = proxy(SharedPreferences.Editor.class, (instance, method, args) -> switch (method.getName()) {
-            case "putInt", "putString" -> {
-                stored.put((String) args[0], args[1]);
-                yield instance;
-            }
-            case "apply" -> null;
-            default -> throw new AssertionError("Unexpected editor method " + method.getName());
-        });
         return proxy(SharedPreferences.class, (instance, method, args) -> switch (method.getName()) {
             case "getInt", "getString" -> stored.getOrDefault(args[0], args[1]);
-            case "edit" -> editor;
+            case "edit" -> inMemoryEditor(stored);
             default -> throw new AssertionError("Unexpected preferences method " + method.getName());
+        });
+    }
+
+    private static SharedPreferences.Editor inMemoryEditor(Map<String, Object> stored) {
+        var staged = new HashMap<String, Object>();
+        return proxy(SharedPreferences.Editor.class, (instance, method, args) -> switch (method.getName()) {
+            case "putInt", "putString" -> {
+                staged.put((String) args[0], args[1]);
+                yield instance;
+            }
+            case "apply" -> {
+                stored.putAll(staged);
+                staged.clear();
+                yield null;
+            }
+            default -> throw new AssertionError("Unexpected editor method " + method.getName());
         });
     }
 
