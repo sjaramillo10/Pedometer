@@ -3,11 +3,17 @@ package dev.sjaramillo.nemi.ui
 import android.app.Dialog
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.RenderEffect
+import android.graphics.RenderNode
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -153,55 +159,147 @@ internal class ScreenLayout(
 ) {
     val content = context.column().apply { pad(16) }
     val scroll =
-        ScrollView(context).apply {
+        HeaderScrollView(context).apply {
             isVerticalScrollBarEnabled = false
             clipToPadding = false
             addView(content, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
         }
-    val root =
-        context.column().apply {
-            setBackgroundColor(colors.background)
-            val toolbar =
-                FrameLayout(context).apply {
-                    minimumHeight = context.dp(56)
-                    pad(16, 0)
-                    addView(
-                        context.label(context.getString(title), colors.text, 24, 600, centered = true).apply {
-                            isAccessibilityHeading = true
-                        },
-                        FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.CENTER).apply {
-                            marginStart = context.dp(48)
-                            marginEnd = context.dp(48)
-                        },
-                    )
-                    addView(
-                        ImageButton(context).apply {
-                            setImageResource(icon)
-                            imageTintList = ColorStateList.valueOf(colors.accent)
-                            contentDescription = context.getString(actionLabel)
-                            background = context.ripple(colors.accent, 24)
-                            pad(12)
-                            setOnClickListener { onAction() }
-                        },
-                        FrameLayout.LayoutParams(
-                            context.dp(48),
-                            context.dp(48),
-                            Gravity.CENTER_VERTICAL or if (actionAtStart) Gravity.START else Gravity.END,
-                        ),
-                    )
+    private val toolbar =
+        BackdropHeader(context, scroll, content, colors).apply {
+            minimumHeight = context.dp(56)
+            addView(
+                context.label(context.getString(title), colors.text, 24, 600, centered = true).apply {
+                    isAccessibilityHeading = true
+                },
+                FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.CENTER).apply {
+                    marginStart = context.dp(48)
+                    marginEnd = context.dp(48)
+                },
+            )
+            addView(
+                ImageButton(context).apply {
+                    setImageResource(icon)
+                    imageTintList = ColorStateList.valueOf(colors.accent)
+                    contentDescription = context.getString(actionLabel)
+                    background = context.ripple(colors.accent, 24)
+                    pad(12)
+                    setOnClickListener { onAction() }
+                },
+                FrameLayout.LayoutParams(
+                    context.dp(48),
+                    context.dp(48),
+                    Gravity.CENTER_VERTICAL or if (actionAtStart) Gravity.START else Gravity.END,
+                ),
+            )
+        }
+    val root: FrameLayout =
+        object : FrameLayout(context) {
+            override fun onMeasure(
+                widthMeasureSpec: Int,
+                heightMeasureSpec: Int,
+            ) {
+                measureChildWithMargins(toolbar, widthMeasureSpec, 0, heightMeasureSpec, 0)
+                if (scroll.paddingTop != toolbar.measuredHeight) {
+                    scroll.setPadding(scroll.paddingLeft, toolbar.measuredHeight, scroll.paddingRight, scroll.paddingBottom)
                 }
-            item(toolbar)
-            addView(scroll, LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f))
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            }
+
+            override fun onDescendantInvalidated(
+                child: View,
+                target: View,
+            ) {
+                super.onDescendantInvalidated(child, target)
+                if (child === scroll) toolbar.invalidate()
+            }
+        }.apply {
+            setBackgroundColor(colors.background)
+            addView(scroll, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+            addView(toolbar, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+            scroll.setOnScrollChangeListener { _, _, _, _, _ -> toolbar.invalidate() }
             setOnApplyWindowInsetsListener { _, insets ->
                 val safe = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
-                setPadding(safe.left, safe.top, safe.right, 0)
-                scroll.setPadding(0, 0, 0, safe.bottom)
+                val gutter = context.dp(16)
+                toolbar.minimumHeight = safe.top + context.dp(56)
+                toolbar.setPadding(safe.left + gutter, safe.top, safe.right + gutter, 0)
+                scroll.setPadding(safe.left, scroll.paddingTop, safe.right, safe.bottom)
                 insets
             }
         }
 
     fun restoreScroll(position: Int) {
         if (position > 0) scroll.post { scroll.scrollTo(0, position) }
+    }
+}
+
+internal class HeaderScrollView(context: Context) : ScrollView(context) {
+    override fun computeScrollDeltaToGetChildRectOnScreen(rect: Rect): Int =
+        scrollDeltaForPinnedHeader(rect.top, rect.bottom, scrollY + paddingTop, scrollY + height - paddingBottom)
+}
+
+internal fun scrollDeltaForPinnedHeader(
+    targetTop: Int,
+    targetBottom: Int,
+    viewportTop: Int,
+    viewportBottom: Int,
+): Int {
+    val targetHeight = targetBottom - targetTop
+    val viewportHeight = viewportBottom - viewportTop
+    return when {
+        targetBottom > viewportBottom && targetTop > viewportTop ->
+            if (targetHeight > viewportHeight) targetTop - viewportTop else targetBottom - viewportBottom
+        targetTop < viewportTop && targetBottom < viewportBottom ->
+            if (targetHeight > viewportHeight) targetBottom - viewportBottom else targetTop - viewportTop
+        else -> 0
+    }
+}
+
+private class BackdropHeader(
+    context: Context,
+    private val scroll: ScrollView,
+    private val content: View,
+    private val colors: Palette,
+) : FrameLayout(context) {
+    private val blurRadius = context.dp(14).toFloat()
+    private val overscan = context.dp(42)
+    private val backdrop =
+        RenderNode("Header backdrop").apply {
+            setRenderEffect(RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.CLAMP))
+        }
+    private val tint = colors.background.withAlpha(0.50f)
+
+    init {
+        setWillNotDraw(false)
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        if (canvas.isHardwareAccelerated && width > 0 && height > 0) {
+            // Include the area below the toolbar so the blur kernel can sample across its bottom edge.
+            backdrop.setPosition(0, 0, width, height + overscan)
+            val recording = backdrop.beginRecording()
+            try {
+                recording.drawColor(colors.background)
+                recording.translate(content.left.toFloat(), (content.top - scroll.scrollY).toFloat())
+                content.draw(recording)
+            } finally {
+                backdrop.endRecording()
+            }
+            val checkpoint = canvas.save()
+            canvas.clipRect(0, 0, width, height)
+            canvas.drawRenderNode(backdrop)
+            canvas.restoreToCount(checkpoint)
+            canvas.drawColor(tint)
+        } else {
+            canvas.drawColor(tint)
+        }
+    }
+
+    // Keep covered card controls from receiving taps through the toolbar.
+    override fun onTouchEvent(event: MotionEvent): Boolean = true
+
+    override fun onDetachedFromWindow() {
+        backdrop.discardDisplayList()
+        super.onDetachedFromWindow()
     }
 }
 
