@@ -25,6 +25,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Install SQLite CLI
+        run: sudo apt-get install -y sqlite3
+
       - name: Run unit tests
         run: ./gradlew :app:testDebugUnitTest
 

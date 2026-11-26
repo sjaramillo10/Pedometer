@@ -80,7 +80,6 @@ dependencies {
 
     // Unit Tests
     testImplementation(libs.junit)
-    testImplementation(libs.sqlite.jdbc)
 }
 
 ksp {

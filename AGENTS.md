@@ -46,6 +46,7 @@
   and updated tests `given <condition> when <action> then <expected outcome>`
   and use `// Given`, `// When`, and `// Then` blocks.
 
+Install the SQLite CLI (`sqlite3`) on your PATH for SQL regression tests.
 Run these commands from the repository root:
 
 ```sh
