@@ -51,20 +51,16 @@ internal class HomeScreen(
         val old = previous
         if (old == state) return
         previous = state
-        if (old == null || state.today != old.today || state.goal != old.goal) {
+        if (old == null || state.today != old.today || state.goal != old.goal || state.todayEmptyMessage != old.todayEmptyMessage) {
             today.removeAllViews()
             today.item(context.todayChart(state, colors))
         }
-        today.visibility = if (state.showTodayChart) View.VISIBLE else View.GONE
         val todayMargin = if (state.sync == HealthConnectSyncState.Ready) 0 else context.dp(16)
         val todayLayout = today.layoutParams as MarginLayoutParams
         if (todayLayout.topMargin != todayMargin) {
             todayLayout.topMargin = todayMargin
             today.layoutParams = todayLayout
         }
-        val historyVisibility = if (state.showHistory) View.VISIBLE else View.GONE
-        week.visibility = historyVisibility
-        stats.visibility = historyVisibility
         if (old?.sync != state.sync) {
             val refreshing = state.sync == HealthConnectSyncState.Loading || state.sync == HealthConnectSyncState.Syncing
             healthStatus.visibility = if (state.sync == HealthConnectSyncState.Ready) View.GONE else View.VISIBLE

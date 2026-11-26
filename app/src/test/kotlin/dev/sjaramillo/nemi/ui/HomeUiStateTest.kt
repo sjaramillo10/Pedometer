@@ -28,23 +28,7 @@ class HomeUiStateTest {
     private val current = DailySteps(today.toEpochDay(), 10_000, fromBackup = false)
 
     @Test
-    fun `given a Health Connect issue when showing Home then keeps history only when saved steps exist`() {
-        // Given
-        val range = WeekSelection().range(today, DayOfWeek.SUNDAY)
-        val empty = HomeUiState(date = today, week = range.withEntries(emptyList()), sync = HealthConnectSyncState.Error, lifetimeSteps = 0)
-        val savedWeek = empty.copy(week = range.withEntries(listOf(current)))
-        val olderHistory = empty.copy(bestDay = DailySteps(today.minusWeeks(2).toEpochDay(), 0, fromBackup = true))
-
-        // When
-        val ready = empty.copy(sync = HealthConnectSyncState.Ready)
-        val historyVisibility = listOf(empty, savedWeek, olderHistory, ready).map { it.showHistory }
-
-        // Then
-        assertEquals(listOf(false, true, true, true), historyVisibility)
-    }
-
-    @Test
-    fun `given no saved steps when tracking is unsupported or ready then only ready shows the empty chart`() {
+    fun `given no saved steps when tracking is unsupported or ready then Today explains the missing total`() {
         // Given
         val week = WeekSelection().range(today, DayOfWeek.SUNDAY).withEntries(emptyList())
         val unavailable = HomeUiState(date = today, week = week, sync = HealthConnectSyncState.Unavailable)
@@ -54,11 +38,14 @@ class HomeUiStateTest {
         val importedZero = unavailable.copy(today = DailySteps(today.toEpochDay(), 0, fromBackup = true))
 
         // When
-        val chartVisibility = listOf(unavailable, outdated, noCounter, ready, importedZero).map { it.showTodayChart }
+        val todayMessages = listOf(unavailable, outdated, noCounter, ready, importedZero).map { it.todayEmptyMessage }
         val messages = listOf(unavailable, outdated, noCounter).map { it.sync.statusMessage }
 
         // Then
-        assertEquals(listOf(false, false, false, true, true), chartVisibility)
+        assertEquals(
+            listOf(R.string.no_step_total_today, R.string.no_step_total_today, R.string.no_step_total_today, R.string.no_steps_today, null),
+            todayMessages,
+        )
         assertEquals(
             listOf(R.string.health_connect_unavailable, R.string.health_connect_update_required, R.string.health_connect_no_step_counter),
             messages,

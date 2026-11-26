@@ -40,7 +40,7 @@ internal fun Context.todayChart(
         column().apply {
             item(label(today?.let { numbers.format(it.steps) } ?: "—", colors.text, 38, 700, centered = true).apply { autoSize(10, 38) })
             if (today == null) {
-                item(label(getString(R.string.no_steps_today), colors.secondary, 13, centered = true))
+                state.todayEmptyMessage?.let { item(label(getString(it), colors.secondary, 13, centered = true)) }
             } else {
                 item(label(getString(R.string.steps_unit), colors.secondary, 14, centered = true))
                 if (today.fromBackup) item(label(getString(R.string.from_backup), colors.secondary, 12, centered = true))

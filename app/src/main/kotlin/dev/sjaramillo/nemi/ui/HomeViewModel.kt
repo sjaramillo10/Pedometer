@@ -2,6 +2,7 @@ package dev.sjaramillo.nemi.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.DailySteps
 import dev.sjaramillo.nemi.data.HealthConnectSyncCoordinator
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
@@ -86,11 +87,13 @@ internal data class HomeUiState(
     val bestDay: DailySteps? = null,
     val lifetimeSteps: Long? = null,
 ) {
-    val showTodayChart: Boolean
-        get() = today != null || sync == HealthConnectSyncState.Ready
-
-    val showHistory: Boolean
-        get() = showTodayChart || !week.isEmpty || bestDay != null
+    val todayEmptyMessage: Int?
+        get() =
+            when {
+                today != null -> null
+                sync == HealthConnectSyncState.Ready -> R.string.no_steps_today
+                else -> R.string.no_step_total_today
+            }
 
     val progress: Float
         get() = ((today?.steps ?: 0L).toDouble() / goal).coerceIn(0.0, 1.0).toFloat()

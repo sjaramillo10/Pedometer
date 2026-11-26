@@ -201,14 +201,18 @@ internal class SettingsScreen(
         )
         val action =
             when (status) {
-                HealthConnectSyncState.PermissionRequired -> R.string.allow_steps_access to onConnect
-                HealthConnectSyncState.Error -> R.string.retry to onRetry
+                HealthConnectSyncState.PermissionRequired ->
+                    context.action(context.getString(R.string.allow_steps_access), colors, onConnect).apply {
+                        setTextColor(colors.background)
+                        background = context.ripple(colors.background, maskRadius = 12, fill = colors.accent)
+                        gravity = Gravity.CENTER
+                        pad(16, 4)
+                    }
+                HealthConnectSyncState.Error ->
+                    context.action(context.getString(R.string.retry), colors, onRetry).apply { pad(0, 4) }
                 else -> null
             }
-        if (action != null) {
-            val (label, onClick) = action
-            healthStatus.item(context.action(context.getString(label), colors, onClick).apply { pad(0, 4) }, top = 12)
-        }
+        action?.let { healthStatus.item(it, top = 12) }
     }
 
     private fun themeOption(

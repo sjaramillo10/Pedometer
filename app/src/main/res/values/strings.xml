@@ -24,7 +24,7 @@
     <string name="health_connect">Health Connect</string>
     <string name="health_connect_status">Health Connect status</string>
     <string name="health_connect_description">Nemi reads step totals recorded by this phone through Health Connect. Each refresh checks up to the last 30 days, including today. For each date, Nemi uses the Health Connect total when one is available, even if it’s zero. Imported totals fill in dates without a Health Connect total.</string>
-    <string name="health_connect_disconnected">Step access is off.</string>
+    <string name="health_connect_disconnected">Steps access is off.</string>
     <string name="health_connect_connected">Connected</string>
     <string name="learn_health_connect">Learn about Health Connect</string>
     <string name="view_health_connect_status">View Health Connect status</string>
@@ -39,6 +39,7 @@
     <string name="health_connect_unavailable">Health Connect is unavailable. Check for an update from your Android system provider, or import a CSV backup in Settings.</string>
     <string name="today">Today</string>
     <string name="step_count">%s steps</string>
+    <string name="no_step_total_today">No step total available today</string>
     <string name="no_steps_today">No steps recorded today</string>
     <string name="from_backup">From backup</string>
     <string name="goal_reached">Goal reached</string>
