@@ -79,7 +79,7 @@ dependencies {
     implementation(libs.lifecycle.runtime)
 
     // Unit Tests
-    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.junit)
     testImplementation(libs.sqlite.jdbc)
 }
 

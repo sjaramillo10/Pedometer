@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        // Keep AGP's built-in Kotlin compiler aligned with the Kotlin test libraries.
+        // Pin the Kotlin compiler used by AGP.
         classpath(libs.kotlin.gradle.plugin)
     }
 }

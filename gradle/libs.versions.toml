@@ -1,6 +1,7 @@
 [versions]
 activity = "1.13.0"
 android-gradle = "9.5.2"
+junit = "4.13.2"
 kotlin = "2.4.21"
 ksp = "2.3.14"
 ktlint = "14.2.0"
@@ -11,8 +12,8 @@ sqlite-jdbc = "3.54.1.0"
 
 [libraries]
 activity-core = { module = "androidx.activity:activity", version.ref = "activity" }
+junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-core = { module = "androidx.room:room-ktx", version.ref = "room" }

@@ -1,7 +1,7 @@
 package dev.sjaramillo.nemi.ui
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
 class HeaderScrollTest {
     @Test

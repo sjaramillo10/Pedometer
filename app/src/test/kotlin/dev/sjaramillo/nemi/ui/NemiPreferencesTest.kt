@@ -1,10 +1,10 @@
 package dev.sjaramillo.nemi.ui
 
 import android.content.SharedPreferences
+import org.junit.Assert.assertEquals
+import org.junit.Test
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Proxy
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class NemiPreferencesTest {
     @Test

@@ -1,8 +1,8 @@
 package dev.sjaramillo.nemi.data
 
+import org.junit.Assert.assertEquals
+import org.junit.Test
 import java.time.LocalDate
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class StepsCsvTest {
     @Test
