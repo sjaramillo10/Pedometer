@@ -69,7 +69,6 @@ dependencies {
     }
 
     // Room
-    implementation(libs.room.core)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 
