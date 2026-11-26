@@ -34,10 +34,10 @@ native step tracking.
 
 ## How Nemi uses your data
 
-Connect Health Connect in Settings to let Nemi read steps recorded by your
-phone. Nemi stores daily totals on your device, leaves Health Connect data
-untouched, and never transmits your health data. Imported CSV totals
-fill in dates when Health Connect has no total.
+In Settings, open Health Connect and tap **Allow steps access** to let Nemi read
+steps recorded by your phone. Nemi stores daily totals on your device, leaves
+Health Connect data untouched, and never transmits your health data. Imported
+CSV totals fill in dates when Health Connect has no total.
 
 ## Why Nemi?
 
@@ -51,7 +51,8 @@ or wander.”
 
 Install a JDK that meets the minimum in [settings.gradle.kts](settings.gradle.kts)
 and the Android platform set by `compileSdk` in [app/build.gradle.kts](app/build.gradle.kts).
-Run this from the repository root:
+Set `sdk.dir` in the repository’s `local.properties` to the path of your Android
+SDK installation. Run this from the repository root:
 
 ```sh
 ./gradlew :app:assembleDebug
