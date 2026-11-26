@@ -1,24 +1,9 @@
 package dev.sjaramillo.nemi.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import android.content.Context
+import android.view.Gravity
+import android.view.View
+import android.widget.LinearLayout
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.DailySteps
 import java.text.NumberFormat
@@ -26,84 +11,69 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-@Composable
-internal fun StatsSummary(
+internal fun Context.statsSummary(
     record: DailySteps?,
     lifetimeSteps: Long?,
-) {
-    val locale = LocalConfiguration.current.locales[0]
+    colors: Palette,
+): View {
+    val locale = resources.configuration.locales[0]
     val numbers = NumberFormat.getIntegerInstance(locale)
     val recordDate =
         record?.let {
             DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale).format(LocalDate.ofEpochDay(it.day))
         }
-    val empty = stringResource(R.string.no_recorded_steps)
-    SectionCard(stringResource(R.string.your_journey)) {
-        MetricPair(
-            Modifier.fillMaxWidth(),
-            first = {
-                StepMetric(stringResource(R.string.best_day), record?.let { numbers.format(it.steps) } ?: "—", recordDate ?: empty)
-            },
-            second = {
-                StepMetric(
-                    stringResource(R.string.lifetime_steps),
-                    lifetimeSteps?.let(numbers::format) ?: "—",
-                    stringResource(R.string.steps_unit),
-                )
-            },
+    return card(R.string.your_journey, colors).apply {
+        item(
+            metricPair(
+                colors,
+                stepMetric(
+                    R.string.best_day,
+                    record?.let { numbers.format(it.steps) } ?: "—",
+                    recordDate ?: getString(R.string.no_recorded_steps),
+                    colors,
+                ),
+                stepMetric(R.string.lifetime_steps, lifetimeSteps?.let(numbers::format) ?: "—", getString(R.string.steps_unit), colors),
+            ),
         )
-        Box(Modifier.padding(top = 16.dp)) { SectionDivider() }
-        AppText(
-            stringResource(R.string.journey_slogan),
-            Modifier.fillMaxWidth().padding(top = 12.dp),
-            size = 13,
-            secondary = true,
-            align = TextAlign.Center,
-        )
+        item(divider(colors), top = 16, height = dp(1))
+        item(label(getString(R.string.journey_slogan), colors.secondary, 13, centered = true), top = 12)
     }
 }
 
-@Composable
-internal fun StepMetric(
-    label: String,
+internal fun Context.stepMetric(
+    title: Int,
     value: String,
     detail: String,
-) {
-    Column(
-        Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        AppText(label, size = 14, secondary = true, align = TextAlign.Center)
-        AppText(value, size = 22, bold = true, align = TextAlign.Center)
-        AppText(detail, size = 13, secondary = true, align = TextAlign.Center)
+    colors: Palette,
+): View =
+    column().apply {
+        isScreenReaderFocusable = true
+        item(label(getString(title), colors.secondary, 14, centered = true))
+        item(label(value, colors.text, 22, 600, centered = true), top = 4)
+        item(label(detail, colors.secondary, 13, centered = true), top = 4)
     }
-}
 
-@Composable
-internal fun MetricPair(
-    modifier: Modifier,
-    first: @Composable () -> Unit,
-    second: @Composable () -> Unit,
-) {
-    BoxWithConstraints(modifier) {
-        if (maxWidth < 280.dp || LocalDensity.current.fontScale >= 1.5f) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                first()
-                second()
-            }
-        } else {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(Modifier.weight(1f)) { first() }
-                Box(Modifier.width(1.dp).height(56.dp).background(LocalPalette.current.text.copy(alpha = 0.10f)))
-                Box(Modifier.weight(1f)) { second() }
-            }
+internal fun Context.metricPair(
+    colors: Palette,
+    first: View,
+    second: View,
+): View =
+    if (resources.configuration.screenWidthDp < 352 || resources.configuration.fontScale >= 1.5f) {
+        column().apply {
+            item(first)
+            item(second, top = 12)
+        }
+    } else {
+        row().apply {
+            gravity = Gravity.CENTER_VERTICAL
+            weighted(first)
+            addView(
+                divider(colors),
+                LinearLayout.LayoutParams(dp(1), dp(56)).apply {
+                    marginStart = dp(12)
+                    marginEnd = dp(12)
+                },
+            )
+            weighted(second)
         }
     }
-}

@@ -1,63 +1,22 @@
 package dev.sjaramillo.nemi.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.fromHtml
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.graphics.Rect
+import android.graphics.drawable.GradientDrawable
+import android.net.Uri
+import android.text.Html
+import android.text.method.LinkMovementMethod
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.TextView
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 import kotlin.math.abs
@@ -66,96 +25,150 @@ internal const val FIRST_GOAL_REPEAT_DELAY = 150L
 
 internal fun nextGoalRepeatDelay(delayMillis: Long): Long = (delayMillis - 15L).coerceAtLeast(45L)
 
-@Composable
-internal fun SettingsScreen(
-    state: SettingsUiState,
-    revealHealthConnect: Boolean,
-    onHealthConnectRevealed: () -> Unit,
+internal class SettingsScreen(
+    private val context: Context,
+    private val colors: Palette,
     onBack: () -> Unit,
-    onConnect: () -> Unit,
-    onRetry: () -> Unit,
+    private val onConnect: () -> Unit,
+    private val onRetry: () -> Unit,
     onAdjustGoal: (Int) -> Unit,
     onSetTheme: (AppTheme) -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
     onDismissFileMessage: () -> Unit,
 ) {
-    val file = state.file
-    val healthConnectRequester = remember { BringIntoViewRequester() }
-    var healthConnectPlaced by remember { mutableStateOf(false) }
-    LaunchedEffect(revealHealthConnect, healthConnectPlaced) {
-        if (revealHealthConnect && healthConnectPlaced) {
-            healthConnectRequester.bringIntoView()
-            onHealthConnectRevealed()
+    private val screen =
+        ScreenLayout(context, colors, R.string.settings_title, R.drawable.ic_back, R.string.back, actionAtStart = true, onAction = onBack)
+    private val goal = context.label("", colors.text, 24, 600, centered = true)
+    private val decrease = goalButton(-100, onAdjustGoal)
+    private val increase = goalButton(100, onAdjustGoal)
+    private val themeOptions = AppTheme.entries.associateWith { theme -> themeOption(theme, onSetTheme) }
+    private val healthStatus = context.column()
+    private val import = backupRow(R.string.import_title, R.string.import_summary, onImport)
+    private val export = backupRow(R.string.export_title, R.string.export_summary, onExport)
+    private val working = context.label(context.getString(R.string.backup_working), colors.text).apply { liveRegion() }
+    private val result = context.label("", colors.text).apply { liveRegion() }
+    private val dismiss = context.action(context.getString(R.string.dismiss_result), colors, onDismissFileMessage)
+    private val version = context.label("", colors.secondary, 13, centered = true)
+    private val healthCard =
+        context.card(R.string.health_connect, colors).apply {
+            item(context.label(context.getString(R.string.health_connect_description), colors.secondary, 14))
+            item(healthStatus, top = 12)
+            item(link(R.string.learn_health_connect, "https://developer.android.com/health-and-fitness/health-connect/get-started", "›"))
         }
-    }
-    val safeDrawing = WindowInsets.safeDrawing
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(LocalPalette.current.background)
-            .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
-    ) {
-        ScreenToolbar(stringResource(R.string.settings_title), actionAtStart = true) {
-            ToolbarAction(R.drawable.ic_back, stringResource(R.string.back), onBack)
-        }
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Bottom))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            SectionCard(stringResource(R.string.daily_step_goal)) {
-                GoalControl(state.goal, onAdjustGoal)
-            }
-            SectionCard(stringResource(R.string.appearance)) {
-                ThemeOptions(state.theme, onSetTheme)
-            }
-            HealthConnectCard(
-                state.sync,
-                onConnect,
-                onRetry,
-                Modifier
-                    .bringIntoViewRequester(healthConnectRequester)
-                    .onGloballyPositioned { healthConnectPlaced = true },
-            )
-            SectionCard(stringResource(R.string.backup)) {
-                BackupRow(R.string.import_title, R.string.import_summary, !file.busy, onImport)
-                SectionDivider()
-                BackupRow(R.string.export_title, R.string.export_summary, !file.busy, onExport)
-                SectionDivider()
-                AppText(
-                    stringResource(R.string.backup_precedence),
-                    Modifier.padding(top = 12.dp),
-                    size = 13,
-                    secondary = true,
-                )
-                if (file.busy) {
-                    AppText(stringResource(R.string.backup_working), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-                }
-                file.message?.let { message ->
-                    AppText(message, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-                    TextAction(stringResource(R.string.dismiss_result), onClick = onDismissFileMessage)
-                }
-            }
-            SectionCard(stringResource(R.string.about)) {
-                AboutDetails(state.version)
-            }
-        }
-    }
-}
+    private var previous: SettingsUiState? = null
 
-@Composable
-private fun HealthConnectCard(
-    status: HealthConnectSyncState,
-    onConnect: () -> Unit,
-    onRetry: () -> Unit,
-    modifier: Modifier,
-) {
-    SectionCard(stringResource(R.string.health_connect), modifier) {
-        val palette = LocalPalette.current
+    val root get() = screen.root
+    val scroll get() = screen.scroll
+
+    init {
+        screen.content.apply {
+            item(
+                context.card(R.string.daily_step_goal, colors).apply {
+                    item(
+                        context.row().apply {
+                            background = context.rounded(colors.track, 16)
+                            pad(8)
+                            addView(decrease)
+                            weighted(
+                                context.column().apply {
+                                    liveRegion()
+                                    pad(8, 0)
+                                    item(goal)
+                                    item(context.label(context.getString(R.string.steps_per_day), colors.secondary, 14, centered = true))
+                                },
+                            )
+                            addView(increase)
+                        },
+                    )
+                },
+            )
+            item(
+                context.card(R.string.appearance, colors).apply {
+                    item(
+                        RadioGroup(context).apply {
+                            themeOptions.values.forEachIndexed { index, button ->
+                                if (index > 0) addView(context.divider(colors), RadioGroup.LayoutParams(-1, context.dp(1)))
+                                addView(button, RadioGroup.LayoutParams(-1, WRAP_CONTENT))
+                            }
+                        },
+                    )
+                },
+                top = 16,
+            )
+            item(healthCard, top = 16)
+            item(
+                context.card(R.string.backup, colors).apply {
+                    item(import)
+                    item(context.divider(colors), height = context.dp(1))
+                    item(export)
+                    item(context.divider(colors), height = context.dp(1))
+                    item(context.label(context.getString(R.string.backup_precedence), colors.secondary, 13), top = 12)
+                    item(working, top = 6)
+                    item(result, top = 6)
+                    item(dismiss)
+                },
+                top = 16,
+            )
+            item(
+                context.card(R.string.about, colors).apply {
+                    item(version)
+                    item(aboutText(R.string.about_text), top = 16)
+                    item(aboutText(R.string.original_project), top = 10)
+                    item(context.divider(colors), top = 10, height = context.dp(1))
+                    item(link(R.string.source_code, "https://github.com/sjaramillo10/Nemi", "↗"))
+                },
+                top = 16,
+            )
+        }
+    }
+
+    fun bind(state: SettingsUiState) {
+        val old = previous
+        if (old == state) return
+        previous = state
+        if (old?.goal != state.goal) {
+            goal.text = context.getString(R.string.selected_goal, state.goal)
+            decrease.isEnabled = adjustGoal(state.goal, -100) != state.goal
+            increase.isEnabled = adjustGoal(state.goal, 100) != state.goal
+        }
+        if (old?.theme != state.theme) {
+            for ((theme, button) in themeOptions) {
+                val selected = theme == state.theme
+                button.isChecked = selected
+                val tint = if (selected) colors.accent else colors.text.withAlpha(0.40f)
+                val ring =
+                    GradientDrawable().apply {
+                        shape = GradientDrawable.OVAL
+                        setStroke(context.dp(if (selected) 7 else 1), tint)
+                        setBounds(0, 0, context.dp(20), context.dp(20))
+                    }
+                button.setCompoundDrawablesRelative(null, null, ring, null)
+            }
+        }
+        if (old?.sync != state.sync) bindHealthStatus(state.sync)
+        if (old?.version != state.version) version.text = context.getString(R.string.about_app_version, state.version)
+        if (old?.file != state.file) {
+            import.isEnabled = !state.file.busy
+            export.isEnabled = !state.file.busy
+            working.visibility = if (state.file.busy) View.VISIBLE else View.GONE
+            result.text = state.file.message
+            result.visibility = if (state.file.message == null) View.GONE else View.VISIBLE
+            dismiss.visibility = result.visibility
+        }
+    }
+
+    fun restoreScroll(position: Int) = screen.restoreScroll(position)
+
+    fun revealHealthConnect() {
+        healthCard.post {
+            val bounds = Rect(0, 0, healthCard.width, healthCard.height)
+            healthCard.requestRectangleOnScreen(bounds, false)
+        }
+    }
+
+    private fun bindHealthStatus(status: HealthConnectSyncState) {
+        healthStatus.removeAllViews()
         val message =
             when (status) {
                 HealthConnectSyncState.Loading, HealthConnectSyncState.Syncing -> R.string.health_connect_syncing
@@ -164,232 +177,145 @@ private fun HealthConnectCard(
                 HealthConnectSyncState.Error -> R.string.health_connect_error
                 HealthConnectSyncState.Ready -> R.string.health_connect_connected
             }
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            AppText(stringResource(R.string.health_connect_description), size = 14, secondary = true)
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .background(palette.background, RoundedCornerShape(16.dp))
-                    .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                val connected = status == HealthConnectSyncState.Ready
-                Box(Modifier.size(8.dp).background(if (connected) palette.accent else palette.text.copy(alpha = 0.55f), CircleShape))
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    AppText(stringResource(R.string.health_connect_status), size = 13, bold = true)
-                    if (!connected) AppText(stringResource(message), size = 13, secondary = true)
-                }
-                if (connected) {
-                    AppText(
-                        stringResource(message),
-                        Modifier.background(palette.track, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
-                        size = 13,
-                        bold = true,
-                        accent = true,
-                    )
-                }
-            }
-            when (status) {
-                HealthConnectSyncState.PermissionRequired ->
-                    TextAction(
-                        stringResource(R.string.connect_health_connect),
-                        onClick = onConnect,
-                    )
-                HealthConnectSyncState.Error -> TextAction(stringResource(R.string.retry), onClick = onRetry)
-                else -> Unit
-            }
-        }
-        SettingsLink(
-            R.string.learn_health_connect,
-            "https://developer.android.com/health-and-fitness/health-connect/get-started",
-            external = false,
-        )
-    }
-}
-
-@Composable
-private fun ThemeOptions(
-    theme: AppTheme,
-    onSetTheme: (AppTheme) -> Unit,
-) {
-    val palette = LocalPalette.current
-    Column(Modifier.selectableGroup()) {
-        for ((index, option) in AppTheme.entries.withIndex()) {
-            if (index > 0) SectionDivider()
-            val selected = option == theme
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .sizeIn(minHeight = 56.dp)
-                    .selectable(selected = selected, role = Role.RadioButton) { onSetTheme(option) }
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AppText(stringResource(option.label), Modifier.weight(1f), size = 15)
-                Box(
-                    Modifier.size(20.dp).border(
-                        if (selected) 7.dp else 1.dp,
-                        if (selected) palette.accent else palette.text.copy(alpha = 0.40f),
-                        CircleShape,
-                    ),
+        val connected = status == HealthConnectSyncState.Ready
+        healthStatus.item(
+            context.row().apply {
+                liveRegion()
+                background = context.rounded(colors.background, 16)
+                pad(12)
+                addView(
+                    View(context).apply {
+                        background = context.rounded(if (connected) colors.accent else colors.text.withAlpha(0.55f), 4)
+                    },
+                    LinearLayout.LayoutParams(context.dp(8), context.dp(8)).apply { marginEnd = context.dp(8) },
                 )
+                weighted(
+                    context.column().apply {
+                        item(context.label(context.getString(R.string.health_connect_status), colors.text, 13, 600))
+                        if (!connected) item(context.label(context.getString(message), colors.secondary, 13), top = 6)
+                    },
+                )
+                if (connected) {
+                    addView(
+                        context.label(context.getString(message), colors.accent, 13, 600).apply {
+                            background = context.rounded(colors.track, 24)
+                            pad(10, 4)
+                        },
+                    )
+                }
+            },
+        )
+        when (status) {
+            HealthConnectSyncState.PermissionRequired ->
+                healthStatus.item(context.action(context.getString(R.string.connect_health_connect), colors, onConnect), top = 12)
+            HealthConnectSyncState.Error -> healthStatus.item(context.action(context.getString(R.string.retry), colors, onRetry), top = 12)
+            else -> Unit
+        }
+    }
+
+    private fun themeOption(
+        theme: AppTheme,
+        onSetTheme: (AppTheme) -> Unit,
+    ): RadioButton =
+        RadioButton(context).apply {
+            id = View.generateViewId()
+            buttonDrawable = null
+            background = context.ripple(colors.accent)
+            minHeight = context.dp(56)
+            pad(0, 8)
+            text = context.getString(theme.label)
+            setTextColor(colors.text)
+            textSize = 15f
+            includeFontPadding = false
+            setOnClickListener { onSetTheme(theme) }
+        }
+
+    private fun backupRow(
+        title: Int,
+        subtitle: Int,
+        onClick: () -> Unit,
+    ): View =
+        context.row().apply {
+            val description = context.getString(title)
+            val summary = context.getString(subtitle)
+            contentDescription = "$description, $summary"
+            isScreenReaderFocusable = true
+            minimumHeight = context.dp(60)
+            background = context.ripple(colors.accent)
+            pad(0, 10)
+            weighted(
+                context.column().apply {
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                    item(context.label(description, colors.accent, 15, 600))
+                    item(context.label(summary, colors.secondary, 13), top = 3)
+                },
+            )
+            addView(context.label("›", colors.secondary, 22).apply { importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO })
+            setOnClickListener { onClick() }
+        }
+
+    private fun aboutText(resource: Int): TextView =
+        context.label(Html.fromHtml(context.getString(resource), Html.FROM_HTML_MODE_COMPACT), colors.text, 14).apply {
+            movementMethod = LinkMovementMethod.getInstance()
+            setLinkTextColor(colors.accent)
+        }
+
+    private fun link(
+        label: Int,
+        url: String,
+        arrow: String,
+    ): Button =
+        context
+            .action("${context.getString(label)}  $arrow", colors) {
+                try {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                } catch (_: ActivityNotFoundException) {
+                    // A browser is optional on the device.
+                }
+            }.apply {
+                textSize = 14f
+                pad(0, 8)
             }
-        }
-    }
-}
 
-@Composable
-private fun BackupRow(
-    title: Int,
-    summary: Int,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .sizeIn(minHeight = 60.dp)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            AppText(stringResource(title), size = 15, bold = true, accent = enabled, secondary = !enabled)
-            AppText(stringResource(summary), size = 13, secondary = true)
-        }
-        AppText("›", Modifier.clearAndSetSemantics {}, size = 22, secondary = true)
-    }
-}
-
-@Composable
-private fun AboutDetails(version: String) {
-    AppText(
-        stringResource(R.string.about_app_version, version),
-        Modifier.fillMaxWidth().padding(bottom = 16.dp),
-        size = 13,
-        secondary = true,
-        align = TextAlign.Center,
-    )
-    AboutLinkedText(R.string.about_text)
-    AboutLinkedText(R.string.original_project, Modifier.padding(vertical = 10.dp))
-    SectionDivider()
-    SettingsLink(R.string.source_code, "https://github.com/sjaramillo10/Nemi")
-}
-
-@Composable
-private fun AboutLinkedText(
-    text: Int,
-    modifier: Modifier = Modifier,
-) {
-    val palette = LocalPalette.current
-    BasicText(
-        AnnotatedString.fromHtml(
-            stringResource(text),
-            linkStyles = TextLinkStyles(style = SpanStyle(color = palette.accent, textDecoration = TextDecoration.Underline)),
-        ),
-        modifier,
-        style = TextStyle(color = palette.text, fontSize = 14.sp),
-    )
-}
-
-@Composable
-private fun SettingsLink(
-    label: Int,
-    url: String,
-    external: Boolean = true,
-) {
-    val uriHandler = LocalUriHandler.current
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .sizeIn(minHeight = 48.dp)
-            .clickable(role = Role.Button) { uriHandler.openUri(url) }
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppText(stringResource(label), size = 14, bold = true, accent = true)
-        AppText(if (external) "↗" else "›", Modifier.clearAndSetSemantics {}, size = 16, accent = true)
-    }
-}
-
-@Composable
-private fun GoalControl(
-    goal: Int,
-    onAdjust: (Int) -> Unit,
-) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .background(LocalPalette.current.track, RoundedCornerShape(16.dp))
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        GoalAdjustment(goal, -100, onAdjust)
-        Column(
-            modifier = Modifier.weight(1f).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            AppText(stringResource(R.string.selected_goal, goal), size = 24, bold = true, align = TextAlign.Center)
-            AppText(stringResource(R.string.steps_per_day), size = 14, secondary = true, align = TextAlign.Center)
-        }
-        GoalAdjustment(goal, 100, onAdjust)
-    }
-}
-
-@Composable
-private fun GoalAdjustment(
-    goal: Int,
-    amount: Int,
-    onAdjust: (Int) -> Unit,
-) {
-    val enabled = adjustGoal(goal, amount) != goal
-    val increasing = amount > 0
-    val label = stringResource(if (increasing) R.string.increase_goal else R.string.decrease_goal, abs(amount))
-    val currentOnAdjust by rememberUpdatedState(onAdjust)
-    Box(
-        modifier =
-            Modifier
-                .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-                .background(LocalPalette.current.surface, CircleShape)
-                .semantics { contentDescription = label }
-                .clickable(enabled = enabled, role = Role.Button) { onAdjust(amount) }
-                .pointerInput(enabled, amount) {
-                    if (!enabled) return@pointerInput
-                    awaitEachGesture {
-                        val pass = PointerEventPass.Initial
-                        awaitFirstDown(requireUnconsumed = false, pass = pass)
-                        var held = false
-                        var waitMillis = viewConfiguration.longPressTimeoutMillis
-                        while (true) {
-                            val finished =
-                                withTimeoutOrNull(waitMillis) {
-                                    val up = waitForUpOrCancellation(pass)
-                                    // Let clickable handle short taps. After a repeat, consume the release.
-                                    if (held) up?.consume()
-                                    true
-                                }
-                            if (finished == true) break
-                            currentOnAdjust(amount)
-                            waitMillis = if (held) nextGoalRepeatDelay(waitMillis) else FIRST_GOAL_REPEAT_DELAY
-                            held = true
+    private fun goalButton(
+        amount: Int,
+        onAdjust: (Int) -> Unit,
+    ): Button {
+        val increasing = amount > 0
+        val label = context.getString(if (increasing) R.string.increase_goal else R.string.decrease_goal, abs(amount))
+        return context.action(if (increasing) "+" else "−", colors) { onAdjust(amount) }.apply {
+            contentDescription = label
+            textSize = 24f
+            gravity = Gravity.CENTER
+            background = context.ripple(colors.accent, 24, colors.surface)
+            val button = this
+            var delay = FIRST_GOAL_REPEAT_DELAY
+            val repeat =
+                object : Runnable {
+                    override fun run() {
+                        if (button.isAttachedToWindow && button.isEnabled && button.isPressed) {
+                            onAdjust(amount)
+                            button.postDelayed(this, delay)
+                            delay = nextGoalRepeatDelay(delay)
                         }
                     }
-                },
-        contentAlignment = Alignment.Center,
-    ) {
-        AppText(
-            if (increasing) "+" else "−",
-            Modifier.clearAndSetSemantics {},
-            size = 24,
-            bold = true,
-            accent = enabled,
-            secondary = !enabled,
-        )
+                }
+            setOnTouchListener { _, event ->
+                if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                    removeCallbacks(repeat)
+                }
+                false
+            }
+            setOnLongClickListener {
+                onAdjust(amount)
+                postDelayed(repeat, FIRST_GOAL_REPEAT_DELAY)
+                delay = nextGoalRepeatDelay(FIRST_GOAL_REPEAT_DELAY)
+                true
+            }
+        }
+    }
+
+    private fun View.liveRegion() {
+        accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
 }

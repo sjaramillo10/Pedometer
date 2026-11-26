@@ -13,7 +13,7 @@
 
 ## App architecture and data
 
-- Keep `MainActivity` as the Compose host. Handle lifecycle events, activity
+- Keep `MainActivity` as the Android Views host. Handle lifecycle events, activity
   results, and privacy intents in `NemiRoute`. Have `HomeViewModel` expose a
   single `HomeUiState` and pass state and callbacks to `HomeScreen`.
 - Refresh Health Connect on lifecycle and user events. Observe committed data
@@ -54,8 +54,8 @@ Run these commands from the repository root:
 ./gradlew :app:testDebugUnitTest --tests 'dev.sjaramillo.nemi.data.StepsCsvTest'
 ```
 
-- See `.editorconfig` for ktlint exceptions covering annotated constructors,
-  class signatures, and Compose function names.
+- See `.editorconfig` for ktlint exceptions covering annotated constructors
+  and class signatures.
 - If a package rename leaves stale KSP outputs, run `./gradlew clean` and
   retry the build. If the SDK or signing setup blocks verification, report
   the exact failed command. Keep signing passwords and keystores private.

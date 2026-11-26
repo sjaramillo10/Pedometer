@@ -1,65 +1,63 @@
 package dev.sjaramillo.nemi.ui
 
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
+import android.content.Context
+import android.view.View
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 
-@Composable
-internal fun HomeScreen(
-    state: HomeUiState,
-    scroll: ScrollState,
-    onOpenSettings: () -> Unit,
-    onOpenHealthConnect: () -> Unit,
-    onPreviousWeek: () -> Unit,
-    onNextWeek: () -> Unit,
+internal class HomeScreen(
+    private val context: Context,
+    private val colors: Palette,
+    onOpenSettings: (Boolean) -> Unit,
+    private val onPreviousWeek: () -> Unit,
+    private val onNextWeek: () -> Unit,
 ) {
-    val safeDrawing = WindowInsets.safeDrawing
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(LocalPalette.current.background)
-            .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
-    ) {
-        ScreenToolbar(stringResource(R.string.app_name)) {
-            ToolbarAction(R.drawable.ic_settings, stringResource(R.string.settings_title), onOpenSettings)
+    private val screen =
+        ScreenLayout(context, colors, R.string.app_name, R.drawable.ic_settings, R.string.settings_title) {
+            onOpenSettings(false)
         }
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .verticalScroll(scroll)
-                .windowInsetsPadding(safeDrawing.only(WindowInsetsSides.Bottom))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            TodayChart(state)
-            if (state.sync == HealthConnectSyncState.PermissionRequired) {
-                AppText(
-                    stringResource(R.string.health_connect_permission_required),
-                    Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                )
-                TextAction(stringResource(R.string.open_settings), onClick = onOpenHealthConnect)
-            }
-            WeekChart(state, onPreviousWeek, onNextWeek)
-            StatsSummary(state.bestDay, state.lifetimeSteps)
+    private val today = context.column()
+    private val week = context.column()
+    private val stats = context.column()
+    private val permission =
+        context.column().apply {
+            item(
+                context.label(context.getString(R.string.health_connect_permission_required), colors.text).apply {
+                    accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+                },
+            )
+            item(context.action(context.getString(R.string.open_settings), colors) { onOpenSettings(true) }, top = 16)
+        }
+    private var previous: HomeUiState? = null
+
+    val root get() = screen.root
+    val scroll get() = screen.scroll
+
+    init {
+        screen.content.item(today)
+        screen.content.item(permission, top = 16)
+        screen.content.item(week, top = 16)
+        screen.content.item(stats, top = 16)
+    }
+
+    fun restoreScroll(position: Int) = screen.restoreScroll(position)
+
+    fun bind(state: HomeUiState) {
+        val old = previous
+        if (old == state) return
+        previous = state
+        if (old == null || state.today != old.today || state.goal != old.goal) {
+            today.removeAllViews()
+            today.item(context.todayChart(state, colors))
+        }
+        permission.visibility = if (state.sync == HealthConnectSyncState.PermissionRequired) View.VISIBLE else View.GONE
+        if (old == null || state.week != old.week || state.goal != old.goal || state.date != old.date) {
+            week.removeAllViews()
+            week.item(context.weekChart(state, colors, onPreviousWeek, onNextWeek))
+        }
+        if (old == null || state.bestDay != old.bestDay || state.lifetimeSteps != old.lifetimeSteps) {
+            stats.removeAllViews()
+            stats.item(context.statsSummary(state.bestDay, state.lifetimeSteps, colors))
         }
     }
 }
