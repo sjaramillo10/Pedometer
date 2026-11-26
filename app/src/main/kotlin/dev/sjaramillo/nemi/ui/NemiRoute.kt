@@ -13,13 +13,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.stepsCsvFileName
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -29,6 +29,8 @@ internal class NemiRoute(
     private val activity: ComponentActivity,
     savedState: Bundle?,
 ) : DefaultLifecycleObserver {
+    private val renderScope = MainScope()
+    private var renderJob: Job? = null
     private val models = ViewModelProvider(activity)
     private val home = models[HomeViewModel::class.java]
     private val settings = models[SettingsViewModel::class.java]
@@ -74,15 +76,14 @@ internal class NemiRoute(
         activity.onBackPressedDispatcher.addCallback(activity, settingsBack)
         activity.lifecycle.addObserver(this)
         render()
-        activity.lifecycleScope.launch {
-            activity.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(home.uiState, settings.uiState) { homeState, settingsState -> homeState to settingsState }
-                    .collect { (homeState, settingsState) -> render(homeState, settingsState) }
-            }
-        }
     }
 
     override fun onStart(owner: LifecycleOwner) {
+        renderJob =
+            renderScope.launch {
+                combine(home.uiState, settings.uiState) { homeState, settingsState -> homeState to settingsState }
+                    .collect { (homeState, settingsState) -> render(homeState, settingsState) }
+            }
         val filter =
             IntentFilter().apply {
                 addAction(Intent.ACTION_DATE_CHANGED)
@@ -97,10 +98,13 @@ internal class NemiRoute(
     }
 
     override fun onStop(owner: LifecycleOwner) {
+        renderJob?.cancel()
+        renderJob = null
         activity.unregisterReceiver(dateChanges)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
+        renderScope.cancel()
         dialog?.setOnDismissListener(null)
         dialog?.dismiss()
     }

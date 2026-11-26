@@ -4,13 +4,11 @@ android-gradle = "9.5.2"
 junit = "4.13.2"
 kotlin = "2.4.21"
 ktlint = "14.2.0"
-lifecycle = "2.11.1"
 
 [libraries]
 activity-core = { module = "androidx.activity:activity", version.ref = "activity" }
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle" }

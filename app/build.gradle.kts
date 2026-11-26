@@ -55,9 +55,6 @@ dependencies {
         exclude(group = "androidx.compose.runtime", module = "runtime-annotation")
     }
 
-    // ViewModel
-    implementation(libs.lifecycle.runtime)
-
     // Unit Tests
     testImplementation(libs.junit)
 }
