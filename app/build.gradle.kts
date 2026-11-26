@@ -6,6 +6,7 @@ plugins {
 }
 
 android {
+    enableKotlin = false
     namespace = "dev.sjaramillo.nemi"
     compileSdk = 37
 
@@ -15,7 +16,11 @@ android {
         minSdk = 34
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     androidResources {
@@ -50,9 +55,5 @@ android {
 }
 
 dependencies {
-    // The Java port removes the remaining coroutine-based app state.
-    implementation(libs.coroutines.android)
-
-    // Unit Tests
     testImplementation(libs.junit)
 }

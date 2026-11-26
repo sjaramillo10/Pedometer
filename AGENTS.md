@@ -31,7 +31,7 @@
 
 - For phone-only queries, include `DataOrigin("android")` and add the current
   device origin when `HealthConnectManager.getCurrentDeviceDataSource` returns
-  one. Suspend on the callback and use the legacy origin alone when the
+  one. Wait for the callback and use the legacy origin alone when the
   current origin is unavailable.
 - Keep the privacy alias qualified by `${applicationId}` so the system can
   resolve it in each build variant. When changing app identity or manifest
@@ -43,7 +43,7 @@
 - Name types for the responsibility they own. Use provider names for
   provider-specific contracts and domain names for provider-independent ones.
 - Add deterministic tests under `app/src/test` for behavior changes. Name new
-  and updated tests `given <condition> when <action> then <expected outcome>`
+  and updated tests `givenCondition_whenAction_thenExpectedOutcome`
   and use `// Given`, `// When`, and `// Then` blocks.
 
 Install the SQLite CLI (`sqlite3`) on your PATH for SQL regression tests.
@@ -55,11 +55,8 @@ Run these commands from the repository root:
 ./gradlew :app:testDebugUnitTest --tests 'dev.sjaramillo.nemi.data.StepsCsvTest'
 ```
 
-- See `.editorconfig` for ktlint exceptions covering annotated constructors
-  and class signatures.
-- If a package rename leaves stale KSP outputs, run `./gradlew clean` and
-  retry the build. If the SDK or signing setup blocks verification, report
-  the exact failed command. Keep signing passwords and keystores private.
+- If the SDK or signing setup blocks verification, report the exact failed
+  command. Keep signing passwords and keystores private.
   Release signing is unfinished.
 
 ## Device testing
