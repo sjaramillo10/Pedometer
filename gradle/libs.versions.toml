@@ -3,7 +3,6 @@ activity = "1.13.0"
 android-gradle = "9.5.2"
 junit = "4.13.2"
 kotlin = "2.4.21"
-ksp = "2.3.14"
 ktlint = "14.2.0"
 lifecycle = "2.11.1"
 
@@ -16,5 +15,4 @@ viewmodel-core = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", versio
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
