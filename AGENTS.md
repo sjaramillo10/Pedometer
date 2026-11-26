@@ -17,12 +17,12 @@
   results, and privacy intents in `NemiRoute`. Have `HomeViewModel` expose a
   single `HomeUiState` and pass state and callbacks to `HomeScreen`.
 - Refresh Health Connect on lifecycle and user events. Observe committed data
-  through Room. Resolve one total per day, preferring Health Connect even when
+  through framework SQLite. Resolve one total per day, preferring Health Connect even when
   its total is zero. Use CSV backup totals when Health Connect has no total for
   that date and preserve `fromBackup`.
-- Keep Room's version 1 reinstall-only policy and track schema exports under
-  `app/schemas`. Change the version or add migrations only with an explicit
-  policy change.
+- Keep the SQLite database at version 1. Use the Room schema export under
+  `app/schemas` as the compatibility reference for existing installs. Change the
+  version or add migrations only with an explicit policy change.
 - Preserve compatibility with existing CSV backups. Suggest
   `Nemi_YYYY-MM-DD.csv` for new exports using the device's local date when
   the user starts the export.
@@ -31,7 +31,7 @@
 
 - For phone-only queries, include `DataOrigin("android")` and add the current
   device origin when `HealthConnectManager.getCurrentDeviceDataSource` returns
-  one. Suspend on the callback and use the legacy origin alone when the
+  one. Wait for the callback and use the legacy origin alone when the
   current origin is unavailable.
 - Keep the privacy alias qualified by `${applicationId}` so the system can
   resolve it in each build variant. When changing app identity or manifest
@@ -43,22 +43,20 @@
 - Name types for the responsibility they own. Use provider names for
   provider-specific contracts and domain names for provider-independent ones.
 - Add deterministic tests under `app/src/test` for behavior changes. Name new
-  and updated tests `given <condition> when <action> then <expected outcome>`
+  and updated tests `givenCondition_whenAction_thenExpectedOutcome`
   and use `// Given`, `// When`, and `// Then` blocks.
 
+Install the SQLite CLI (`sqlite3`) on your PATH for SQL regression tests.
 Run these commands from the repository root:
 
 ```sh
 ./gradlew build
-./gradlew ktlintCheck
+./gradlew :app:lintDebug
 ./gradlew :app:testDebugUnitTest --tests 'dev.sjaramillo.nemi.data.StepsCsvTest'
 ```
 
-- See `.editorconfig` for ktlint exceptions covering annotated constructors
-  and class signatures.
-- If a package rename leaves stale KSP outputs, run `./gradlew clean` and
-  retry the build. If the SDK or signing setup blocks verification, report
-  the exact failed command. Keep signing passwords and keystores private.
+- If the SDK or signing setup blocks verification, report the exact failed
+  command. Keep signing passwords and keystores private.
   Release signing is unfinished.
 
 ## Device testing

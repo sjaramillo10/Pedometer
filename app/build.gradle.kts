@@ -3,11 +3,10 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.metro)
-    alias(libs.plugins.ksp)
 }
 
 android {
+    enableKotlin = false
     namespace = "dev.sjaramillo.nemi"
     compileSdk = 37
 
@@ -17,19 +16,11 @@ android {
         minSdk = 34
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        // https://developer.android.com/jetpack/androidx/releases/room#compiler-options
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments +=
-                    mapOf(
-                        "room.schemaLocation" to "$projectDir/schemas",
-                        "room.incremental" to "true",
-                        "room.expandProjection" to "true",
-                    )
-            }
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     androidResources {
@@ -64,27 +55,5 @@ android {
 }
 
 dependencies {
-    implementation(libs.activity.core) {
-        // NavigationEvent uses Compose stability annotations. The View host does not use them.
-        exclude(group = "androidx.compose.runtime", module = "runtime-annotation")
-    }
-
-    // Room
-    implementation(libs.room.core)
-    implementation(libs.room.runtime)
-    ksp(libs.room.compiler)
-
-    // ViewModel
-    implementation(libs.viewmodel.core)
-    implementation(libs.lifecycle.runtime)
-
-    // Unit Tests
-    testImplementation(libs.kotlin.test.junit)
-    testImplementation(libs.sqlite.jdbc)
-}
-
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.incremental", "true")
-    arg("room.expandProjection", "true")
+    testImplementation(libs.junit)
 }
