@@ -2,6 +2,7 @@ package dev.sjaramillo.nemi.ui
 
 import android.content.Context
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import dev.sjaramillo.nemi.R
 import dev.sjaramillo.nemi.data.HealthConnectSyncState
 
@@ -20,14 +21,17 @@ internal class HomeScreen(
     private val week = context.column()
     private val stats = context.column()
     private val healthMessage =
-        context.label("", colors.text).apply {
+        context.label("", colors.secondary, 14).apply {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
-    private val healthAction = context.action(context.getString(R.string.open_settings), colors) { onOpenSettings(true) }
+    private val healthAction =
+        context
+            .action(context.getString(R.string.view_health_connect_status), colors) { onOpenSettings(true) }
+            .apply { pad(0, 4) }
     private val healthStatus =
-        context.column().apply {
+        context.card(R.string.health_connect, colors).apply {
             item(healthMessage)
-            item(healthAction, top = 16)
+            item(healthAction, top = 8)
         }
     private var previous: HomeUiState? = null
 
@@ -35,8 +39,8 @@ internal class HomeScreen(
     val scroll get() = screen.scroll
 
     init {
-        screen.content.item(today)
-        screen.content.item(healthStatus, top = 16)
+        screen.content.item(healthStatus)
+        screen.content.item(today, top = 16)
         screen.content.item(week, top = 16)
         screen.content.item(stats, top = 16)
     }
@@ -52,16 +56,19 @@ internal class HomeScreen(
             today.item(context.todayChart(state, colors))
         }
         today.visibility = if (state.showTodayChart) View.VISIBLE else View.GONE
+        val todayMargin = if (state.sync == HealthConnectSyncState.Ready) 0 else context.dp(16)
+        val todayLayout = today.layoutParams as MarginLayoutParams
+        if (todayLayout.topMargin != todayMargin) {
+            todayLayout.topMargin = todayMargin
+            today.layoutParams = todayLayout
+        }
+        val historyVisibility = if (state.showHistory) View.VISIBLE else View.GONE
+        week.visibility = historyVisibility
+        stats.visibility = historyVisibility
         if (old?.sync != state.sync) {
-            healthStatus.visibility = if (state.sync == HealthConnectSyncState.Ready) View.GONE else View.VISIBLE
-            healthMessage.setText(
-                if (state.sync == HealthConnectSyncState.PermissionRequired) {
-                    R.string.health_connect_permission_required
-                } else {
-                    state.sync.statusMessage
-                },
-            )
             val refreshing = state.sync == HealthConnectSyncState.Loading || state.sync == HealthConnectSyncState.Syncing
+            healthStatus.visibility = if (state.sync == HealthConnectSyncState.Ready) View.GONE else View.VISIBLE
+            healthMessage.setText(if (refreshing) R.string.health_connect_syncing else R.string.check_health_connect_status)
             healthAction.visibility = if (refreshing) View.GONE else View.VISIBLE
         }
         if (old == null || state.week != old.week || state.goal != old.goal || state.date != old.date) {

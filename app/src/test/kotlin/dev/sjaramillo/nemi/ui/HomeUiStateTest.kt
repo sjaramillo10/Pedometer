@@ -28,6 +28,22 @@ class HomeUiStateTest {
     private val current = DailySteps(today.toEpochDay(), 10_000, fromBackup = false)
 
     @Test
+    fun `given a Health Connect issue when showing Home then keeps history only when saved steps exist`() {
+        // Given
+        val range = WeekSelection().range(today, DayOfWeek.SUNDAY)
+        val empty = HomeUiState(date = today, week = range.withEntries(emptyList()), sync = HealthConnectSyncState.Error, lifetimeSteps = 0)
+        val savedWeek = empty.copy(week = range.withEntries(listOf(current)))
+        val olderHistory = empty.copy(bestDay = DailySteps(today.minusWeeks(2).toEpochDay(), 0, fromBackup = true))
+
+        // When
+        val ready = empty.copy(sync = HealthConnectSyncState.Ready)
+        val historyVisibility = listOf(empty, savedWeek, olderHistory, ready).map { it.showHistory }
+
+        // Then
+        assertEquals(listOf(false, true, true, true), historyVisibility)
+    }
+
+    @Test
     fun `given no saved steps when tracking is unsupported or ready then only ready shows the empty chart`() {
         // Given
         val week = WeekSelection().range(today, DayOfWeek.SUNDAY).withEntries(emptyList())
