@@ -10,7 +10,6 @@ plugins {
     alias(libs.plugins.metro) apply false
     alias(libs.plugins.ktlint)
     alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.compose) apply false
 }
 
 subprojects {
