@@ -266,7 +266,7 @@ private class BackdropHeader(
         RenderNode("Header backdrop").apply {
             setRenderEffect(RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.CLAMP))
         }
-    private val tint = colors.background.withAlpha(0.85f)
+    private val tint = colors.background.withAlpha(0.75f)
 
     init {
         setWillNotDraw(false)
