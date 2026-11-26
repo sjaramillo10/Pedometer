@@ -25,18 +25,27 @@ class HealthConnectSyncCoordinatorTest {
         }
 
     @Test
-    fun `given unavailable Health Connect when refreshing then skips cache synchronization`() =
+    fun `given unsupported phone step tracking when refreshing then reports the reason and skips synchronization`() =
         runBlocking {
             // Given
-            var synced = false
-            val coordinator = HealthConnectSyncCoordinator({ HealthConnectAccess.Unavailable }, { synced = true })
+            val unsupported =
+                mapOf(
+                    HealthConnectAccess.Unavailable to HealthConnectSyncState.Unavailable,
+                    HealthConnectAccess.UpdateRequired to HealthConnectSyncState.UpdateRequired,
+                    HealthConnectAccess.NoStepCounter to HealthConnectSyncState.NoStepCounter,
+                )
 
-            // When
-            coordinator.refresh()
+            for ((access, expectedState) in unsupported) {
+                var synced = false
+                val coordinator = HealthConnectSyncCoordinator({ access }, { synced = true })
 
-            // Then
-            assertEquals(HealthConnectSyncState.Unavailable, coordinator.state.value)
-            assertFalse(synced)
+                // When
+                coordinator.refresh()
+
+                // Then
+                assertEquals(expectedState, coordinator.state.value)
+                assertFalse(synced)
+            }
         }
 
     @Test

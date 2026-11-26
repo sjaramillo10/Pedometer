@@ -169,14 +169,7 @@ internal class SettingsScreen(
 
     private fun bindHealthStatus(status: HealthConnectSyncState) {
         healthStatus.removeAllViews()
-        val message =
-            when (status) {
-                HealthConnectSyncState.Loading, HealthConnectSyncState.Syncing -> R.string.health_connect_syncing
-                HealthConnectSyncState.PermissionRequired -> R.string.health_connect_disconnected
-                HealthConnectSyncState.Unavailable -> R.string.health_connect_unavailable
-                HealthConnectSyncState.Error -> R.string.health_connect_error
-                HealthConnectSyncState.Ready -> R.string.health_connect_connected
-            }
+        val message = status.statusMessage
         val connected = status == HealthConnectSyncState.Ready
         healthStatus.item(
             context.row().apply {

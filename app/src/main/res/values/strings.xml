@@ -35,7 +35,9 @@
     <string name="health_connect_error">Unable to refresh phone steps. Check Health Connect and try again.</string>
     <string name="health_connect_privacy_policy">Nemi reads step data recorded by this phone through Health Connect. It stores daily totals only on this device to show recent history and statistics. Nemi does not write Health Connect data and does not transmit your health data.</string>
 
-    <string name="health_connect_unavailable">Health Connect is unavailable on this device.</string>
+    <string name="health_connect_update_required">This Android build needs SDK Extension 20 or later to record phone steps in Health Connect. Check for a system update, or import a CSV backup in Settings.</string>
+    <string name="health_connect_no_step_counter">Android exposes no step counter on this device. To view existing steps, import a CSV backup in Settings.</string>
+    <string name="health_connect_unavailable">Health Connect is unavailable. Check for an update from your Android system provider, or import a CSV backup in Settings.</string>
     <string name="today">Today</string>
     <string name="step_count">%s steps</string>
     <string name="no_steps_today">No steps recorded today</string>

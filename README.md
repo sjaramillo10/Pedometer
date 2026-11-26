@@ -24,6 +24,15 @@ measures the entire unsigned release APK.
   lifetime steps.
 - Save a dated CSV backup or restore one from Settings.
 
+## Device requirements
+
+Nemi installs on Android 14 or later. Live phone steps require the system
+Health Connect service, Android 14 (U) SDK Extension 20 or later, and a step
+counter sensor. On GrapheneOS and other Android distributions, support depends
+on the features shipped by the installed OS build. Nemi works independently of
+Google Play Services and can display imported CSV history on devices without
+native step tracking.
+
 ## How Nemi uses your data
 
 Connect Health Connect in Settings to let Nemi read steps recorded by your

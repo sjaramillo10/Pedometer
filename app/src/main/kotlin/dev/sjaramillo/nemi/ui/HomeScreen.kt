@@ -19,14 +19,15 @@ internal class HomeScreen(
     private val today = context.column()
     private val week = context.column()
     private val stats = context.column()
-    private val permission =
+    private val healthMessage =
+        context.label("", colors.text).apply {
+            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+        }
+    private val healthAction = context.action(context.getString(R.string.open_settings), colors) { onOpenSettings(true) }
+    private val healthStatus =
         context.column().apply {
-            item(
-                context.label(context.getString(R.string.health_connect_permission_required), colors.text).apply {
-                    accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-                },
-            )
-            item(context.action(context.getString(R.string.open_settings), colors) { onOpenSettings(true) }, top = 16)
+            item(healthMessage)
+            item(healthAction, top = 16)
         }
     private var previous: HomeUiState? = null
 
@@ -35,7 +36,7 @@ internal class HomeScreen(
 
     init {
         screen.content.item(today)
-        screen.content.item(permission, top = 16)
+        screen.content.item(healthStatus, top = 16)
         screen.content.item(week, top = 16)
         screen.content.item(stats, top = 16)
     }
@@ -50,7 +51,19 @@ internal class HomeScreen(
             today.removeAllViews()
             today.item(context.todayChart(state, colors))
         }
-        permission.visibility = if (state.sync == HealthConnectSyncState.PermissionRequired) View.VISIBLE else View.GONE
+        today.visibility = if (state.showTodayChart) View.VISIBLE else View.GONE
+        if (old?.sync != state.sync) {
+            healthStatus.visibility = if (state.sync == HealthConnectSyncState.Ready) View.GONE else View.VISIBLE
+            healthMessage.setText(
+                if (state.sync == HealthConnectSyncState.PermissionRequired) {
+                    R.string.health_connect_permission_required
+                } else {
+                    state.sync.statusMessage
+                },
+            )
+            val refreshing = state.sync == HealthConnectSyncState.Loading || state.sync == HealthConnectSyncState.Syncing
+            healthAction.visibility = if (refreshing) View.GONE else View.VISIBLE
+        }
         if (old == null || state.week != old.week || state.goal != old.goal || state.date != old.date) {
             week.removeAllViews()
             week.item(context.weekChart(state, colors, onPreviousWeek, onNextWeek))
