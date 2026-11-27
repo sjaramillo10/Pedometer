@@ -45,7 +45,9 @@ if ! "$tools/zipalign" -c -P 16 4 "$unsigned"; then
     input="$temp/aligned.apk"
     "$tools/zipalign" -P 16 4 "$unsigned" "$input"
 fi
-"$tools/apksigner" sign --ks "$keystore" "${alias_args[@]}" --v4-signing-enabled false --out "$temp/signed.apk" "$input"
+"$tools/apksigner" sign --ks "$keystore" "${alias_args[@]}" \
+    --alignment-preserved true --v1-signing-enabled false --v4-signing-enabled false \
+    --out "$temp/signed.apk" "$input"
 "$tools/apksigner" verify --verbose --print-certs "$temp/signed.apk"
 mv -f -- "$temp/signed.apk" "$output"
 printf 'Signed APK: %s (%d bytes)\n' "$output" "$(wc -c < "$output")"
