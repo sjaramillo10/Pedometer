@@ -6,7 +6,7 @@ fail() { echo "Error: $*" >&2; exit 1; }
 
 root=$(cd -- "$(dirname -- "$0")/.." && pwd)
 unsigned="$root/app/build/outputs/apk/release/app-release-unsigned.apk"
-output="$root/app/build/signed/app-release.apk"
+output="${unsigned%/*}/app-release.apk"
 keystore=''
 alias_args=()
 while (( $# )); do
@@ -25,12 +25,12 @@ while (( $# )); do
 done
 
 [[ -f "$keystore" && -r "$keystore" ]] || fail "Supply a readable keystore with --keystore"
-tools="${ANDROID_HOME:?Set ANDROID_HOME to your Android SDK}/build-tools/37.0.0"
-[[ -x "$tools/zipalign" && -x "$tools/apksigner" ]] || fail "Install Android SDK Build Tools 37.0.0 in $ANDROID_HOME"
 
 # Repackage this variant and consume its known output, even after earlier builds.
 "$root/gradlew" -p "$root" :app:packageRelease --rerun :app:assembleRelease
 [[ -s "$unsigned" ]] || fail "Expected unsigned release APK at $unsigned"
+tools=$("$root/gradlew" -p "$root" --quiet :app:printBuildToolsDir)
+[[ -x "$tools/zipalign" && -x "$tools/apksigner" ]] || fail "Expected zipalign and apksigner in $tools"
 [[ ! -d "$output" && ! -L "$output" && ! "$output" -ef "$unsigned" && ! "$output" -ef "$keystore" ]] ||
     fail "Choose an output file distinct from the unsigned APK and keystore"
 mkdir -p -- "$(dirname -- "$output")"

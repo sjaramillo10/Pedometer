@@ -46,3 +46,9 @@ android {
 dependencies {
     testImplementation(libs.junit)
 }
+
+tasks.register("printBuildToolsDir") {
+    val sdk = androidComponents.sdkComponents.sdkDirectory
+    val tools = sdk.get().dir("build-tools/${android.buildToolsVersion}").asFile
+    doLast { println(tools.absolutePath) }
+}

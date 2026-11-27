@@ -26,16 +26,18 @@ of the tagged commit.
 Use the same RSA-3072 signing key for each release. Keep it in a
 password-protected PKCS#12 keystore (`.p12`) outside the checkout.
 
-Set `ANDROID_HOME` to
-your Android SDK with Build Tools 37.0.0 installed. From the tagged checkout,
-run the signing script in your terminal and enter passwords at its prompts.
+The signing script uses the Android SDK and Build Tools selected by Gradle.
+
+From the tagged checkout, run the signing script and enter passwords at its prompts.
+Replace `KEYSTORE_FILE` with the path to your `.p12` file. Quote the path if
+it contains spaces or shell metacharacters.
 
 ```sh
-./scripts/sign-release.sh --keystore "<path to keystore>" --alias release
+./scripts/sign-release.sh --keystore KEYSTORE_FILE --alias release
 ```
 
 The alias is optional for a single-key keystore. Use `--output PATH` to
-choose the signed APK destination. The default is `app/build/signed/app-release.apk`.
+choose the signed APK destination. The default is `app/build/outputs/apk/release/app-release.apk`.
 The script preserves the unsigned Gradle output, verifies the signature, and
 prints the signer fingerprint and signed file size.
 
@@ -56,7 +58,7 @@ the independent checkout as `unsigned_checkout`.
 ```sh
 unsigned_checkout=/path/to/unsigned-checkout
 apksigcopier compare --unsigned \
-  app/build/signed/app-release.apk \
+  app/build/outputs/apk/release/app-release.apk \
   "$unsigned_checkout/app/build/outputs/apk/release/app-release-unsigned.apk"
 ```
 
