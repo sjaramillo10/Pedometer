@@ -46,7 +46,8 @@
   and use `// Given`, `// When`, and `// Then` blocks.
 
 Install the SQLite CLI (`sqlite3`) on your PATH for SQL regression tests.
-Run these commands from the repository root:
+Run these commands from the root of a clean worktree or clone created from
+tracked source:
 
 ```sh
 ./gradlew build
@@ -56,7 +57,16 @@ Run these commands from the repository root:
 
 - If the SDK or signing setup blocks verification, report the exact failed
   command. Keep signing passwords and keystores private.
-  See [the release guide](docs/releasing.md) for release signing.
+
+## Release signing credentials
+
+- Treat `.signing/release/` as private and maintainer-only. Never inspect,
+  read, copy, modify, or transfer anything there. Exclude the directory from
+  recursive searches, file listings, and workspace archives.
+- Gradle can load release credentials during configuration, even for debug
+  tasks. Agents must run Gradle in a clean worktree or clone created from
+  tracked source and leave production signing to the maintainer.
+  See [the release guide](docs/releasing.md) for the maintainer workflow.
 
 ## Device testing
 
