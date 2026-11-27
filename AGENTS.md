@@ -20,9 +20,8 @@
   through framework SQLite. Resolve one total per day, preferring Health Connect even when
   its total is zero. Use CSV backup totals when Health Connect has no total for
   that date and preserve `fromBackup`.
-- Keep the SQLite database at version 1. Use the Room schema export under
-  `app/schemas` as the compatibility reference for existing installs. Change the
-  version or add migrations only with an explicit policy change.
+- Keep the SQLite database at version 1. Change the version or add migrations
+  only with an explicit policy change.
 - Preserve compatibility with existing CSV backups. Suggest
   `Nemi_YYYY-MM-DD.csv` for new exports using the device's local date when
   the user starts the export.
@@ -57,7 +56,7 @@ Run these commands from the repository root:
 
 - If the SDK or signing setup blocks verification, report the exact failed
   command. Keep signing passwords and keystores private.
-  Release signing is unfinished.
+  See [the release guide](docs/releasing.md) for release signing.
 
 ## Device testing
 

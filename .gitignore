@@ -1,34 +1,23 @@
-#built application files
-*.apk
-*.ap_
-
-# files for the dex VM
-*.dex
-
-# Java class files
-*.class
-
-# generated files
+# Build output
+build/
 bin/
 gen/
+*.apk
+*.ap_
+*.dex
+*.class
 
-# Local configuration file (sdk path, etc)
+# Local configuration and signing
 local.properties
 key.properties
+/.signing/*
+!/.signing/debug/
 
-# Windows thumbnail db
-Thumbs.db
-
-# OSX files
-.DS_Store
-
-# Eclipse project files
-.classpath
-.project
-
-# Android Studio & Gradle/Kotlin
+# Android Studio and Gradle
 .idea
 .gradle
-.kotlin
-build/
 *.iml
+
+# OS metadata
+.DS_Store
+Thumbs.db
