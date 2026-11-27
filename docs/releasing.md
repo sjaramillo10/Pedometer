@@ -2,14 +2,13 @@
 
 ## Choose the version and source
 
-Nemi's first release is `0.1.0` with version code `1`. For each subsequent
-release, set the version code to one more than the latest published code,
-regardless of the source branch. Set both values in
+Set the version code to one more than the latest published code, regardless
+of the source branch. Set the version name and code in
 [`app/build.gradle.kts`](../app/build.gradle.kts).
 
 - **Major and minor releases.** Update the version through a PR into
-  `develop`, then merge `develop` into `main`. Create `main` for the first
-  release. Tag the reviewed release commit on `main`.
+  `develop`, then merge `develop` into `main`. Tag the reviewed release commit
+  on `main`.
 - **Patch releases.** Branch from `main` for the first patch on a release line.
   For further patches on that line, branch from the previous patch tag. Bump
   the patch version, assign the next version code, and merge the fixes into
@@ -17,7 +16,8 @@ regardless of the source branch. Set both values in
   squash-merge it into `develop`, preserving any newer version name and the
   higher version code, then delete the patch branch.
 
-Use tags of the form `v0.1.0`. Build from a clean checkout of the tagged commit.
+Use the version name as the tag, such as `0.2.0`. Build from a clean checkout
+of the tagged commit.
 
 ## Prepare the local release key
 
@@ -68,7 +68,7 @@ checkout without `.signing/release/`. Use the F-Droid build recipe for this
 rebuild and verify the match with the signed APK.
 
 ```sh
-apksigcopier compare --unsigned Nemi-0.1.0.apk app-release-unsigned.apk
+apksigcopier compare --unsigned app-release.apk app-release-unsigned.apk
 ```
 
 Publish the verified signed APK as `Nemi-<version>.apk` on the GitHub Release
