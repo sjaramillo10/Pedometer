@@ -23,12 +23,15 @@ of the tagged commit.
 
 ## Build and sign locally
 
-Keep the production keystore outside the checkout. Set `ANDROID_HOME` to
+Use the same RSA-3072 signing key for each release. Keep it in a
+password-protected PKCS#12 keystore (`.p12`) outside the checkout.
+
+Set `ANDROID_HOME` to
 your Android SDK with Build Tools 37.0.0 installed. From the tagged checkout,
 run the signing script in your terminal and enter passwords at its prompts.
 
 ```sh
-./scripts/sign-release.sh --keystore ~/keys/release.jks --alias release
+./scripts/sign-release.sh --keystore ~/keys/nemi-release.p12 --alias release
 ```
 
 The alias is optional for a single-key keystore. Use `--output PATH` to
