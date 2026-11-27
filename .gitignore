@@ -17,9 +17,6 @@ local.properties
 key.properties
 /.signing/*
 !/.signing/debug/
-/.signing/debug/*
-!/.signing/debug/debug.jks
-!/.signing/debug/signing.properties
 
 # Windows thumbnail db
 Thumbs.db
