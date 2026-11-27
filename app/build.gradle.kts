@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApkSigningConfig
+import com.android.build.api.dsl.ApplicationExtension
 import java.io.File
 import java.util.Properties
 
@@ -28,44 +29,42 @@ android {
         localeFilters += "en"
     }
 
-    val releaseSigningDirectory = rootProject.file(".signing/release")
     signingConfigs {
         getByName("debug") {
             loadCredentials(rootProject.file(".signing/debug"))
         }
     }
-    val releaseSigning = if (releaseSigningDirectory.exists()) {
-        runCatching {
-            signingConfigs.create("release").apply {
-                loadCredentials(releaseSigningDirectory)
-            }
-        }
-    } else {
-        null
-    }
-
     buildTypes {
         getByName("debug") {
             applicationIdSuffix = ".debug"
             isMinifyEnabled = false
         }
         getByName("release") {
-            signingConfig = releaseSigning?.getOrNull()
+            signingConfig = localReleaseSigning()
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
-    releaseSigning?.exceptionOrNull()?.let { error ->
-        val message = "Invalid release signing configuration: ${error.message}"
-        tasks.matching { it.name == "preReleaseBuild" }.configureEach {
-            doFirst { throw GradleException(message) }
         }
     }
 }
 
 dependencies {
     testImplementation(libs.junit)
+}
+
+fun ApplicationExtension.localReleaseSigning(): ApkSigningConfig? {
+    val directory = rootProject.file(".signing/release")
+    if (!directory.exists()) return null
+
+    return runCatching {
+        signingConfigs.create("release") { loadCredentials(directory) }
+    }.getOrElse { error ->
+        val message = "Invalid release signing configuration: ${error.message}"
+        tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+            doFirst { throw GradleException(message) }
+        }
+        null
+    }
 }
 
 fun ApkSigningConfig.loadCredentials(directory: File) {
