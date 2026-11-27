@@ -7,11 +7,8 @@ gen/
 *.dex
 *.class
 
-# Local configuration and signing
+# Local configuration
 local.properties
-key.properties
-/.signing/*
-!/.signing/debug/
 
 # Android Studio and Gradle
 .idea

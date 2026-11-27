@@ -24,8 +24,7 @@ Nemi is a personal app with three priorities, in this order.
 
 ## APK size
 
-CI caps the release APK signed with the debug key at **0.1 MB (100,000 bytes)**,
-including signing overhead.
+CI caps the unsigned release APK at **0.1 MB (100,000 bytes)**.
 
 Nemi uses Java, Android framework Views, custom-drawn charts, and Android’s
 built-in SQLite. The app ships without Kotlin, Jetpack Compose, AndroidX, or
