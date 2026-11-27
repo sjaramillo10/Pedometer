@@ -26,7 +26,7 @@ android {
 
     signingConfigs {
         getByName("debug") {
-            storeFile = rootProject.file(".signing/debug/debug.jks")
+            storeFile = file("debug.jks")
             keyAlias = "android"
         }
     }

@@ -31,7 +31,7 @@ your Android SDK with Build Tools 37.0.0 installed. From the tagged checkout,
 run the signing script in your terminal and enter passwords at its prompts.
 
 ```sh
-./scripts/sign-release.sh --keystore ~/keys/nemi-release.p12 --alias release
+./scripts/sign-release.sh --keystore "<path to keystore>" --alias release
 ```
 
 The alias is optional for a single-key keystore. Use `--output PATH` to
