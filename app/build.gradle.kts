@@ -6,27 +6,6 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-fun ApkSigningConfig.loadCredentials(directory: File) {
-    val propertiesFile = directory.resolve("signing.properties")
-    val location = directory.relativeTo(rootDir)
-    require(propertiesFile.isFile) { "Missing signing.properties in $location" }
-
-    val properties = Properties()
-    propertiesFile.inputStream().use { properties.load(it) }
-    fun requiredProperty(name: String): String =
-        requireNotNull(properties.getProperty(name)?.takeIf { it.isNotBlank() }) {
-            "Missing $name in $location/signing.properties"
-        }
-
-    val keystore = directory.resolve(requiredProperty("storeFile"))
-    require(keystore.isFile) { "Keystore missing in $location. Check storeFile in signing.properties." }
-    storeFile = keystore
-    storeType = requiredProperty("storeType")
-    keyAlias = requiredProperty("keyAlias")
-    keyPassword = requiredProperty("keyPassword")
-    storePassword = requiredProperty("storePassword")
-}
-
 android {
     enableKotlin = false
     namespace = "dev.sjaramillo.nemi"
@@ -54,11 +33,15 @@ android {
         getByName("debug") {
             loadCredentials(rootProject.file(".signing/debug"))
         }
-        if (releaseSigningDirectory.exists()) {
-            create("release") {
+    }
+    val releaseSigning = if (releaseSigningDirectory.exists()) {
+        runCatching {
+            signingConfigs.create("release").apply {
                 loadCredentials(releaseSigningDirectory)
             }
         }
+    } else {
+        null
     }
 
     buildTypes {
@@ -67,14 +50,41 @@ android {
             isMinifyEnabled = false
         }
         getByName("release") {
-            signingConfig = signingConfigs.findByName("release")
+            signingConfig = releaseSigning?.getOrNull()
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    releaseSigning?.exceptionOrNull()?.let { error ->
+        val message = "Invalid release signing configuration: ${error.message}"
+        tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+            doFirst { throw GradleException(message) }
         }
     }
 }
 
 dependencies {
     testImplementation(libs.junit)
+}
+
+fun ApkSigningConfig.loadCredentials(directory: File) {
+    val propertiesFile = directory.resolve("signing.properties")
+    val location = directory.relativeTo(rootDir)
+    require(propertiesFile.isFile) { "Missing signing.properties in $location" }
+
+    val properties = Properties()
+    propertiesFile.inputStream().use { properties.load(it) }
+    fun requiredProperty(name: String): String =
+        requireNotNull(properties.getProperty(name)?.takeIf { it.isNotBlank() }) {
+            "Missing $name in $location/signing.properties"
+        }
+
+    val keystore = directory.resolve(requiredProperty("storeFile"))
+    require(keystore.isFile) { "Keystore missing in $location. Check storeFile in signing.properties." }
+    storeFile = keystore
+    storeType = requiredProperty("storeType")
+    keyAlias = requiredProperty("keyAlias")
+    keyPassword = requiredProperty("keyPassword")
+    storePassword = requiredProperty("storePassword")
 }
