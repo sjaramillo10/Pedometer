@@ -51,10 +51,14 @@ Owner profile, following [AGENTS.md](../AGENTS.md).
 
 Independently build the same tag with `./gradlew :app:assembleRelease` from a
 checkout without `.signing/release/`. Use the F-Droid build recipe for this
-rebuild and verify the match with the signed APK.
+rebuild. From the signed build's checkout, compare the APKs using the path to
+the independent checkout as `unsigned_checkout`.
 
 ```sh
-apksigcopier compare --unsigned app-release.apk app-release-unsigned.apk
+unsigned_checkout=/path/to/unsigned-checkout
+apksigcopier compare --unsigned \
+  app/build/outputs/apk/release/app-release.apk \
+  "$unsigned_checkout/app/build/outputs/apk/release/app-release-unsigned.apk"
 ```
 
 Publish the verified signed APK as `Nemi-<version>.apk` on the GitHub Release
