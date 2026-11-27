@@ -21,45 +21,39 @@ of the source branch. Set the version name and code in
 Use the version name as the tag, such as `0.2.0`. Build from a clean checkout
 of the tagged commit.
 
-## Set up local release signing
+## Build and sign locally
 
-Place the existing release keystore at `.signing/release/nemi.p12`. Put its
-signing settings in `.signing/release/signing.properties` using the keystore's
-alias and password.
-
-```properties
-storeFile=nemi.p12
-storeType=PKCS12
-keyAlias=nemi-release
-storePassword=<keystore password>
-keyPassword=<keystore password>
-```
-
-## Build and verify
+Keep the production keystore outside the checkout. Set `ANDROID_HOME` to
+your Android SDK with Build Tools 37.0.0 installed. From the tagged checkout,
+run the signing script in your terminal and enter passwords at its prompts.
 
 ```sh
-./gradlew :app:assembleRelease
-apksigner verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+./scripts/sign-release.sh --keystore ~/keys/release.jks --alias release
 ```
 
-Use `apksigner` from the Android SDK Build Tools. Check the signer SHA-256
+The alias is optional for a single-key keystore. Use `--output PATH` to
+choose the signed APK destination. The default is `app/build/signed/app-release.apk`.
+The script preserves the unsigned Gradle output, verifies the signature, and
+prints the signer fingerprint and signed file size.
+
+Check the signer SHA-256
 fingerprint against your backed-up release key and inspect the APK for the
 expected version, package `dev.sjaramillo.nemi`, launcher, and Health Connect
-privacy alias. Remove the local working credentials after signing. Test Steps
+privacy alias. Test Steps
 permission, live sync, and CSV export and restore on a physical phone in the
 Owner profile, following [AGENTS.md](../AGENTS.md).
 
 ## Publish for F-Droid
 
 Independently build the same tag with `./gradlew :app:assembleRelease` from a
-checkout without `.signing/release/`. Use the F-Droid build recipe for this
+clean checkout. Use the F-Droid build recipe for this
 rebuild. From the signed build's checkout, compare the APKs using the path to
 the independent checkout as `unsigned_checkout`.
 
 ```sh
 unsigned_checkout=/path/to/unsigned-checkout
 apksigcopier compare --unsigned \
-  app/build/outputs/apk/release/app-release.apk \
+  app/build/signed/app-release.apk \
   "$unsigned_checkout/app/build/outputs/apk/release/app-release-unsigned.apk"
 ```
 

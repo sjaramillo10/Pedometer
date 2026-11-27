@@ -10,8 +10,19 @@ gen/
 # Local configuration and signing
 local.properties
 key.properties
+signing.properties
+keystore.properties
+release.properties
+*.jks
+*.keystore
+*.p12
+*.pkcs12
+*.pfx
+*.pk8
+*.key
 /.signing/*
 !/.signing/debug/
+!/.signing/debug/debug.jks
 
 # Android Studio and Gradle
 .idea
