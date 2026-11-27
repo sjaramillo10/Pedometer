@@ -1,4 +1,8 @@
-Nemi is a lightweight step tracker powered by Android's Health Connect. Set a daily step goal, check your progress, and browse past weeks to see your daily totals, weekly average, best day, and lifetime steps.
+Life, one step at a time.
+
+In Classical Nahuatl, nemi means “to live, exist, or dwell,” and nenemi means “to walk or wander.” Those words capture the idea behind Nemi. Walking is part of everyday life, and a step goal can fit the way you live.
+
+Nemi is a lightweight step tracker powered by Android's Health Connect. Set your own daily goal, check your progress, and browse past weeks to see your daily totals, weekly average, best day, and lifetime steps.
 
 Export your step history to a CSV backup or restore it from Settings. Nemi stores daily totals on your phone and never transmits your health data.
 
