@@ -19,25 +19,11 @@ of the source branch. Set the version name and code in
 Use the version name as the tag, such as `0.2.0`. Build from a clean checkout
 of the tagged commit.
 
-## Prepare the local release key
+## Set up local release signing
 
-Generate the production signing key once and reuse it for updates. Run these
-commands from the repository root and enter the keystore password at the prompt.
-
-```sh
-mkdir -m 700 -p .signing/release
-keytool -genkeypair -keystore .signing/release/nemi.p12 -storetype PKCS12 \
-  -alias nemi-release -keyalg RSA -keysize 3072 -validity 10000
-```
-
-Back up the encrypted keystore and its password in your secret manager. Restore
-a copy and confirm its SHA-256 certificate fingerprint matches the original
-using `keytool -list -v`. For future releases, restore the same key.
-
-Create the ignored `.signing/release/signing.properties` file with permissions
-restricted to your user. Replace the password placeholders with your keystore
-password. Java properties use a backslash as an escape character, so double
-any literal backslashes in the password.
+Place the existing release keystore at `.signing/release/nemi.p12`. Put its
+signing settings in `.signing/release/signing.properties` using the keystore's
+alias and password.
 
 ```properties
 storeFile=nemi.p12
