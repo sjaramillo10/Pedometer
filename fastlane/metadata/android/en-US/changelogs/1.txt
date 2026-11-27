@@ -1,0 +1,3 @@
+Nemi’s first release. Track daily steps with Health Connect, set a goal, browse your weekly history, and back up or restore your step totals with CSV.
+
+You may run into bugs in this early release. If you do, please report them on GitHub.
