@@ -9,8 +9,10 @@ of the source branch. Set the version name and code in
 - **Major and minor releases.** Update the version through a PR into
   `develop`, then merge `develop` into `main`. Tag the reviewed release commit
   on `main`.
-- **Patch releases.** Branch from `main` for the first patch on a release line.
-  For further patches on that line, branch from the previous patch tag. Bump
+- **Patch releases.** Patch only the latest published release line. For
+  example, once `0.2.0` ships, publish fixes as `0.2.1`. Android treats the
+  higher version code as newer. Branch from `main` for the first patch on
+  that line. For further patches, branch from the previous patch tag. Bump
   the patch version, assign the next version code, and merge the fixes into
   the patch branch. Tag and release directly from that branch. After release,
   squash-merge it into `develop`, preserving any newer version name and the
