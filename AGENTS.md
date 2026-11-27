@@ -57,7 +57,7 @@ Run these commands from the repository root:
 
 - If the SDK or signing setup blocks verification, report the exact failed
   command. Keep signing passwords and keystores private.
-  Release signing is unfinished.
+  See [the release guide](docs/releasing.md) for release signing.
 
 ## Device testing
 

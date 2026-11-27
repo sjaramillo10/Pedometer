@@ -45,12 +45,14 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Assemble unsigned release APK
+      - name: Stage debug credentials for release signing
+        run: cp -R .signing/debug .signing/release
+      - name: Assemble signed release APK
         run: ./gradlew :app:assembleRelease
       - name: Check release APK size
         shell: bash
         run: |
-          apk=app/build/outputs/apk/release/app-release-unsigned.apk
+          apk=app/build/outputs/apk/release/app-release.apk
           budget=100000
           bytes=$(stat -c %s "$apk")
           printf 'Release APK size: %s bytes (budget: %s bytes)\n' "$bytes" "$budget" | tee -a "$GITHUB_STEP_SUMMARY"
