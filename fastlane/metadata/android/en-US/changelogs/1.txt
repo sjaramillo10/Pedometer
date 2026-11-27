@@ -1,0 +1,1 @@
+Track daily steps with Health Connect, set a daily goal, browse your weekly history, and export or restore your step totals using CSV backups.

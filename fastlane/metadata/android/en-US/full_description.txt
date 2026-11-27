@@ -1,0 +1,5 @@
+Nemi is a lightweight step tracker powered by Android's Health Connect. Set a daily step goal, check your progress, and browse past weeks to see your daily totals, weekly average, best day, and lifetime steps.
+
+Export your step history to a CSV backup or restore it from Settings. Nemi stores daily totals on your phone and never transmits your health data.
+
+Nemi installs on Android 14 or later and works independently of Google Play Services. Live tracking requires the system Health Connect service, Android 14 (U) SDK Extension 20 or later, and a step-counter sensor. You can view imported CSV history on devices without live step tracking.
